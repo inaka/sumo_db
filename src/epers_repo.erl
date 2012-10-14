@@ -33,24 +33,29 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%% Public API.
+%%% Public API.
 -export([
   create_schema/2, persist/2, find_by/3, find_by/5,
   delete/3, delete_all/2, call/4
 ]).
 -export([start_link/3]).
 
-%% Exports for gen_server
+%%% Exports for gen_server
 -export([
   init/1, handle_call/3, handle_cast/2, handle_info/2,
   terminate/2, code_change/3
 ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Types.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+-record(state, {handler, handler_state}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%% @doc Returns all behavior callbacks.
+-spec behaviour_info(callbacks) -> proplists:proplist()|undefined.
 behaviour_info(callbacks) ->
   [
     {init,1}, {persist,2}, {delete,3}, {find_by,3}, {find_by,5},
@@ -60,17 +65,21 @@ behaviour_info(callbacks) ->
 behaviour_info(_Other) ->
   undefined.
 
--record(state, {handler, handler_state}).
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% External API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% @doc Persist the given doc with the given repository name.
+-spec persist(atom(), #epers_doc{}) -> #epers_doc{}.
 persist(Name, #epers_doc{}=Doc) ->
   gen_server:call(Name, {persist, Doc}).
 
+%% @doc Deletes the doc identified by id in the given repository name.
+-spec delete(atom(), epers_schema_name(), term()) -> ok.
 delete(Name, DocName, Id) ->
   gen_server:call(Name, {delete, DocName, Id}).
 
+%% @doc Deletes all docs in the given repository name.
+-spec delete_all(atom(), epers_schema_name()) -> ok.
 delete_all(Name, DocName) ->
   gen_server:call(Name, {delete_all, DocName}).
 

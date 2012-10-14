@@ -32,6 +32,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% @doc Returns all behavior callbacks.
+-spec behaviour_info(callbacks) -> proplists:proplist()|undefined.
 behaviour_info(callbacks) ->
   [{epers_schema,0}, {epers_wakeup,1}];
 

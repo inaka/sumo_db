@@ -29,7 +29,9 @@ offering a consistent api to your code.
 
 # Example
 See: [**examples/blog**](https://github.com/marcelog/epers/tree/master/examples/blog)
-for a full example.
+for a full example. To run it, while being in the top level directory:
+
+    make all blog
 
 # TODO
  * Get rid of atoms and use lists.

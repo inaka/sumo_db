@@ -1,0 +1,259 @@
+2012-10-14 17:44:25 =CRASH REPORT====
+  crasher:
+    initial call: epers_repo:init/1
+    pid: <0.78.0>
+    registered_name: []
+    exception exit: {{failed_to_connect_to_database,econnrefused},[{gen_server,init_it,6,[{file,"gen_server.erl"},{line,328}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+    ancestors: [epers_repo_sup,epers_sup,<0.75.0>]
+    messages: []
+    links: [<0.77.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 377
+    stack_size: 24
+    reductions: 447
+  neighbours:
+2012-10-14 17:44:25 =SUPERVISOR REPORT====
+     Supervisor: {local,epers_repo_sup}
+     Context:    start_error
+     Reason:     {failed_to_connect_to_database,econnrefused}
+     Offender:   [{pid,undefined},{name,blog_post_repo},{mfargs,{epers_repo,start_link,[mysql,blog_post_repo,[{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]]}},{restart_type,permanent},{shutdown,5000},{child_type,worker}]
+
+2012-10-14 17:44:25 =SUPERVISOR REPORT====
+     Supervisor: {local,epers_sup}
+     Context:    start_error
+     Reason:     shutdown
+     Offender:   [{pid,undefined},{name,epers_repo_sup},{mfargs,{epers_repo_sup,start_link,[]}},{restart_type,permanent},{shutdown,infinity},{child_type,supervisor}]
+
+2012-10-14 17:44:43 =CRASH REPORT====
+  crasher:
+    initial call: epers_repo:init/1
+    pid: <0.78.0>
+    registered_name: []
+    exception exit: {{failed_to_authenticate,{error_packet,2,1045,<<"28000">>,"Access denied for user 'root'@'localhost' (using password: YES)"}},[{gen_server,init_it,6,[{file,"gen_server.erl"},{line,328}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+    ancestors: [epers_repo_sup,epers_sup,<0.75.0>]
+    messages: []
+    links: [<0.77.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 987
+    stack_size: 24
+    reductions: 929
+  neighbours:
+2012-10-14 17:44:43 =SUPERVISOR REPORT====
+     Supervisor: {local,epers_repo_sup}
+     Context:    start_error
+     Reason:     {failed_to_authenticate,{error_packet,2,1045,<<"28000">>,"Access denied for user 'root'@'localhost' (using password: YES)"}}
+     Offender:   [{pid,undefined},{name,blog_post_repo},{mfargs,{epers_repo,start_link,[mysql,blog_post_repo,[{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]]}},{restart_type,permanent},{shutdown,5000},{child_type,worker}]
+
+2012-10-14 17:45:48 =CRASH REPORT====
+  crasher:
+    initial call: emongo_conn:init/4
+    pid: <0.83.0>
+    registered_name: []
+    exception exit: {{failed_to_open_socket,econnrefused},[{emongo_conn,open_socket,2,[{file,"src/emongo_conn.erl"},{line,131}]},{emongo_conn,init,4,[{file,"src/emongo_conn.erl"},{line,36}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+    ancestors: [emongo,emongo_app,<0.68.0>]
+    messages: []
+    links: [<0.70.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 377
+    stack_size: 24
+    reductions: 291
+  neighbours:
+2012-10-14 17:46:01 =CRASH REPORT====
+  crasher:
+    initial call: epers_repo:init/1
+    pid: <0.82.0>
+    registered_name: []
+    exception exit: {{function_clause,[{lists,nth,[2,[]],[{file,"lists.erl"},{line,117}]},{emongo,do_auth,5,[{file,"src/emongo.erl"},{line,105}]},{lists,foreach,2,[{file,"lists.erl"},{line,1262}]},{epers_repo_mongo,init,1,[{file,"src/epers_repo_mongo.erl"},{line,151}]},{epers_repo,init,1,[{file,"src/epers_repo.erl"},{line,88}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,304}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]},[{gen_server,init_it,6,[{file,"gen_server.erl"},{line,328}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+    ancestors: [epers_repo_sup,epers_sup,<0.75.0>]
+    messages: []
+    links: [<0.77.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 987
+    stack_size: 24
+    reductions: 504
+  neighbours:
+2012-10-14 17:46:01 =SUPERVISOR REPORT====
+     Supervisor: {local,epers_repo_sup}
+     Context:    start_error
+     Reason:     {function_clause,[{lists,nth,[2,[]],[{file,"lists.erl"},{line,117}]},{emongo,do_auth,5,[{file,"src/emongo.erl"},{line,105}]},{lists,foreach,2,[{file,"lists.erl"},{line,1262}]},{epers_repo_mongo,init,1,[{file,"src/epers_repo_mongo.erl"},{line,151}]},{epers_repo,init,1,[{file,"src/epers_repo.erl"},{line,88}]},{gen_server,init_it,6,[{file,"gen_server.erl"},{line,304}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+     Offender:   [{pid,undefined},{name,epers_repo_mongo},{mfargs,{epers_repo,start_link,[mongo,epers_repo_mongo,[{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]]}},{restart_type,permanent},{shutdown,5000},{child_type,worker}]
+
+2012-10-14 17:46:01 =SUPERVISOR REPORT====
+     Supervisor: {local,epers_sup}
+     Context:    start_error
+     Reason:     shutdown
+     Offender:   [{pid,undefined},{name,epers_repo_sup},{mfargs,{epers_repo_sup,start_link,[]}},{restart_type,permanent},{shutdown,infinity},{child_type,supervisor}]
+
+2012-10-14 17:53:38 =ERROR REPORT====
+** Generic server mysql terminating 
+** Last message in was {persist,{epers_doc,blog_author,[{id,undefined},{name,"Pepe Gorostiga"},{photo,<<"some binary jpg">>}]}}
+** When Server state == {state,blog_post_repo,{state,"#Ref<0.0.0.194>"}}
+** Reason for termination == 
+** {'module could not be loaded',[{eper,get_id_field,[blog_author],[]},{epers_repo_mysql,persist,2,[{file,"src/epers_repo_mysql.erl"},{line,44}]},{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,95}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+2012-10-14 17:53:38 =CRASH REPORT====
+  crasher:
+    initial call: epers_repo:init/1
+    pid: <0.78.0>
+    registered_name: mysql
+    exception exit: {{undef,[{eper,get_id_field,[blog_author],[]},{epers_repo_mysql,persist,2,[{file,"src/epers_repo_mysql.erl"},{line,44}]},{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,95}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,747}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+    ancestors: [epers_repo_sup,epers_sup,<0.75.0>]
+    messages: []
+    links: [<0.77.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 1597
+    stack_size: 24
+    reductions: 8141
+  neighbours:
+2012-10-14 17:54:18 =ERROR REPORT====
+** Generic server mysql terminating 
+** Last message in was {call,blog_post,total_posts,[]}
+** When Server state == {state,blog_post_repo,{state,"#Ref<0.0.0.190>"}}
+** Reason for termination == 
+** {'module could not be loaded',[{eper_repo_mysql,execute,["SELECT COUNT(1) FROM `blog_post`",{state,"#Ref<0.0.0.190>"}],[]},{blog_post_repo,total_posts,2,[{file,"examples/blog/src/blog_post_repo.erl"},{line,11}]},{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,133}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+2012-10-14 17:54:18 =CRASH REPORT====
+  crasher:
+    initial call: epers_repo:init/1
+    pid: <0.78.0>
+    registered_name: mysql
+    exception exit: {{undef,[{eper_repo_mysql,execute,["SELECT COUNT(1) FROM `blog_post`",{state,"#Ref<0.0.0.190>"}],[]},{blog_post_repo,total_posts,2,[{file,"examples/blog/src/blog_post_repo.erl"},{line,11}]},{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,133}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,747}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+    ancestors: [epers_repo_sup,epers_sup,<0.75.0>]
+    messages: []
+    links: [<0.77.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 4181
+    stack_size: 24
+    reductions: 22760
+  neighbours:
+2012-10-14 17:54:18 =SUPERVISOR REPORT====
+     Supervisor: {local,epers_repo_sup}
+     Context:    child_terminated
+     Reason:     {undef,[{eper_repo_mysql,execute,["SELECT COUNT(1) FROM `blog_post`",{state,"#Ref<0.0.0.190>"}],[]},{blog_post_repo,total_posts,2,[{file,"examples/blog/src/blog_post_repo.erl"},{line,11}]},{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,133}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+     Offender:   [{pid,<0.78.0>},{name,blog_post_repo},{mfargs,{epers_repo,start_link,[mysql,blog_post_repo,[{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]]}},{restart_type,permanent},{shutdown,5000},{child_type,worker}]
+
+2012-10-14 17:54:49 =ERROR REPORT====
+** Generic server mongo terminating 
+** Last message in was {find_by,blog_reader,[{id,<<"507b269947dbbf0046000001">>}],1,0}
+** When Server state == {state,epers_repo_mongo,{state,"#Ref<0.0.0.213>"}}
+** Reason for termination == 
+** {'module could not be loaded',[{eper,new_doc,[blog_reader],[]},{epers_repo_mongo,'-find_by/5-fun-1-',2,[{file,"src/epers_repo_mongo.erl"},{line,95}]},{lists,map,2,[{file,"lists.erl"},{line,1173}]},{epers_repo_mongo,find_by,5,[{file,"src/epers_repo_mongo.erl"},{line,73}]},{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,123}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+2012-10-14 17:54:49 =CRASH REPORT====
+  crasher:
+    initial call: epers_repo:init/1
+    pid: <0.82.0>
+    registered_name: mongo
+    exception exit: {{undef,[{eper,new_doc,[blog_reader],[]},{epers_repo_mongo,'-find_by/5-fun-1-',2,[{file,"src/epers_repo_mongo.erl"},{line,95}]},{lists,map,2,[{file,"lists.erl"},{line,1173}]},{epers_repo_mongo,find_by,5,[{file,"src/epers_repo_mongo.erl"},{line,73}]},{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,123}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,747}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+    ancestors: [epers_repo_sup,epers_sup,<0.75.0>]
+    messages: []
+    links: [<0.77.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 2584
+    stack_size: 24
+    reductions: 4699
+  neighbours:
+2012-10-14 17:54:49 =SUPERVISOR REPORT====
+     Supervisor: {local,epers_repo_sup}
+     Context:    child_terminated
+     Reason:     {undef,[{eper,new_doc,[blog_reader],[]},{epers_repo_mongo,'-find_by/5-fun-1-',2,[{file,"src/epers_repo_mongo.erl"},{line,95}]},{lists,map,2,[{file,"lists.erl"},{line,1173}]},{epers_repo_mongo,find_by,5,[{file,"src/epers_repo_mongo.erl"},{line,73}]},{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,123}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+     Offender:   [{pid,<0.82.0>},{name,epers_repo_mongo},{mfargs,{epers_repo,start_link,[mongo,epers_repo_mongo,[{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]]}},{restart_type,permanent},{shutdown,5000},{child_type,worker}]
+
+2012-10-14 17:55:21 =ERROR REPORT====
+** Generic server eredis terminating 
+** Last message in was {persist,{epers_doc,blog_vote,[{id,undefined},{reader_id,<<"507b26b947dbbf0046000002">>},{post_id,321}]}}
+** When Server state == {state,epers_repo_redis,{state,<0.85.0>}}
+** Reason for termination == 
+** {'module could not be loaded',[{eper,get_id_field,[blog_vote],[]},{epers_repo_redis,persist,2,[{file,"src/epers_repo_redis.erl"},{line,44}]},{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,95}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+2012-10-14 17:55:21 =CRASH REPORT====
+  crasher:
+    initial call: epers_repo:init/1
+    pid: <0.84.0>
+    registered_name: eredis
+    exception exit: {{undef,[{eper,get_id_field,[blog_vote],[]},{epers_repo_redis,persist,2,[{file,"src/epers_repo_redis.erl"},{line,44}]},{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,95}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,747}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+    ancestors: [epers_repo_sup,epers_sup,<0.75.0>]
+    messages: []
+    links: [<0.77.0>,<0.85.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 987
+    stack_size: 24
+    reductions: 922
+  neighbours:
+    neighbour: [{pid,<0.85.0>},{registered_name,[]},{initial_call,{eredis_client,init,['Argument__1']}},{current_function,{gen_server,loop,6}},{ancestors,[eredis,epers_repo_sup,epers_sup,<0.75.0>]},{messages,[]},{links,[<0.84.0>,#Port<0.3235>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,233},{stack_size,9},{reductions,334}]
+2012-10-14 17:55:21 =SUPERVISOR REPORT====
+     Supervisor: {local,epers_repo_sup}
+     Context:    child_terminated
+     Reason:     {undef,[{eper,get_id_field,[blog_vote],[]},{epers_repo_redis,persist,2,[{file,"src/epers_repo_redis.erl"},{line,44}]},{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,95}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+     Offender:   [{pid,<0.84.0>},{name,epers_repo_redis},{mfargs,{epers_repo,start_link,[eredis,epers_repo_redis,[{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]]}},{restart_type,permanent},{shutdown,5000},{child_type,worker}]
+
+2012-10-14 17:55:48 =ERROR REPORT====
+** Generic server eredis terminating 
+** Last message in was {persist,{epers_doc,blog_vote,[{id,undefined},{reader_id,<<"507b26d447dbbf0046000002">>},{post_id,323}]}}
+** When Server state == {state,epers_repo_redis,{state,<0.85.0>}}
+** Reason for termination == 
+** {{badmatch,ok},[{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,95}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+2012-10-14 17:55:48 =CRASH REPORT====
+  crasher:
+    initial call: epers_repo:init/1
+    pid: <0.84.0>
+    registered_name: eredis
+    exception exit: {{{badmatch,ok},[{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,95}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,747}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+    ancestors: [epers_repo_sup,epers_sup,<0.75.0>]
+    messages: []
+    links: [<0.77.0>,<0.85.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 610
+    stack_size: 24
+    reductions: 1124
+  neighbours:
+    neighbour: [{pid,<0.85.0>},{registered_name,[]},{initial_call,{eredis_client,init,['Argument__1']}},{current_function,{gen_server,loop,6}},{ancestors,[eredis,epers_repo_sup,epers_sup,<0.75.0>]},{messages,[]},{links,[<0.84.0>,#Port<0.3235>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,610},{stack_size,9},{reductions,526}]
+2012-10-14 17:55:48 =SUPERVISOR REPORT====
+     Supervisor: {local,epers_repo_sup}
+     Context:    child_terminated
+     Reason:     {{badmatch,ok},[{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,95}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+     Offender:   [{pid,<0.84.0>},{name,epers_repo_redis},{mfargs,{epers_repo,start_link,[eredis,epers_repo_redis,[{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]]}},{restart_type,permanent},{shutdown,5000},{child_type,worker}]
+
+2012-10-14 18:04:24 =ERROR REPORT====
+** Generic server eredis terminating 
+** Last message in was {persist,{epers_doc,blog_vote,[{id,undefined},{reader_id,<<"507b28d847dbbf0046000002">>},{post_id,325}]}}
+** When Server state == {state,epers_repo_redis,{state,<0.85.0>}}
+** Reason for termination == 
+** {{badmatch,ok},[{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,95}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+2012-10-14 18:04:24 =CRASH REPORT====
+  crasher:
+    initial call: epers_repo:init/1
+    pid: <0.84.0>
+    registered_name: eredis
+    exception exit: {{{badmatch,ok},[{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,95}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]},[{gen_server,terminate,6,[{file,"gen_server.erl"},{line,747}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+    ancestors: [epers_repo_sup,epers_sup,<0.75.0>]
+    messages: []
+    links: [<0.77.0>,<0.85.0>]
+    dictionary: []
+    trap_exit: false
+    status: running
+    heap_size: 610
+    stack_size: 24
+    reductions: 1128
+  neighbours:
+    neighbour: [{pid,<0.85.0>},{registered_name,[]},{initial_call,{eredis_client,init,['Argument__1']}},{current_function,{gen_server,loop,6}},{ancestors,[eredis,epers_repo_sup,epers_sup,<0.75.0>]},{messages,[]},{links,[<0.84.0>,#Port<0.3235>]},{dictionary,[]},{trap_exit,false},{status,waiting},{heap_size,610},{stack_size,9},{reductions,526}]
+2012-10-14 18:04:24 =SUPERVISOR REPORT====
+     Supervisor: {local,epers_repo_sup}
+     Context:    child_terminated
+     Reason:     {{badmatch,ok},[{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,95}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+     Offender:   [{pid,<0.84.0>},{name,epers_repo_redis},{mfargs,{epers_repo,start_link,[eredis,epers_repo_redis,[{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]]}},{restart_type,permanent},{shutdown,5000},{child_type,worker}]
+

@@ -1,0 +1,876 @@
+2012-10-14 17:44:04.025 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 17:44:04.025 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 17:44:04.029 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 17:44:04.030 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 17:44:04.045 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 17:44:04.045 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 17:44:04.048 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 17:44:04.050 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 17:44:04.050 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 17:44:04.054 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 17:44:04.054 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 17:44:04.055 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 17:44:25.307 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 17:44:25.307 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 17:44:25.311 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 17:44:25.311 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 17:44:25.328 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 17:44:25.328 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 17:44:25.330 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 17:44:25.332 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 17:44:25.332 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 17:44:25.336 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 17:44:25.336 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 17:44:25.337 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 17:44:25.337 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 17:44:25.340 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 17:44:25.340 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 17:44:25.340 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 17:44:25.340 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 17:44:25.356 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 17:44:25.356 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 17:44:25.368 [error] <0.78.0> CRASH REPORT Process <0.78.0> with 0 neighbours exited with reason: {failed_to_connect_to_database,econnrefused} in gen_server:init_it/6 line 328
+2012-10-14 17:44:25.369 [error] <0.77.0> Supervisor epers_repo_sup had child blog_post_repo started with epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at undefined exit with reason {failed_to_connect_to_database,econnrefused} in context start_error
+2012-10-14 17:44:25.371 [error] <0.76.0> Supervisor epers_sup had child epers_repo_sup started with epers_repo_sup:start_link() at undefined exit with reason shutdown in context start_error
+2012-10-14 17:44:43.345 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 17:44:43.346 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 17:44:43.349 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 17:44:43.350 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 17:44:43.364 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 17:44:43.365 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 17:44:43.367 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 17:44:43.369 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 17:44:43.370 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 17:44:43.373 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 17:44:43.374 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 17:44:43.375 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 17:44:43.375 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 17:44:43.378 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 17:44:43.378 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 17:44:43.378 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 17:44:43.379 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 17:44:43.391 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 17:44:43.392 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 17:44:43.414 [error] <0.78.0> CRASH REPORT Process <0.78.0> with 0 neighbours exited with reason: {failed_to_authenticate,{error_packet,2,1045,<<"28000">>,"Access denied for user 'root'@'localhost' (using password: YES)"}} in gen_server:init_it/6 line 328
+2012-10-14 17:44:43.416 [error] <0.77.0> Supervisor epers_repo_sup had child blog_post_repo started with epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at undefined exit with reason {failed_to_authenticate,{error_packet,2,1045,<<"28000">>,"Access denied for user 'root'@'localhost' (using password: YES)"}} in context start_error
+2012-10-14 17:44:43.417 [error] <0.76.0> Supervisor epers_sup had child epers_repo_sup started with epers_repo_sup:start_link() at undefined exit with reason shutdown in context start_error
+2012-10-14 17:44:43.417 [info] <0.6.0> Application epers exited with reason: {shutdown,{epers_app,start,[normal,[]]}}
+2012-10-14 17:45:48.015 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 17:45:48.016 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 17:45:48.019 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 17:45:48.020 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 17:45:48.036 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 17:45:48.036 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 17:45:48.039 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 17:45:48.041 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 17:45:48.041 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 17:45:48.044 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 17:45:48.045 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 17:45:48.045 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 17:45:48.045 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 17:45:48.048 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 17:45:48.049 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 17:45:48.049 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 17:45:48.049 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 17:45:48.061 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 17:45:48.061 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 17:45:48.083 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 17:45:48.088 [error] <0.83.0> CRASH REPORT Process <0.83.0> with 0 neighbours exited with reason: {failed_to_open_socket,econnrefused} in emongo_conn:open_socket/2 line 131
+2012-10-14 17:46:01.384 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 17:46:01.384 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 17:46:01.388 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 17:46:01.388 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 17:46:01.403 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 17:46:01.404 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 17:46:01.406 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 17:46:01.407 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 17:46:01.408 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 17:46:01.411 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 17:46:01.411 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 17:46:01.412 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 17:46:01.412 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 17:46:01.415 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 17:46:01.415 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 17:46:01.415 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 17:46:01.415 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 17:46:01.426 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 17:46:01.427 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 17:46:01.448 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 17:46:01.470 [error] <0.82.0> CRASH REPORT Process <0.82.0> with 0 neighbours exited with reason: no function clause matching lists:nth(2, []) line 117 in gen_server:init_it/6 line 328
+2012-10-14 17:46:01.472 [error] <0.77.0> Supervisor epers_repo_sup had child epers_repo_mongo started with epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at undefined exit with reason no function clause matching lists:nth(2, []) line 117 in context start_error
+2012-10-14 17:46:01.475 [error] <0.76.0> Supervisor epers_sup had child epers_repo_sup started with epers_repo_sup:start_link() at undefined exit with reason shutdown in context start_error
+2012-10-14 17:52:43.744 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 17:52:43.744 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 17:52:43.748 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 17:52:43.748 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 17:52:43.765 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 17:52:43.765 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 17:52:43.768 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 17:52:43.769 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 17:52:43.770 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 17:52:43.773 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 17:52:43.774 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 17:52:43.774 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 17:52:43.774 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 17:52:43.777 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 17:52:43.777 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 17:52:43.777 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 17:52:43.777 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 17:52:43.789 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 17:52:43.789 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 17:52:43.810 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 17:52:43.815 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at pid <0.82.0>
+2012-10-14 17:52:43.823 [error] <0.85.0> CRASH REPORT Process <0.85.0> with 1 neighbours exited with reason: {connection_error,{connection_error,econnrefused}} in gen_server:init_it/6 line 320
+2012-10-14 17:52:43.824 [error] <0.77.0> Supervisor epers_repo_sup had child epers_repo_redis started with epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at undefined exit with reason {connection_error,{connection_error,econnrefused}} in context start_error
+2012-10-14 17:52:43.825 [error] <0.76.0> Supervisor epers_sup had child epers_repo_sup started with epers_repo_sup:start_link() at undefined exit with reason shutdown in context start_error
+2012-10-14 17:52:43.826 [info] <0.6.0> Application epers exited with reason: {shutdown,{epers_app,start,[normal,[]]}}
+2012-10-14 17:52:58.220 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 17:52:58.220 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 17:52:58.224 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 17:52:58.225 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 17:52:58.239 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 17:52:58.240 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 17:52:58.242 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 17:52:58.244 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 17:52:58.244 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 17:52:58.248 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 17:52:58.248 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 17:52:58.248 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 17:52:58.249 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 17:52:58.251 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 17:52:58.252 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 17:52:58.252 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 17:52:58.252 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 17:52:58.263 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 17:52:58.263 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 17:52:58.282 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 17:52:58.287 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at pid <0.82.0>
+2012-10-14 17:52:58.293 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.84.0>
+2012-10-14 17:52:58.294 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(sqlite3, epers_repo_sqlite3, [{file,"/tmp/epers.sqlite3"},{options,[]}]) at pid <0.86.0>
+2012-10-14 17:52:58.295 [debug] <0.76.0> Supervisor epers_sup started epers_repo_sup:start_link() at pid <0.77.0>
+2012-10-14 17:52:58.295 [info] <0.6.0> Application epers started on node nonode@nohost
+2012-10-14 17:52:58.296 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_post
+2012-10-14 17:52:58.297 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_post` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`title` VARCHAR (128)  NOT NULL ,`content` TEXT ,`author_id` INT(11) ,PRIMARY KEY(`id`),UNIQUE KEY `title` (`title`),KEY `author_id` (`author_id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 17:53:37.973 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 17:53:37.974 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 17:53:37.978 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 17:53:37.978 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 17:53:37.993 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 17:53:37.994 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 17:53:37.996 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 17:53:37.998 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 17:53:37.998 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 17:53:38.001 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 17:53:38.002 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 17:53:38.002 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 17:53:38.002 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 17:53:38.005 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 17:53:38.006 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 17:53:38.006 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 17:53:38.007 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 17:53:38.019 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 17:53:38.019 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 17:53:38.042 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 17:53:38.047 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at pid <0.82.0>
+2012-10-14 17:53:38.060 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.84.0>
+2012-10-14 17:53:38.061 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(sqlite3, epers_repo_sqlite3, [{file,"/tmp/epers.sqlite3"},{options,[]}]) at pid <0.86.0>
+2012-10-14 17:53:38.061 [debug] <0.76.0> Supervisor epers_sup started epers_repo_sup:start_link() at pid <0.77.0>
+2012-10-14 17:53:38.062 [info] <0.6.0> Application epers started on node nonode@nohost
+2012-10-14 17:53:38.063 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_post
+2012-10-14 17:53:38.063 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_post` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`title` VARCHAR (128)  NOT NULL ,`content` TEXT ,`author_id` INT(11) ,PRIMARY KEY(`id`),UNIQUE KEY `title` (`title`),KEY `author_id` (`author_id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 17:53:38.065 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_author
+2012-10-14 17:53:38.066 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_author` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`name` VARCHAR (128)  NOT NULL ,`photo` BLOB ,PRIMARY KEY(`id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 17:53:38.070 [info] <0.82.0>@epers_repo:handle_call:140 Creating schema for: blog_reader
+2012-10-14 17:53:38.071 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: id for blog_reader
+2012-10-14 17:53:38.071 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: name for blog_reader
+2012-10-14 17:53:38.072 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: email for blog_reader
+2012-10-14 17:53:38.073 [info] <0.84.0>@epers_repo:handle_call:140 Creating schema for: blog_vote
+2012-10-14 17:53:38.073 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` ->  [] 
+2012-10-14 17:53:38.075 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` ->  [] 
+2012-10-14 17:53:38.077 [debug] <0.82.0>@epers_repo_mongo:delete_all:64 Dropping collection: blog_reader
+2012-10-14 17:53:38.084 [error] <0.78.0> gen_server mysql terminated with reason: {'module could not be loaded',[{eper,get_id_field,[blog_author],[]},{epers_repo_mysql,persist,2,[{file,"src/epers_repo_mysql.erl"},{line,44}]},{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,95}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+2012-10-14 17:53:38.087 [error] <0.78.0> CRASH REPORT Process mysql with 0 neighbours exited with reason: call to undefined function eper:get_id_field(blog_author) in gen_server:terminate/6 line 747
+2012-10-14 17:54:18.578 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 17:54:18.578 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 17:54:18.582 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 17:54:18.582 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 17:54:18.599 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 17:54:18.599 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 17:54:18.602 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 17:54:18.604 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 17:54:18.604 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 17:54:18.608 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 17:54:18.608 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 17:54:18.609 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 17:54:18.612 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 17:54:18.613 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 17:54:18.613 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 17:54:18.613 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 17:54:18.620 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 17:54:18.625 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 17:54:18.625 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 17:54:18.647 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 17:54:18.653 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at pid <0.82.0>
+2012-10-14 17:54:18.665 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.84.0>
+2012-10-14 17:54:18.666 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(sqlite3, epers_repo_sqlite3, [{file,"/tmp/epers.sqlite3"},{options,[]}]) at pid <0.86.0>
+2012-10-14 17:54:18.666 [debug] <0.76.0> Supervisor epers_sup started epers_repo_sup:start_link() at pid <0.77.0>
+2012-10-14 17:54:18.667 [info] <0.6.0> Application epers started on node nonode@nohost
+2012-10-14 17:54:18.669 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_post
+2012-10-14 17:54:18.669 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_post` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`title` VARCHAR (128)  NOT NULL ,`content` TEXT ,`author_id` INT(11) ,PRIMARY KEY(`id`),UNIQUE KEY `title` (`title`),KEY `author_id` (`author_id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 17:54:18.671 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_author
+2012-10-14 17:54:18.671 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_author` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`name` VARCHAR (128)  NOT NULL ,`photo` BLOB ,PRIMARY KEY(`id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 17:54:18.673 [info] <0.82.0>@epers_repo:handle_call:140 Creating schema for: blog_reader
+2012-10-14 17:54:18.673 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: id for blog_reader
+2012-10-14 17:54:18.674 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: name for blog_reader
+2012-10-14 17:54:18.674 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: email for blog_reader
+2012-10-14 17:54:18.676 [info] <0.84.0>@epers_repo:handle_call:140 Creating schema for: blog_vote
+2012-10-14 17:54:18.677 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` ->  [] 
+2012-10-14 17:54:18.678 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` ->  [] 
+2012-10-14 17:54:18.679 [debug] <0.82.0>@epers_repo_mongo:delete_all:64 Dropping collection: blog_reader
+2012-10-14 17:54:18.682 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 17:54:18.686 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [317,"It just make things easy","How awesome eper is",0,317,"It just make things easy","How awesome eper is",0] 
+2012-10-14 17:54:18.688 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` WHERE `id`=? LIMIT 1 ->  [316] 
+2012-10-14 17:54:18.691 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` WHERE `id`=? LIMIT 1 ->  [317] 
+2012-10-14 17:54:18.692 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 17:54:18.694 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [318,"It just make things easy","How awesome eper is",0,318,"It just make things easy","How awesome eper is",0] 
+2012-10-14 17:54:18.697 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"new photo">>,"Pepe Gorostiga",318,<<"new photo">>,"Pepe Gorostiga",318] 
+2012-10-14 17:54:18.699 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [318,"It just make things easy","My new shiny title",317,318,"It just make things easy","My new shiny title",317] 
+2012-10-14 17:54:18.703 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_post` WHERE `id`=? LIMIT 0,1 ->  [317] 
+2012-10-14 17:54:18.705 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_author` WHERE `id`=? LIMIT 0,1 ->  [318] 
+2012-10-14 17:54:18.712 [error] <0.78.0> gen_server mysql terminated with reason: {'module could not be loaded',[{eper_repo_mysql,execute,["SELECT COUNT(1) FROM `blog_post`",{state,"#Ref<0.0.0.190>"}],[]},{blog_post_repo,total_posts,2,[{file,"examples/blog/src/blog_post_repo.erl"},{line,11}]},{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,133}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+2012-10-14 17:54:18.713 [error] <0.78.0> CRASH REPORT Process mysql with 0 neighbours exited with reason: call to undefined function eper_repo_mysql:execute("SELECT COUNT(1) FROM `blog_post`", {state,"#Ref<0.0.0.190>"}) in gen_server:terminate/6 line 747
+2012-10-14 17:54:18.714 [error] <0.77.0> Supervisor epers_repo_sup had child blog_post_repo started with epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at <0.78.0> exit with reason call to undefined function eper_repo_mysql:execute("SELECT COUNT(1) FROM `blog_post`", {state,"#Ref<0.0.0.190>"}) in context child_terminated
+2012-10-14 17:54:49.386 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 17:54:49.387 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 17:54:49.391 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 17:54:49.391 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 17:54:49.409 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 17:54:49.409 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 17:54:49.411 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 17:54:49.413 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 17:54:49.414 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 17:54:49.417 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 17:54:49.417 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 17:54:49.421 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 17:54:49.421 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 17:54:49.421 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 17:54:49.422 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 17:54:49.429 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 17:54:49.430 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 17:54:49.433 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 17:54:49.434 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 17:54:49.454 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 17:54:49.460 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at pid <0.82.0>
+2012-10-14 17:54:49.464 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.84.0>
+2012-10-14 17:54:49.466 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(sqlite3, epers_repo_sqlite3, [{file,"/tmp/epers.sqlite3"},{options,[]}]) at pid <0.86.0>
+2012-10-14 17:54:49.466 [debug] <0.76.0> Supervisor epers_sup started epers_repo_sup:start_link() at pid <0.77.0>
+2012-10-14 17:54:49.467 [info] <0.6.0> Application epers started on node nonode@nohost
+2012-10-14 17:54:49.469 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_post
+2012-10-14 17:54:49.469 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_post` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`title` VARCHAR (128)  NOT NULL ,`content` TEXT ,`author_id` INT(11) ,PRIMARY KEY(`id`),UNIQUE KEY `title` (`title`),KEY `author_id` (`author_id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 17:54:49.477 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_author
+2012-10-14 17:54:49.477 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_author` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`name` VARCHAR (128)  NOT NULL ,`photo` BLOB ,PRIMARY KEY(`id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 17:54:49.479 [info] <0.82.0>@epers_repo:handle_call:140 Creating schema for: blog_reader
+2012-10-14 17:54:49.479 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: id for blog_reader
+2012-10-14 17:54:49.479 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: name for blog_reader
+2012-10-14 17:54:49.480 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: email for blog_reader
+2012-10-14 17:54:49.481 [info] <0.84.0>@epers_repo:handle_call:140 Creating schema for: blog_vote
+2012-10-14 17:54:49.482 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` ->  [] 
+2012-10-14 17:54:49.485 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` ->  [] 
+2012-10-14 17:54:49.486 [debug] <0.82.0>@epers_repo_mongo:delete_all:64 Dropping collection: blog_reader
+2012-10-14 17:54:49.489 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 17:54:49.491 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [319,"It just make things easy","How awesome eper is",0,319,"It just make things easy","How awesome eper is",0] 
+2012-10-14 17:54:49.494 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` WHERE `id`=? LIMIT 1 ->  [318] 
+2012-10-14 17:54:49.496 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` WHERE `id`=? LIMIT 1 ->  [319] 
+2012-10-14 17:54:49.497 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 17:54:49.500 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [320,"It just make things easy","How awesome eper is",0,320,"It just make things easy","How awesome eper is",0] 
+2012-10-14 17:54:49.503 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"new photo">>,"Pepe Gorostiga",320,<<"new photo">>,"Pepe Gorostiga",320] 
+2012-10-14 17:54:49.505 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [320,"It just make things easy","My new shiny title",319,320,"It just make things easy","My new shiny title",319] 
+2012-10-14 17:54:49.508 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_post` WHERE `id`=? LIMIT 0,1 ->  [319] 
+2012-10-14 17:54:49.510 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_author` WHERE `id`=? LIMIT 0,1 ->  [320] 
+2012-10-14 17:54:49.512 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT COUNT(1) FROM `blog_post` ->  [] 
+2012-10-14 17:54:49.526 [error] <0.82.0> gen_server mongo terminated with reason: {'module could not be loaded',[{eper,new_doc,[blog_reader],[]},{epers_repo_mongo,'-find_by/5-fun-1-',2,[{file,"src/epers_repo_mongo.erl"},{line,95}]},{lists,map,2,[{file,"lists.erl"},{line,1173}]},{epers_repo_mongo,find_by,5,[{file,"src/epers_repo_mongo.erl"},{line,73}]},{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,123}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+2012-10-14 17:54:49.528 [error] <0.82.0> CRASH REPORT Process mongo with 0 neighbours exited with reason: call to undefined function eper:new_doc(blog_reader) in gen_server:terminate/6 line 747
+2012-10-14 17:54:49.529 [error] <0.77.0> Supervisor epers_repo_sup had child epers_repo_mongo started with epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at <0.82.0> exit with reason call to undefined function eper:new_doc(blog_reader) in context child_terminated
+2012-10-14 17:55:21.081 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 17:55:21.082 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 17:55:21.086 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 17:55:21.086 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 17:55:21.103 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 17:55:21.104 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 17:55:21.107 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 17:55:21.108 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 17:55:21.108 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 17:55:21.112 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 17:55:21.112 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 17:55:21.113 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 17:55:21.116 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 17:55:21.117 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 17:55:21.117 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 17:55:21.117 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 17:55:21.118 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 17:55:21.129 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 17:55:21.130 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 17:55:21.149 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 17:55:21.155 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at pid <0.82.0>
+2012-10-14 17:55:21.160 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.84.0>
+2012-10-14 17:55:21.161 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(sqlite3, epers_repo_sqlite3, [{file,"/tmp/epers.sqlite3"},{options,[]}]) at pid <0.86.0>
+2012-10-14 17:55:21.162 [debug] <0.76.0> Supervisor epers_sup started epers_repo_sup:start_link() at pid <0.77.0>
+2012-10-14 17:55:21.162 [info] <0.6.0> Application epers started on node nonode@nohost
+2012-10-14 17:55:21.164 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_post
+2012-10-14 17:55:21.164 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_post` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`title` VARCHAR (128)  NOT NULL ,`content` TEXT ,`author_id` INT(11) ,PRIMARY KEY(`id`),UNIQUE KEY `title` (`title`),KEY `author_id` (`author_id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 17:55:21.166 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_author
+2012-10-14 17:55:21.166 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_author` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`name` VARCHAR (128)  NOT NULL ,`photo` BLOB ,PRIMARY KEY(`id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 17:55:21.169 [info] <0.82.0>@epers_repo:handle_call:140 Creating schema for: blog_reader
+2012-10-14 17:55:21.169 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: id for blog_reader
+2012-10-14 17:55:21.169 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: name for blog_reader
+2012-10-14 17:55:21.170 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: email for blog_reader
+2012-10-14 17:55:21.171 [info] <0.84.0>@epers_repo:handle_call:140 Creating schema for: blog_vote
+2012-10-14 17:55:21.171 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` ->  [] 
+2012-10-14 17:55:21.174 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` ->  [] 
+2012-10-14 17:55:21.176 [debug] <0.82.0>@epers_repo_mongo:delete_all:64 Dropping collection: blog_reader
+2012-10-14 17:55:21.180 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 17:55:21.183 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [321,"It just make things easy","How awesome eper is",0,321,"It just make things easy","How awesome eper is",0] 
+2012-10-14 17:55:21.185 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` WHERE `id`=? LIMIT 1 ->  [320] 
+2012-10-14 17:55:21.186 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` WHERE `id`=? LIMIT 1 ->  [321] 
+2012-10-14 17:55:21.187 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 17:55:21.190 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [322,"It just make things easy","How awesome eper is",0,322,"It just make things easy","How awesome eper is",0] 
+2012-10-14 17:55:21.193 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"new photo">>,"Pepe Gorostiga",322,<<"new photo">>,"Pepe Gorostiga",322] 
+2012-10-14 17:55:21.195 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [322,"It just make things easy","My new shiny title",321,322,"It just make things easy","My new shiny title",321] 
+2012-10-14 17:55:21.199 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_post` WHERE `id`=? LIMIT 0,1 ->  [321] 
+2012-10-14 17:55:21.200 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_author` WHERE `id`=? LIMIT 0,1 ->  [322] 
+2012-10-14 17:55:21.202 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT COUNT(1) FROM `blog_post` ->  [] 
+2012-10-14 17:55:21.211 [error] <0.84.0> gen_server eredis terminated with reason: {'module could not be loaded',[{eper,get_id_field,[blog_vote],[]},{epers_repo_redis,persist,2,[{file,"src/epers_repo_redis.erl"},{line,44}]},{epers_repo,handle_call,3,[{file,"src/epers_repo.erl"},{line,95}]},{gen_server,handle_msg,5,[{file,"gen_server.erl"},{line,588}]},{proc_lib,init_p_do_apply,3,[{file,"proc_lib.erl"},{line,227}]}]}
+2012-10-14 17:55:21.214 [error] <0.84.0> CRASH REPORT Process eredis with 1 neighbours exited with reason: call to undefined function eper:get_id_field(blog_vote) in gen_server:terminate/6 line 747
+2012-10-14 17:55:21.215 [error] <0.77.0> Supervisor epers_repo_sup had child epers_repo_redis started with epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at <0.84.0> exit with reason call to undefined function eper:get_id_field(blog_vote) in context child_terminated
+2012-10-14 17:55:21.217 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.102.0>
+2012-10-14 17:55:48.540 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 17:55:48.540 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 17:55:48.544 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 17:55:48.544 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 17:55:48.562 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 17:55:48.563 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 17:55:48.566 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 17:55:48.567 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 17:55:48.568 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 17:55:48.576 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 17:55:48.576 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 17:55:48.576 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 17:55:48.577 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 17:55:48.582 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 17:55:48.582 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 17:55:48.583 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 17:55:48.583 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 17:55:48.589 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 17:55:48.589 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 17:55:48.611 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 17:55:48.619 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at pid <0.82.0>
+2012-10-14 17:55:48.626 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.84.0>
+2012-10-14 17:55:48.627 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(sqlite3, epers_repo_sqlite3, [{file,"/tmp/epers.sqlite3"},{options,[]}]) at pid <0.86.0>
+2012-10-14 17:55:48.628 [debug] <0.76.0> Supervisor epers_sup started epers_repo_sup:start_link() at pid <0.77.0>
+2012-10-14 17:55:48.628 [info] <0.6.0> Application epers started on node nonode@nohost
+2012-10-14 17:55:48.630 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_post
+2012-10-14 17:55:48.630 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_post` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`title` VARCHAR (128)  NOT NULL ,`content` TEXT ,`author_id` INT(11) ,PRIMARY KEY(`id`),UNIQUE KEY `title` (`title`),KEY `author_id` (`author_id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 17:55:48.632 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_author
+2012-10-14 17:55:48.632 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_author` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`name` VARCHAR (128)  NOT NULL ,`photo` BLOB ,PRIMARY KEY(`id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 17:55:48.634 [info] <0.82.0>@epers_repo:handle_call:140 Creating schema for: blog_reader
+2012-10-14 17:55:48.634 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: id for blog_reader
+2012-10-14 17:55:48.635 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: name for blog_reader
+2012-10-14 17:55:48.635 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: email for blog_reader
+2012-10-14 17:55:48.636 [info] <0.84.0>@epers_repo:handle_call:140 Creating schema for: blog_vote
+2012-10-14 17:55:48.637 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` ->  [] 
+2012-10-14 17:55:48.640 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` ->  [] 
+2012-10-14 17:55:48.641 [debug] <0.82.0>@epers_repo_mongo:delete_all:64 Dropping collection: blog_reader
+2012-10-14 17:55:48.645 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 17:55:48.648 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [323,"It just make things easy","How awesome eper is",0,323,"It just make things easy","How awesome eper is",0] 
+2012-10-14 17:55:48.650 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` WHERE `id`=? LIMIT 1 ->  [322] 
+2012-10-14 17:55:48.652 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` WHERE `id`=? LIMIT 1 ->  [323] 
+2012-10-14 17:55:48.653 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 17:55:48.655 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [324,"It just make things easy","How awesome eper is",0,324,"It just make things easy","How awesome eper is",0] 
+2012-10-14 17:55:48.657 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"new photo">>,"Pepe Gorostiga",324,<<"new photo">>,"Pepe Gorostiga",324] 
+2012-10-14 17:55:48.659 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [324,"It just make things easy","My new shiny title",323,324,"It just make things easy","My new shiny title",323] 
+2012-10-14 17:55:48.674 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_post` WHERE `id`=? LIMIT 0,1 ->  [323] 
+2012-10-14 17:55:48.676 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_author` WHERE `id`=? LIMIT 0,1 ->  [324] 
+2012-10-14 17:55:48.679 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT COUNT(1) FROM `blog_post` ->  [] 
+2012-10-14 17:55:48.683 [error] <0.84.0> gen_server eredis terminated with reason: no match of right hand value ok in epers_repo:handle_call/3 line 95
+2012-10-14 17:55:48.685 [error] <0.84.0> CRASH REPORT Process eredis with 1 neighbours exited with reason: no match of right hand value ok in epers_repo:handle_call/3 line 95 in gen_server:terminate/6 line 747
+2012-10-14 17:55:48.686 [error] <0.77.0> Supervisor epers_repo_sup had child epers_repo_redis started with epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at <0.84.0> exit with reason no match of right hand value ok in epers_repo:handle_call/3 line 95 in context child_terminated
+2012-10-14 17:55:48.688 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.102.0>
+2012-10-14 18:02:40.393 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 18:02:40.393 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 18:02:40.397 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 18:02:40.398 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 18:02:40.415 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 18:02:40.415 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 18:02:40.419 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 18:02:40.420 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 18:02:40.421 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 18:02:40.425 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 18:02:40.425 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 18:02:40.426 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 18:02:40.427 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 18:04:24.837 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 18:04:24.837 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 18:04:24.841 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 18:04:24.841 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 18:04:24.857 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 18:04:24.858 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 18:04:24.860 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 18:04:24.862 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 18:04:24.862 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 18:04:24.866 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 18:04:24.866 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 18:04:24.866 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 18:04:24.867 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 18:04:24.869 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 18:04:24.870 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 18:04:24.870 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 18:04:24.870 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 18:04:24.882 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 18:04:24.882 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 18:04:24.902 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 18:04:24.908 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at pid <0.82.0>
+2012-10-14 18:04:24.912 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.84.0>
+2012-10-14 18:04:24.913 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(sqlite3, epers_repo_sqlite3, [{file,"/tmp/epers.sqlite3"},{options,[]}]) at pid <0.86.0>
+2012-10-14 18:04:24.913 [debug] <0.76.0> Supervisor epers_sup started epers_repo_sup:start_link() at pid <0.77.0>
+2012-10-14 18:04:24.914 [info] <0.6.0> Application epers started on node nonode@nohost
+2012-10-14 18:04:24.916 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_post
+2012-10-14 18:04:24.917 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_post` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`title` VARCHAR (128)  NOT NULL ,`content` TEXT ,`author_id` INT(11) ,PRIMARY KEY(`id`),UNIQUE KEY `title` (`title`),KEY `author_id` (`author_id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 18:04:24.919 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_author
+2012-10-14 18:04:24.919 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_author` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`name` VARCHAR (128)  NOT NULL ,`photo` BLOB ,PRIMARY KEY(`id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 18:04:24.921 [info] <0.82.0>@epers_repo:handle_call:140 Creating schema for: blog_reader
+2012-10-14 18:04:24.921 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: id for blog_reader
+2012-10-14 18:04:24.922 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: name for blog_reader
+2012-10-14 18:04:24.922 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: email for blog_reader
+2012-10-14 18:04:24.923 [info] <0.84.0>@epers_repo:handle_call:140 Creating schema for: blog_vote
+2012-10-14 18:04:24.924 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` ->  [] 
+2012-10-14 18:04:24.928 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` ->  [] 
+2012-10-14 18:04:24.929 [debug] <0.82.0>@epers_repo_mongo:delete_all:64 Dropping collection: blog_reader
+2012-10-14 18:04:24.932 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 18:04:24.935 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [325,"It just make things easy","How awesome eper is",0,325,"It just make things easy","How awesome eper is",0] 
+2012-10-14 18:04:24.937 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` WHERE `id`=? LIMIT 1 ->  [324] 
+2012-10-14 18:04:24.939 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` WHERE `id`=? LIMIT 1 ->  [325] 
+2012-10-14 18:04:24.940 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 18:04:24.941 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [326,"It just make things easy","How awesome eper is",0,326,"It just make things easy","How awesome eper is",0] 
+2012-10-14 18:04:24.944 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"new photo">>,"Pepe Gorostiga",326,<<"new photo">>,"Pepe Gorostiga",326] 
+2012-10-14 18:04:24.946 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [326,"It just make things easy","My new shiny title",325,326,"It just make things easy","My new shiny title",325] 
+2012-10-14 18:04:24.948 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_post` WHERE `id`=? LIMIT 0,1 ->  [325] 
+2012-10-14 18:04:24.950 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_author` WHERE `id`=? LIMIT 0,1 ->  [326] 
+2012-10-14 18:04:24.952 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT COUNT(1) FROM `blog_post` ->  [] 
+2012-10-14 18:04:24.956 [error] <0.84.0> gen_server eredis terminated with reason: no match of right hand value ok in epers_repo:handle_call/3 line 95
+2012-10-14 18:04:24.957 [error] <0.84.0> CRASH REPORT Process eredis with 1 neighbours exited with reason: no match of right hand value ok in epers_repo:handle_call/3 line 95 in gen_server:terminate/6 line 747
+2012-10-14 18:04:24.958 [error] <0.77.0> Supervisor epers_repo_sup had child epers_repo_redis started with epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at <0.84.0> exit with reason no match of right hand value ok in epers_repo:handle_call/3 line 95 in context child_terminated
+2012-10-14 18:04:24.960 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.102.0>
+2012-10-14 18:06:27.222 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 18:06:27.223 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 18:06:27.226 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 18:06:27.227 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 18:06:27.243 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 18:06:27.243 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 18:06:27.246 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 18:06:27.248 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 18:06:27.248 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 18:06:27.252 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 18:06:27.252 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 18:06:27.253 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 18:06:27.253 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 18:06:27.256 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 18:06:27.256 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 18:06:27.257 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 18:06:27.257 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 18:06:27.269 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 18:06:27.269 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 18:06:27.289 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 18:06:27.295 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at pid <0.82.0>
+2012-10-14 18:06:27.299 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.84.0>
+2012-10-14 18:06:27.301 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(sqlite3, epers_repo_sqlite3, [{file,"/tmp/epers.sqlite3"},{options,[]}]) at pid <0.86.0>
+2012-10-14 18:06:27.301 [debug] <0.76.0> Supervisor epers_sup started epers_repo_sup:start_link() at pid <0.77.0>
+2012-10-14 18:06:27.302 [info] <0.6.0> Application epers started on node nonode@nohost
+2012-10-14 18:06:27.303 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_post
+2012-10-14 18:06:27.304 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_post` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`title` VARCHAR (128)  NOT NULL ,`content` TEXT ,`author_id` INT(11) ,PRIMARY KEY(`id`),UNIQUE KEY `title` (`title`),KEY `author_id` (`author_id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 18:06:27.306 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_author
+2012-10-14 18:06:27.306 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_author` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`name` VARCHAR (128)  NOT NULL ,`photo` BLOB ,PRIMARY KEY(`id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 18:06:27.308 [info] <0.82.0>@epers_repo:handle_call:140 Creating schema for: blog_reader
+2012-10-14 18:06:27.308 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: id for blog_reader
+2012-10-14 18:06:27.308 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: name for blog_reader
+2012-10-14 18:06:27.309 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: email for blog_reader
+2012-10-14 18:06:27.310 [info] <0.84.0>@epers_repo:handle_call:140 Creating schema for: blog_vote
+2012-10-14 18:06:27.311 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` ->  [] 
+2012-10-14 18:06:27.315 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` ->  [] 
+2012-10-14 18:06:27.317 [debug] <0.82.0>@epers_repo_mongo:delete_all:64 Dropping collection: blog_reader
+2012-10-14 18:06:27.319 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 18:06:27.321 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [327,"It just make things easy","How awesome eper is",0,327,"It just make things easy","How awesome eper is",0] 
+2012-10-14 18:06:27.324 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` WHERE `id`=? LIMIT 1 ->  [326] 
+2012-10-14 18:06:27.325 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` WHERE `id`=? LIMIT 1 ->  [327] 
+2012-10-14 18:06:27.326 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 18:06:27.328 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [328,"It just make things easy","How awesome eper is",0,328,"It just make things easy","How awesome eper is",0] 
+2012-10-14 18:06:27.330 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"new photo">>,"Pepe Gorostiga",328,<<"new photo">>,"Pepe Gorostiga",328] 
+2012-10-14 18:06:27.333 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [328,"It just make things easy","My new shiny title",327,328,"It just make things easy","My new shiny title",327] 
+2012-10-14 18:06:27.335 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_post` WHERE `id`=? LIMIT 0,1 ->  [327] 
+2012-10-14 18:06:27.336 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_author` WHERE `id`=? LIMIT 0,1 ->  [328] 
+2012-10-14 18:06:27.338 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT COUNT(1) FROM `blog_post` ->  [] 
+2012-10-14 18:33:39.009 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 18:33:39.009 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 18:33:39.013 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 18:33:39.013 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 18:33:39.029 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 18:33:39.030 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 18:33:39.033 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 18:33:39.034 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 18:33:39.035 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 18:33:39.039 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 18:33:39.039 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 18:33:39.040 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 18:33:39.044 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 18:33:39.044 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 18:33:39.044 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 18:33:39.045 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 18:33:39.051 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 18:33:39.058 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 18:33:39.059 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 18:33:39.082 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 18:33:39.094 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at pid <0.82.0>
+2012-10-14 18:33:39.100 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.84.0>
+2012-10-14 18:33:39.101 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(sqlite3, epers_repo_sqlite3, [{file,"/tmp/epers.sqlite3"},{options,[]}]) at pid <0.86.0>
+2012-10-14 18:33:39.101 [debug] <0.76.0> Supervisor epers_sup started epers_repo_sup:start_link() at pid <0.77.0>
+2012-10-14 18:33:39.102 [info] <0.6.0> Application epers started on node nonode@nohost
+2012-10-14 18:33:39.104 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_post
+2012-10-14 18:33:39.105 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_post` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`title` VARCHAR (128)  NOT NULL ,`content` TEXT ,`author_id` INT(11) ,PRIMARY KEY(`id`),UNIQUE KEY `title` (`title`),KEY `author_id` (`author_id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 18:33:39.108 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_author
+2012-10-14 18:33:39.108 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_author` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`name` VARCHAR (128)  NOT NULL ,`photo` BLOB ,PRIMARY KEY(`id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 18:33:39.110 [info] <0.82.0>@epers_repo:handle_call:140 Creating schema for: blog_reader
+2012-10-14 18:33:39.111 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: id for blog_reader
+2012-10-14 18:33:39.112 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: name for blog_reader
+2012-10-14 18:33:39.113 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: email for blog_reader
+2012-10-14 18:33:39.122 [info] <0.84.0>@epers_repo:handle_call:140 Creating schema for: blog_vote
+2012-10-14 18:33:39.125 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` ->  [] 
+2012-10-14 18:33:39.145 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` ->  [] 
+2012-10-14 18:33:39.146 [debug] <0.82.0>@epers_repo_mongo:delete_all:64 Dropping collection: blog_reader
+2012-10-14 18:33:39.152 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 18:33:39.155 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [329,"It just make things easy","How awesome eper is",0,329,"It just make things easy","How awesome eper is",0] 
+2012-10-14 18:33:39.157 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` WHERE `id`=? LIMIT 1 ->  [328] 
+2012-10-14 18:33:39.159 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` WHERE `id`=? LIMIT 1 ->  [329] 
+2012-10-14 18:33:39.160 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 18:33:39.162 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [330,"It just make things easy","How awesome eper is",0,330,"It just make things easy","How awesome eper is",0] 
+2012-10-14 18:33:39.165 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"new photo">>,"Pepe Gorostiga",330,<<"new photo">>,"Pepe Gorostiga",330] 
+2012-10-14 18:33:39.167 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [330,"It just make things easy","My new shiny title",329,330,"It just make things easy","My new shiny title",329] 
+2012-10-14 18:33:39.174 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_post` WHERE `id`=? LIMIT 0,1 ->  [329] 
+2012-10-14 18:33:39.176 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_author` WHERE `id`=? LIMIT 0,1 ->  [330] 
+2012-10-14 18:33:39.178 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT COUNT(1) FROM `blog_post` ->  [] 
+2012-10-14 18:35:25.422 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 18:35:25.422 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 18:35:25.426 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 18:35:25.427 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 18:35:25.442 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 18:35:25.443 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 18:35:25.445 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 18:35:25.447 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 18:35:25.447 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 18:35:25.450 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 18:35:25.451 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 18:35:25.451 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 18:35:25.452 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 18:35:37.951 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 18:35:37.952 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 18:35:37.956 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 18:35:37.956 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 18:35:37.973 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 18:35:37.973 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 18:35:37.976 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 18:35:37.978 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 18:35:37.978 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 18:35:37.981 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 18:35:37.982 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 18:35:37.982 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 18:35:37.983 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 18:35:59.536 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 18:35:59.536 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 18:35:59.540 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 18:35:59.540 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 18:35:59.556 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 18:35:59.556 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 18:35:59.559 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 18:35:59.561 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 18:35:59.562 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 18:35:59.565 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 18:35:59.566 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 18:35:59.567 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 18:35:59.567 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 18:35:59.570 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 18:35:59.571 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 18:35:59.571 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 18:35:59.571 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 18:35:59.583 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 18:35:59.584 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 18:35:59.604 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 18:35:59.610 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at pid <0.82.0>
+2012-10-14 18:35:59.614 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.84.0>
+2012-10-14 18:35:59.616 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(sqlite3, epers_repo_sqlite3, [{file,"/tmp/epers.sqlite3"},{options,[]}]) at pid <0.86.0>
+2012-10-14 18:35:59.617 [debug] <0.76.0> Supervisor epers_sup started epers_repo_sup:start_link() at pid <0.77.0>
+2012-10-14 18:35:59.617 [info] <0.6.0> Application epers started on node nonode@nohost
+2012-10-14 18:35:59.620 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_post
+2012-10-14 18:35:59.620 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_post` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`title` VARCHAR (128)  NOT NULL ,`content` TEXT ,`author_id` INT(11) ,PRIMARY KEY(`id`),UNIQUE KEY `title` (`title`),KEY `author_id` (`author_id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 18:35:59.623 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_author
+2012-10-14 18:35:59.624 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_author` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`name` VARCHAR (128)  NOT NULL ,`photo` BLOB ,PRIMARY KEY(`id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 18:35:59.625 [info] <0.82.0>@epers_repo:handle_call:140 Creating schema for: blog_reader
+2012-10-14 18:35:59.626 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: id for blog_reader
+2012-10-14 18:35:59.626 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: name for blog_reader
+2012-10-14 18:35:59.626 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: email for blog_reader
+2012-10-14 18:35:59.627 [info] <0.84.0>@epers_repo:handle_call:140 Creating schema for: blog_vote
+2012-10-14 18:35:59.628 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` ->  [] 
+2012-10-14 18:35:59.632 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` ->  [] 
+2012-10-14 18:35:59.633 [debug] <0.82.0>@epers_repo_mongo:delete_all:64 Dropping collection: blog_reader
+2012-10-14 18:35:59.636 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 18:35:59.639 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [331,"It just make things easy","How awesome eper is",0,331,"It just make things easy","How awesome eper is",0] 
+2012-10-14 18:35:59.641 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` WHERE `id`=? LIMIT 1 ->  [330] 
+2012-10-14 18:35:59.643 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` WHERE `id`=? LIMIT 1 ->  [331] 
+2012-10-14 18:35:59.644 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 18:35:59.645 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [332,"It just make things easy","How awesome eper is",0,332,"It just make things easy","How awesome eper is",0] 
+2012-10-14 18:35:59.648 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"new photo">>,"Pepe Gorostiga",332,<<"new photo">>,"Pepe Gorostiga",332] 
+2012-10-14 18:35:59.651 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [332,"It just make things easy","My new shiny title",331,332,"It just make things easy","My new shiny title",331] 
+2012-10-14 18:35:59.654 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_post` WHERE `id`=? LIMIT 0,1 ->  [331] 
+2012-10-14 18:35:59.656 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_author` WHERE `id`=? LIMIT 0,1 ->  [332] 
+2012-10-14 18:35:59.659 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT COUNT(1) FROM `blog_post` ->  [] 
+2012-10-14 18:40:06.638 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 18:40:06.638 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 18:40:06.642 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 18:40:06.642 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 18:40:06.657 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 18:40:06.657 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 18:40:06.660 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 18:40:06.662 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 18:40:06.662 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 18:40:06.666 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 18:40:06.666 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 18:40:06.667 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 18:40:06.668 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 18:40:22.918 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 18:40:22.919 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 18:40:22.922 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 18:40:22.923 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 18:40:22.938 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 18:40:22.939 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 18:40:22.941 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 18:40:22.943 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 18:40:22.943 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 18:40:22.946 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 18:40:22.947 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 18:40:22.947 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 18:40:22.948 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 18:40:22.950 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mysql (blog_post_repo)
+2012-10-14 18:40:22.950 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 18:40:22.951 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: eredis (epers_repo_redis)
+2012-10-14 18:40:22.951 [debug] <0.77.0>@epers_repo_sup:init:42 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 18:40:22.963 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 18:40:22.963 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 18:40:22.991 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 18:40:22.998 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at pid <0.82.0>
+2012-10-14 18:40:23.002 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.84.0>
+2012-10-14 18:40:23.003 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(sqlite3, epers_repo_sqlite3, [{file,"/tmp/epers.sqlite3"},{options,[]}]) at pid <0.86.0>
+2012-10-14 18:40:23.004 [debug] <0.76.0> Supervisor epers_sup started epers_repo_sup:start_link() at pid <0.77.0>
+2012-10-14 18:40:23.004 [info] <0.6.0> Application epers started on node nonode@nohost
+2012-10-14 18:40:23.007 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_post
+2012-10-14 18:40:23.007 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_post` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`title` VARCHAR (128)  NOT NULL ,`content` TEXT ,`author_id` INT(11) ,PRIMARY KEY(`id`),UNIQUE KEY `title` (`title`),KEY `author_id` (`author_id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 18:40:23.009 [info] <0.78.0>@epers_repo:handle_call:140 Creating schema for: blog_author
+2012-10-14 18:40:23.009 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: CREATE TABLE IF NOT EXISTS `blog_author` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`name` VARCHAR (128)  NOT NULL ,`photo` BLOB ,PRIMARY KEY(`id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 18:40:23.011 [info] <0.82.0>@epers_repo:handle_call:140 Creating schema for: blog_reader
+2012-10-14 18:40:23.011 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: id for blog_reader
+2012-10-14 18:40:23.012 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: name for blog_reader
+2012-10-14 18:40:23.012 [debug] <0.82.0>@epers_repo_mongo:create_schema:121 Creating index: email for blog_reader
+2012-10-14 18:40:23.013 [info] <0.84.0>@epers_repo:handle_call:140 Creating schema for: blog_vote
+2012-10-14 18:40:23.014 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` ->  [] 
+2012-10-14 18:40:23.016 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` ->  [] 
+2012-10-14 18:40:23.017 [debug] <0.82.0>@epers_repo_mongo:delete_all:64 Dropping collection: blog_reader
+2012-10-14 18:40:23.019 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 18:40:23.023 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [333,"It just make things easy","How awesome eper is",0,333,"It just make things easy","How awesome eper is",0] 
+2012-10-14 18:40:23.026 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_post` WHERE `id`=? LIMIT 1 ->  [332] 
+2012-10-14 18:40:23.027 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: DELETE FROM `blog_author` WHERE `id`=? LIMIT 1 ->  [333] 
+2012-10-14 18:40:23.028 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 18:40:23.030 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [334,"It just make things easy","How awesome eper is",0,334,"It just make things easy","How awesome eper is",0] 
+2012-10-14 18:40:23.033 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"new photo">>,"Pepe Gorostiga",334,<<"new photo">>,"Pepe Gorostiga",334] 
+2012-10-14 18:40:23.035 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [334,"It just make things easy","My new shiny title",333,334,"It just make things easy","My new shiny title",333] 
+2012-10-14 18:40:23.037 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_post` WHERE `id`=? LIMIT 0,1 ->  [333] 
+2012-10-14 18:40:23.039 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT * FROM `blog_author` WHERE `id`=? LIMIT 0,1 ->  [334] 
+2012-10-14 18:40:23.041 [debug] <0.78.0>@epers_repo_mysql:execute:212 Query: SELECT COUNT(1) FROM `blog_post` ->  [] 
+2012-10-14 18:48:52.105 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 18:48:52.105 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 18:48:52.109 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 18:48:52.110 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 18:48:52.127 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 18:48:52.128 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 18:48:52.131 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 18:48:52.133 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 18:48:52.133 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 18:48:52.147 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 18:48:52.148 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 18:48:52.149 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 18:48:52.149 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 18:49:13.278 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 18:49:13.278 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 18:49:13.282 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 18:49:13.282 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 18:49:13.299 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 18:49:13.299 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 18:49:13.302 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 18:49:13.303 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 18:49:13.304 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 18:49:13.308 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 18:49:13.308 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 18:49:13.308 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 18:49:13.309 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 18:49:13.312 [debug] <0.77.0>@epers_repo_sup:init:50 Starting repository: mysql (blog_post_repo)
+2012-10-14 18:49:13.312 [debug] <0.77.0>@epers_repo_sup:init:50 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 18:49:13.312 [debug] <0.77.0>@epers_repo_sup:init:50 Starting repository: eredis (epers_repo_redis)
+2012-10-14 18:49:13.313 [debug] <0.77.0>@epers_repo_sup:init:50 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 18:49:13.325 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 18:49:13.326 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 18:49:13.348 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 18:49:13.353 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at pid <0.82.0>
+2012-10-14 18:49:13.358 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.84.0>
+2012-10-14 18:49:13.360 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(sqlite3, epers_repo_sqlite3, [{file,"/tmp/epers.sqlite3"},{options,[]}]) at pid <0.86.0>
+2012-10-14 18:49:13.360 [debug] <0.76.0> Supervisor epers_sup started epers_repo_sup:start_link() at pid <0.77.0>
+2012-10-14 18:49:13.360 [info] <0.6.0> Application epers started on node nonode@nohost
+2012-10-14 18:49:13.362 [info] <0.78.0>@epers_repo:handle_call:148 Creating schema for: blog_post
+2012-10-14 18:49:13.362 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: CREATE TABLE IF NOT EXISTS `blog_post` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`title` VARCHAR (128)  NOT NULL ,`content` TEXT ,`author_id` INT(11) ,PRIMARY KEY(`id`),UNIQUE KEY `title` (`title`),KEY `author_id` (`author_id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 18:49:13.365 [info] <0.78.0>@epers_repo:handle_call:148 Creating schema for: blog_author
+2012-10-14 18:49:13.365 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: CREATE TABLE IF NOT EXISTS `blog_author` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`name` VARCHAR (128)  NOT NULL ,`photo` BLOB ,PRIMARY KEY(`id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 18:49:13.368 [info] <0.82.0>@epers_repo:handle_call:148 Creating schema for: blog_reader
+2012-10-14 18:49:13.368 [debug] <0.82.0>@epers_repo_mongo:create_schema:125 Creating index: id for blog_reader
+2012-10-14 18:49:13.368 [debug] <0.82.0>@epers_repo_mongo:create_schema:125 Creating index: name for blog_reader
+2012-10-14 18:49:13.368 [debug] <0.82.0>@epers_repo_mongo:create_schema:125 Creating index: email for blog_reader
+2012-10-14 18:49:13.370 [info] <0.84.0>@epers_repo:handle_call:148 Creating schema for: blog_vote
+2012-10-14 18:49:13.371 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: DELETE FROM `blog_author` ->  [] 
+2012-10-14 18:49:13.374 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: DELETE FROM `blog_post` ->  [] 
+2012-10-14 18:49:13.375 [debug] <0.82.0>@epers_repo_mongo:delete_all:68 Dropping collection: blog_reader
+2012-10-14 18:49:13.377 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 18:49:13.379 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [335,"It just make things easy","How awesome eper is",0,335,"It just make things easy","How awesome eper is",0] 
+2012-10-14 18:49:13.382 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: DELETE FROM `blog_post` WHERE `id`=? LIMIT 1 ->  [334] 
+2012-10-14 18:49:13.383 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: DELETE FROM `blog_author` WHERE `id`=? LIMIT 1 ->  [335] 
+2012-10-14 18:49:13.384 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 18:49:13.386 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [336,"It just make things easy","How awesome eper is",0,336,"It just make things easy","How awesome eper is",0] 
+2012-10-14 18:49:13.388 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"new photo">>,"Pepe Gorostiga",336,<<"new photo">>,"Pepe Gorostiga",336] 
+2012-10-14 18:49:13.390 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [336,"It just make things easy","My new shiny title",335,336,"It just make things easy","My new shiny title",335] 
+2012-10-14 18:49:13.393 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: SELECT * FROM `blog_post` WHERE `id`=? LIMIT 0,1 ->  [335] 
+2012-10-14 18:49:13.395 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: SELECT * FROM `blog_author` WHERE `id`=? LIMIT 0,1 ->  [336] 
+2012-10-14 18:49:13.396 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: SELECT COUNT(1) FROM `blog_post` ->  [] 
+2012-10-14 18:56:47.621 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 18:56:47.622 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 18:56:47.626 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 18:56:47.626 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 18:56:47.643 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 18:56:47.643 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 18:56:47.646 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 18:56:47.648 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 18:56:47.648 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 18:56:47.652 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 18:56:47.653 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 18:56:47.653 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 18:56:47.656 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 18:59:30.867 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 18:59:30.867 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 18:59:30.871 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 18:59:30.871 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 18:59:30.886 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 18:59:30.887 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 18:59:30.889 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 18:59:30.891 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 18:59:30.892 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 18:59:30.896 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 18:59:30.896 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 18:59:30.897 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 18:59:30.897 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 18:59:30.900 [debug] <0.77.0>@epers_repo_sup:init:50 Starting repository: mysql (blog_post_repo)
+2012-10-14 18:59:30.900 [debug] <0.77.0>@epers_repo_sup:init:50 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 18:59:30.900 [debug] <0.77.0>@epers_repo_sup:init:50 Starting repository: eredis (epers_repo_redis)
+2012-10-14 18:59:30.901 [debug] <0.77.0>@epers_repo_sup:init:50 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 18:59:30.913 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 18:59:30.914 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 18:59:30.939 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 18:59:30.944 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at pid <0.82.0>
+2012-10-14 18:59:30.950 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.84.0>
+2012-10-14 18:59:30.952 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(sqlite3, epers_repo_sqlite3, [{file,"/tmp/epers.sqlite3"},{options,[]}]) at pid <0.86.0>
+2012-10-14 18:59:30.952 [debug] <0.76.0> Supervisor epers_sup started epers_repo_sup:start_link() at pid <0.77.0>
+2012-10-14 18:59:30.952 [info] <0.6.0> Application epers started on node nonode@nohost
+2012-10-14 18:59:30.954 [info] <0.78.0>@epers_repo:handle_call:148 Creating schema for: blog_post
+2012-10-14 18:59:30.955 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: CREATE TABLE IF NOT EXISTS `blog_post` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`title` VARCHAR (128)  NOT NULL ,`content` TEXT ,`author_id` INT(11) ,PRIMARY KEY(`id`),UNIQUE KEY `title` (`title`),KEY `author_id` (`author_id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 18:59:30.958 [info] <0.78.0>@epers_repo:handle_call:148 Creating schema for: blog_author
+2012-10-14 18:59:30.958 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: CREATE TABLE IF NOT EXISTS `blog_author` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`name` VARCHAR (128)  NOT NULL ,`photo` BLOB ,PRIMARY KEY(`id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 18:59:30.960 [info] <0.82.0>@epers_repo:handle_call:148 Creating schema for: blog_reader
+2012-10-14 18:59:30.960 [debug] <0.82.0>@epers_repo_mongo:create_schema:125 Creating index: id for blog_reader
+2012-10-14 18:59:30.961 [debug] <0.82.0>@epers_repo_mongo:create_schema:125 Creating index: name for blog_reader
+2012-10-14 18:59:30.961 [debug] <0.82.0>@epers_repo_mongo:create_schema:125 Creating index: email for blog_reader
+2012-10-14 18:59:30.962 [info] <0.84.0>@epers_repo:handle_call:148 Creating schema for: blog_vote
+2012-10-14 18:59:30.963 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: DELETE FROM `blog_author` ->  [] 
+2012-10-14 18:59:30.965 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: DELETE FROM `blog_post` ->  [] 
+2012-10-14 18:59:30.966 [debug] <0.82.0>@epers_repo_mongo:delete_all:68 Dropping collection: blog_reader
+2012-10-14 18:59:30.968 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 18:59:30.970 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [337,"It just make things easy","How awesome eper is",0,337,"It just make things easy","How awesome eper is",0] 
+2012-10-14 18:59:30.973 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: DELETE FROM `blog_post` WHERE `id`=? LIMIT 1 ->  [336] 
+2012-10-14 18:59:30.974 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: DELETE FROM `blog_author` WHERE `id`=? LIMIT 1 ->  [337] 
+2012-10-14 18:59:30.975 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 18:59:30.977 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [338,"It just make things easy","How awesome eper is",0,338,"It just make things easy","How awesome eper is",0] 
+2012-10-14 18:59:30.980 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"new photo">>,"Pepe Gorostiga",338,<<"new photo">>,"Pepe Gorostiga",338] 
+2012-10-14 18:59:30.982 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [338,"It just make things easy","My new shiny title",337,338,"It just make things easy","My new shiny title",337] 
+2012-10-14 18:59:30.985 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: SELECT * FROM `blog_post` WHERE `id`=? LIMIT 0,1 ->  [337] 
+2012-10-14 18:59:30.986 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: SELECT * FROM `blog_author` WHERE `id`=? LIMIT 0,1 ->  [338] 
+2012-10-14 18:59:30.988 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: SELECT COUNT(1) FROM `blog_post` ->  [] 
+2012-10-14 19:04:34.953 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 19:04:34.953 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 19:04:34.957 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 19:04:34.957 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 19:04:34.974 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 19:04:34.974 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 19:04:34.977 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 19:04:34.978 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 19:04:34.979 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 19:04:34.982 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 19:04:34.982 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 19:04:34.983 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 19:04:34.983 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 19:05:04.535 [debug] <0.51.0> Lager installed handler {lager_file_backend,"log/lager_error.log"} into lager_event
+2012-10-14 19:05:04.535 [debug] <0.52.0> Lager installed handler {lager_file_backend,"log/lager_console.log"} into lager_event
+2012-10-14 19:05:04.539 [debug] <0.54.0> Lager installed handler error_logger_lager_h into error_logger
+2012-10-14 19:05:04.539 [info] <0.6.0> Application lager started on node nonode@nohost
+2012-10-14 19:05:04.555 [debug] <0.58.0> Supervisor crypto_sup started crypto_server:start_link() at pid <0.59.0>
+2012-10-14 19:05:04.556 [info] <0.6.0> Application crypto started on node nonode@nohost
+2012-10-14 19:05:04.559 [debug] <0.63.0> Supervisor emysql_sup started emysql_statements:start_link() at pid <0.64.0>
+2012-10-14 19:05:04.561 [debug] <0.63.0> Supervisor emysql_sup started emysql_conn_mgr:start_link() at pid <0.65.0>
+2012-10-14 19:05:04.561 [info] <0.6.0> Application emysql started on node nonode@nohost
+2012-10-14 19:05:04.565 [debug] <0.69.0> Supervisor emongo_app started emongo:start_link() at pid <0.70.0>
+2012-10-14 19:05:04.565 [info] <0.6.0> Application emongo started on node nonode@nohost
+2012-10-14 19:05:04.566 [info] <0.6.0> Application eredis started on node nonode@nohost
+2012-10-14 19:05:04.569 [debug] <0.77.0>@epers_repo_sup:init:50 Starting repository: mysql (blog_post_repo)
+2012-10-14 19:05:04.570 [debug] <0.77.0>@epers_repo_sup:init:50 Starting repository: mongo (epers_repo_mongo)
+2012-10-14 19:05:04.570 [debug] <0.77.0>@epers_repo_sup:init:50 Starting repository: eredis (epers_repo_redis)
+2012-10-14 19:05:04.570 [debug] <0.77.0>@epers_repo_sup:init:50 Starting repository: sqlite3 (epers_repo_sqlite3)
+2012-10-14 19:05:04.577 [info] <0.6.0> Application sqlite3 started on node nonode@nohost
+2012-10-14 19:05:04.582 [debug] <0.79.0> Supervisor inet_gethost_native_sup started undefined at pid <0.80.0>
+2012-10-14 19:05:04.583 [debug] <0.24.0> Supervisor kernel_safe_sup started inet_gethost_native:start_link() at pid <0.79.0>
+2012-10-14 19:05:04.608 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mysql, blog_post_repo, [{username,"root"},{password,"pass"},{host,"127.0.0.1"},{port,3306},{database,"blog"}]) at pid <0.78.0>
+2012-10-14 19:05:04.618 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(mongo, epers_repo_mongo, [{username,"root"},{password,"pepe"},{host,"127.0.0.1"},{port,27017},{database,"blog"}]) at pid <0.82.0>
+2012-10-14 19:05:04.624 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(eredis, epers_repo_redis, [{host,"127.0.0.1"},{port,6379},{database,0},{reconnect_sleep,100}]) at pid <0.84.0>
+2012-10-14 19:05:04.625 [debug] <0.77.0> Supervisor epers_repo_sup started epers_repo:start_link(sqlite3, epers_repo_sqlite3, [{file,"/tmp/epers.sqlite3"},{options,[]}]) at pid <0.86.0>
+2012-10-14 19:05:04.625 [debug] <0.76.0> Supervisor epers_sup started epers_repo_sup:start_link() at pid <0.77.0>
+2012-10-14 19:05:04.626 [info] <0.6.0> Application epers started on node nonode@nohost
+2012-10-14 19:05:04.629 [info] <0.78.0>@epers_repo:handle_call:148 Creating schema for: blog_post
+2012-10-14 19:05:04.630 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: CREATE TABLE IF NOT EXISTS `blog_post` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`title` VARCHAR (128)  NOT NULL ,`content` TEXT ,`author_id` INT(11) ,PRIMARY KEY(`id`),UNIQUE KEY `title` (`title`),KEY `author_id` (`author_id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 19:05:04.632 [info] <0.78.0>@epers_repo:handle_call:148 Creating schema for: blog_author
+2012-10-14 19:05:04.632 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: CREATE TABLE IF NOT EXISTS `blog_author` (`id` INT(11)  NOT NULL AUTO_INCREMENT ,`name` VARCHAR (128)  NOT NULL ,`photo` BLOB ,PRIMARY KEY(`id`)) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 ->  [] 
+2012-10-14 19:05:04.634 [info] <0.82.0>@epers_repo:handle_call:148 Creating schema for: blog_reader
+2012-10-14 19:05:04.634 [debug] <0.82.0>@epers_repo_mongo:create_schema:125 Creating index: id for blog_reader
+2012-10-14 19:05:04.635 [debug] <0.82.0>@epers_repo_mongo:create_schema:125 Creating index: name for blog_reader
+2012-10-14 19:05:04.635 [debug] <0.82.0>@epers_repo_mongo:create_schema:125 Creating index: email for blog_reader
+2012-10-14 19:05:04.636 [info] <0.84.0>@epers_repo:handle_call:148 Creating schema for: blog_vote
+2012-10-14 19:05:04.637 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: DELETE FROM `blog_author` ->  [] 
+2012-10-14 19:05:04.639 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: DELETE FROM `blog_post` ->  [] 
+2012-10-14 19:05:04.640 [debug] <0.82.0>@epers_repo_mongo:delete_all:68 Dropping collection: blog_reader
+2012-10-14 19:05:04.642 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 19:05:04.645 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [339,"It just make things easy","How awesome eper is",0,339,"It just make things easy","How awesome eper is",0] 
+2012-10-14 19:05:04.647 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: DELETE FROM `blog_post` WHERE `id`=? LIMIT 1 ->  [338] 
+2012-10-14 19:05:04.649 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: DELETE FROM `blog_author` WHERE `id`=? LIMIT 1 ->  [339] 
+2012-10-14 19:05:04.650 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"some binary jpg">>,"Pepe Gorostiga",0,<<"some binary jpg">>,"Pepe Gorostiga",0] 
+2012-10-14 19:05:04.652 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [340,"It just make things easy","How awesome eper is",0,340,"It just make things easy","How awesome eper is",0] 
+2012-10-14 19:05:04.655 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_author` (`photo`,`name`,`id`) VALUES (?,?,?) ON DUPLICATE KEY UPDATE `photo`=?,`name`=?,`id`=? ->  [<<"new photo">>,"Pepe Gorostiga",340,<<"new photo">>,"Pepe Gorostiga",340] 
+2012-10-14 19:05:04.669 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: INSERT INTO `blog_post` (`author_id`,`content`,`title`,`id`) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE `author_id`=?,`content`=?,`title`=?,`id`=? ->  [340,"It just make things easy","My new shiny title",339,340,"It just make things easy","My new shiny title",339] 
+2012-10-14 19:05:04.672 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: SELECT * FROM `blog_post` WHERE `id`=? LIMIT 0,1 ->  [339] 
+2012-10-14 19:05:04.674 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: SELECT * FROM `blog_author` WHERE `id`=? LIMIT 0,1 ->  [340] 
+2012-10-14 19:05:04.675 [debug] <0.78.0>@epers_repo_mysql:execute:216 Query: SELECT COUNT(1) FROM `blog_post` ->  [] 

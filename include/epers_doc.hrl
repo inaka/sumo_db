@@ -10,14 +10,16 @@
 
 -record(epers_doc, {
   name :: atom(),
-  fields=[]
+  fields=[] :: proplists:proplist()
 }).
--record(epers_schema, {
-  name :: atom(),
-  fields=[]
-}).
+
 -record(epers_field, {
   name :: atom(),
   type :: atom(),
-  attrs=[]
+  attrs=[] :: epers_field_attrs()
+}).
+
+-record(epers_schema, {
+  name :: atom(),
+  fields=[] :: [#epers_field{}]
 }).

@@ -27,44 +27,72 @@
 
 -behavior(epers_doc).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Exports.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -export([epers_schema/0, epers_wakeup/1]).
 -export([new/2]).
 -export([id/1, email/1, name/1]).
 -export([update_email/2]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Types.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+-type reader() :: proplists:proplist().
+-type id() :: pos_integer().
+-export_type([reader/0]).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Public API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% @doc Returns a new reader.
+-spec new(string(), string()) -> reader().
 new(Name, Email) when is_list(Name), is_list(Email) ->
   create(undefined, Name, Email).
 
+%% @doc Returns a new reader (internal).
+-spec create(id(), string(), string()) -> reader().
 create(Id, Name, Email) when is_list(Name), is_list(Email) ->
   [{id, Id}, {name, Name}, {email, Email}].
 
-id(State) when is_list(State) ->
-  get(id, State).
+%% @doc Returns the id of the given reader.
+-spec id(reader()) -> id().
+id(Reader) when is_list(Reader) ->
+  get(id, Reader).
 
-email(State) when is_list(State) ->
-  get(email, State).
+%% @doc Returns the email of the given reader.
+-spec email(reader()) -> string().
+email(Reader) when is_list(Reader) ->
+  get(email, Reader).
 
-name(State) when is_list(State) ->
-  get(name, State).
+%% @doc Returns the name of the given reader.
+-spec name(reader()) -> string().
+name(Reader) when is_list(Reader) ->
+  get(name, Reader).
 
-update_email(Email, State) when is_list(Email) ->
-  set(email, Email, State).
+%% @doc Updated the email for the given reader.
+-spec update_email(string(), reader()) -> reader().
+update_email(Email, Reader) when is_list(Email) ->
+  set(email, Email, Reader).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Private functions.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-get(Key, State) when is_atom(Key), is_list(State) ->
-  proplists:get_value(Key, State).
+%% @doc Generically returns an attibute of the given reader.
+-spec get(atom(), reader()) -> reader().
+get(Key, Reader) when is_atom(Key), is_list(Reader) ->
+  proplists:get_value(Key, Reader).
 
-set(Key, Value, State) when is_atom(Key), is_list(State) ->
-  lists:keyreplace(Key, 1, State, {Key, Value}).
+%% @doc Generically set an attribute of the given reader.
+-spec set(atom(), term(), reader()) -> reader().
+set(Key, Value, Reader) when is_atom(Key), is_list(Reader) ->
+  lists:keyreplace(Key, 1, Reader, {Key, Value}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% eper behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% @doc Part of the epers_doc behavior.
+-spec epers_wakeup(#epers_doc{}) -> reader().
 epers_wakeup(#epers_doc{}=Doc) ->
   [
     {id, epers:get_field(id, Doc)},
@@ -72,6 +100,8 @@ epers_wakeup(#epers_doc{}=Doc) ->
     {email, epers:get_field(email, Doc)}
   ].
 
+%% @doc Part of the epers_doc behavior.
+-spec epers_schema() -> #epers_schema{}.
 epers_schema() ->
   epers:new_schema(?MODULE, [
     epers:new_field(id, integer, [not_null, auto_increment, id]),

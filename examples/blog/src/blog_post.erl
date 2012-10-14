@@ -27,57 +27,82 @@
 
 -behavior(epers_doc).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Exports.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -export([epers_schema/0, epers_wakeup/1]).
 -export([new/3]).
 -export([id/1, author/1, title/1, content/1, update_content/2, update_title/2]).
 
--type post() :: [attr()].
--type attr() :: {key(), term()}.
--type key() :: id|title|content|author_id.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Types.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+-type post() :: proplists:proplist().
 -type id() :: pos_integer().
-
 -export_type([post/0]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Public API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% @doc Returns a new post.
+-spec new(string(), string(), blog_author:id()) -> post().
 new(Title, Content, AuthorId) when is_list(Title), is_list(Content) ->
   create(undefined, Title, Content, AuthorId).
 
+%% @doc Returns a new post (internal).
+-spec create(id(), string(), string(), blog_author:id()) -> post().
 create(Id, Title, Content, AuthorId)
   when is_list(Title), is_list(Content), is_integer(AuthorId) ->
   [{id, Id}, {title, Title}, {content, Content}, {author_id, AuthorId}].
 
-id(State) when is_list(State) ->
-  get(id, State).
+%% @doc Returns the id of the given post.
+-spec id(post()) -> id().
+id(Post) when is_list(Post) ->
+  get(id, Post).
 
-author(State) when is_list(State) ->
-  get(author, State).
+%% @doc Returns the author of the given post.
+-spec author(post()) -> blog_author:id().
+author(Post) when is_list(Post) ->
+  get(author, Post).
 
-title(State) when is_list(State) ->
-  get(title, State).
+%% @doc Returns the title of the given post.
+-spec title(post()) -> string().
+title(Post) when is_list(Post) ->
+  get(title, Post).
 
-content(State) when is_list(State) ->
-  get(content, State).
+%% @doc Returns the content of the given post.
+-spec content(post()) -> string().
+content(Post) when is_list(Post) ->
+  get(content, Post).
 
-update_title(Title, State) when is_list(Title), is_list(State) ->
-  set(title, Title, State).
+%% @doc Updated the title of the given post.
+-spec update_title(string(), post()) -> post().
+update_title(Title, Post) when is_list(Title), is_list(Post) ->
+  set(title, Title, Post).
 
-update_content(Content, State) when is_list(Content), is_list(State) ->
-  set(content, Content, State).
+%% @doc Updated the content of the given post.
+-spec update_content(string(), post()) -> post().
+update_content(Content, Post) when is_list(Content), is_list(Post) ->
+  set(content, Content, Post).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Private functions.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-get(Key, State) when is_atom(Key), is_list(State) ->
-  proplists:get_value(Key, State).
+%% @doc Generically returns an attibute of the given post.
+-spec get(atom(), post()) -> term().
+get(Key, Post) when is_atom(Key), is_list(Post) ->
+  proplists:get_value(Key, Post).
 
-set(Key, Value, State) when is_atom(Key), is_list(State) ->
-  lists:keyreplace(Key, 1, State, {Key, Value}).
+%% @doc Generically set an attribute of the given post.
+-spec set(atom(), term(), post()) -> post().
+set(Key, Value, Post) when is_atom(Key), is_list(Post) ->
+  lists:keyreplace(Key, 1, Post, {Key, Value}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% eper behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% @doc Part of the epers_doc behavior.
+-spec epers_wakeup(#epers_doc{}) -> post().
 epers_wakeup(#epers_doc{}=Doc) ->
   [
     {id, epers:get_field(id, Doc)},
@@ -86,6 +111,8 @@ epers_wakeup(#epers_doc{}=Doc) ->
     {author_id, epers:get_field(author_id, Doc)}
   ].
 
+%% @doc Part of the epers_doc behavior.
+-spec epers_schema() -> #epers_schema{}.
 epers_schema() ->
   epers:new_schema(?MODULE, [
     epers:new_field(id, integer, [not_null, auto_increment, id]),

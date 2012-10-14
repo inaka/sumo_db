@@ -27,52 +27,76 @@
 
 -behavior(epers_doc).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Exports.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -export([epers_schema/0, epers_wakeup/1]).
 -export([new/1, new/2]).
 -export([id/1, name/1, photo/1, update_photo/2]).
 
--type author() :: [attr()].
--type attr() :: {key(), term()}.
--type key() :: id|name|photo.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Types.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+-type author() :: proplists:proplist().
 -type id() :: pos_integer().
-
 -export_type([author/0]).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Public API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% @doc Returns a new author.
+-spec new(string()) -> author().
 new(Name) when is_list(Name) ->
   create(undefined, Name, <<>>).
 
+%% @doc Returns a new author.
+-spec new(string(), binary()) -> author().
 new(Name, Photo) when is_list(Name), is_binary(Photo) ->
   create(undefined, Name, Photo).
 
+%% @doc Returns a new author (internal).
+-spec create(id(), string(), binary()) -> author().
 create(Id, Name, Photo) when is_list(Name), is_binary(Photo) ->
   [{id, Id}, {name, Name}, {photo, Photo}].
 
-id(State) when is_list(State) ->
-  get(id, State).
+%% @doc Returns the id of the given author.
+-spec id(author()) -> id().
+id(Author) when is_list(Author) ->
+  get(id, Author).
 
-name(State) when is_list(State) ->
-  get(name, State).
+%% @doc Returns the name of the given author.
+-spec name(author()) -> string().
+name(Author) when is_list(Author) ->
+  get(name, Author).
 
-photo(State) when is_list(State) ->
-  get(photo, State).
+%% @doc Returns the current author's photo.
+-spec photo(author()) -> binary().
+photo(Author) when is_list(Author) ->
+  get(photo, Author).
 
-update_photo(Photo, State) when is_binary(Photo), is_list(State) ->
-  set(photo, Photo, State).
+%% @doc Updated the photo of the given author.
+-spec update_photo(binary(), author()) -> author().
+update_photo(Photo, Author) when is_binary(Photo), is_list(Author) ->
+  set(photo, Photo, Author).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Private functions.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-get(Key, State) when is_atom(Key), is_list(State) ->
-  proplists:get_value(Key, State).
+%% @doc Generically returns an attibute of the given author.
+-spec get(atom(), author()) -> term().
+get(Key, Author) when is_atom(Key), is_list(Author) ->
+  proplists:get_value(Key, Author).
 
-set(Key, Value, State) when is_atom(Key), is_list(State) ->
-  lists:keyreplace(Key, 1, State, {Key, Value}).
+%% @doc Generically set an attribute of the given author.
+-spec set(atom(), term(), author()) -> author().
+set(Key, Value, Author) when is_atom(Key), is_list(Author) ->
+  lists:keyreplace(Key, 1, Author, {Key, Value}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% eper behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% @doc Part of the epers_doc behavior.
+-spec epers_wakeup(#epers_doc{}) -> author().
 epers_wakeup(#epers_doc{}=Doc) ->
   [
     {id, epers:get_field(id, Doc)},
@@ -80,6 +104,8 @@ epers_wakeup(#epers_doc{}=Doc) ->
     {photo, epers:get_field(photo, Doc)}
   ].
 
+%% @doc Part of the epers_doc behavior.
+-spec epers_schema() -> #epers_schema{}.
 epers_schema() ->
   epers:new_schema(?MODULE, [
     epers:new_field(id, integer, [not_null, auto_increment, id]),

@@ -27,40 +27,66 @@
 
 -behavior(epers_doc).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Exports.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -export([epers_schema/0, epers_wakeup/1]).
 -export([new/2]).
 -export([id/1, post_id/1, reader_id/1]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Types.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+-type vote() :: proplists:proplist().
+-type id() :: pos_integer().
+-export_type([vote/0]).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Public API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% @doc Returns a new vote.
+-spec new(blog_reader:id(), blog_post:id()) -> vote().
 new(ReaderId, PostId) ->
   create(undefined, ReaderId, PostId).
 
+%% @doc Returns a new vote (internal).
+-spec create(id(), blog_reader:id(), blog_post:id()) -> vote().
 create(Id, ReaderId, PostId) ->
   [{id, Id}, {reader_id, ReaderId}, {post_id, PostId}].
 
-id(State) when is_list(State) ->
-  get(id, State).
+%% @doc Returns the id of the given vote.
+-spec id(vote()) -> id().
+id(Vote) when is_list(Vote) ->
+  get(id, Vote).
 
-post_id(State) when is_list(State) ->
-  get(post_id, State).
+%% @doc Returns the post id of the given vote.
+-spec post_id(vote()) -> blog_post:id().
+post_id(Vote) when is_list(Vote) ->
+  get(post_id, Vote).
 
-reader_id(State) when is_list(State) ->
-  get(reader_id, State).
+%% @doc Returns the reader id of the given post.
+-spec reader_id(vote()) -> blog_reader:id().
+reader_id(Vote) when is_list(Vote) ->
+  get(reader_id, Vote).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Private functions.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-get(Key, State) when is_atom(Key), is_list(State) ->
-  proplists:get_value(Key, State).
+%% @doc Generically returns an attibute of the given vote.
+-spec get(atom(), vote()) -> term().
+get(Key, Vote) when is_atom(Key), is_list(Vote) ->
+  proplists:get_value(Key, Vote).
 
-%set(Key, Value, State) when is_atom(Key), is_list(State) ->
-%  lists:keyreplace(Key, 1, State, {Key, Value}).
+%% @doc Generically set an attribute of the given vote.
+%-spec set(atom(), term(), vote()) -> proplists:proplist().
+%set(Key, Value, Vote) when is_atom(Key), is_list(Vote) ->
+%  lists:keyreplace(Key, 1, Vote, {Key, Value}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% eper behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% @doc Part of the epers_doc behavior.
+-spec epers_wakeup(#epers_doc{}) -> proplists:proplist().
 epers_wakeup(#epers_doc{}=Doc) ->
   [
     {id, epers:get_field(id, Doc)},
@@ -68,6 +94,8 @@ epers_wakeup(#epers_doc{}=Doc) ->
     {reader_id, epers:get_field(reader_id, Doc)}
   ].
 
+%% @doc Part of the epers_doc behavior.
+-spec epers_schema() -> #epers_schema{}.
 epers_schema() ->
   epers:new_schema(?MODULE, [
     epers:new_field(id, integer, [not_null, auto_increment, id]),

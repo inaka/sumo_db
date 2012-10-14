@@ -27,11 +27,22 @@
 -license("Apache License 2.0").
 
 -include_lib("emysql/include/emysql.hrl").
+-include_lib("epers_doc.hrl").
 
 -extends(epers_repo_mysql).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Exports.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -export([total_posts/2]).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Code starts here.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% @doc Returns the total number of posts.
+-spec total_posts(
+  epers_schema_name(), term()
+) -> {ok, {raw, pos_integer}, term()} | {ok, error, term()}.
 total_posts(DocName, State) ->
   Sql = "SELECT COUNT(1) FROM `" ++ atom_to_list(DocName) ++ "`",
   Result = epers_repo_mysql:execute(Sql, State),

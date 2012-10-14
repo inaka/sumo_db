@@ -23,6 +23,10 @@
 -homepage("http://marcelog.github.com/").
 -license("Apache License 2.0").
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Exports.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%% Posts API.
 -export([
   total_posts/0, new_post/3, save_post/1, del_post/0, del_post/1, find_post/1
@@ -39,6 +43,10 @@
 %%% Vote API.
 -export([new_vote/2]).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Code starts here.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% @doc Finds a post given the id.
 -spec find_post(blog_post:id()) -> blog_post:post()|notfound.
 find_post(Id) ->
@@ -49,46 +57,74 @@ find_post(Id) ->
 find_author(Id) ->
   epers:find(blog_author, Id).
 
+%% @doc Find a reader, given the id.
+-spec find_reader(blog_reader:id()) -> blog_reader:reader()|notfound.
 find_reader(Id) ->
   epers:find(blog_reader, Id).
 
+%% @doc Returns all available posts.
+-spec total_posts() -> pos_integer().
 total_posts() ->
   epers:call(blog_post, total_posts).
 
+%% @doc Deletes all authors.
+-spec del_author() -> ok.
 del_author() ->
   epers:delete_all(blog_author).
 
+%% @doc Deletes all posts.
+-spec del_post() -> ok.
 del_post() ->
   epers:delete_all(blog_post).
 
+%% @doc Deletes all readers.
+-spec del_reader() -> ok.
 del_reader() ->
   epers:delete_all(blog_reader).
 
+%% @doc Deletes the given author.
+-spec del_author(blog_author:author()) -> ok.
 del_author(Author) ->
   epers:delete(blog_author, blog_author:id(Author)).
 
+%% @doc Deletes the given post.
+-spec del_post(blog_post:post()) -> ok.
 del_post(Post) ->
   epers:delete(blog_post, blog_post:id(Post)).
 
+%% @doc Updates an author.
+-spec save_author(blog_author:author()) -> ok.
 save_author(Author) ->
   epers:persist(blog_author, Author).
 
+%% @doc Updates a post.
+-spec save_post(blog_post:post()) -> ok.
 save_post(Post) ->
   epers:persist(blog_post, Post).
 
+%% @doc Updates a reader.
+-spec save_reader(blog_reader:reader()) -> ok.
 save_reader(Reader) ->
   epers:persist(blog_reader, Reader).
 
+%% @doc Creates a new author.
+-spec new_author(string(), binary()) -> blog_author:author().
 new_author(Name, Photo) ->
   epers:persist(blog_author, blog_author:new(Name, Photo)).
 
+%% @doc Creates a new post.
+-spec new_post(string(), string(), string()) -> blog_post:post().
 new_post(Title, Content, Author) ->
   epers:persist(
     blog_post, blog_post:new(Title, Content, blog_author:id(Author))
   ).
 
+%% @doc Creates a new blog reader.
+-spec new_reader(string(), string()) -> blog_reader:reader().
 new_reader(Name, Email) ->
   epers:persist(blog_reader, blog_reader:new(Name, Email)).
 
+%% @doc Creates a new vote.
+-spec new_vote(blog_reader:id(), blog_post:id()) -> blog_vote:vote().
 new_vote(ReaderId, PostId) ->
   epers:persist(blog_vote, blog_vote:new(ReaderId, PostId)).

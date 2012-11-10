@@ -92,13 +92,9 @@ set(Key, Value, Reader) when is_atom(Key), is_list(Reader) ->
 %% eper behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Part of the epers_doc behavior.
--spec epers_wakeup(#epers_doc{}) -> reader().
-epers_wakeup(#epers_doc{}=Doc) ->
-  [
-    {id, epers:get_field(id, Doc)},
-    {name, epers:get_field(name, Doc)},
-    {email, epers:get_field(email, Doc)}
-  ].
+-spec epers_wakeup(proplists:proplist()) -> reader().
+epers_wakeup(Data) ->
+  Data.
 
 %% @doc Part of the epers_doc behavior.
 -spec epers_sleep(reader()) -> proplists:proplist().

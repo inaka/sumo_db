@@ -102,14 +102,9 @@ set(Key, Value, Post) when is_atom(Key), is_list(Post) ->
 %% eper behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Part of the epers_doc behavior.
--spec epers_wakeup(#epers_doc{}) -> post().
-epers_wakeup(#epers_doc{}=Doc) ->
-  [
-    {id, epers:get_field(id, Doc)},
-    {title, epers:get_field(title, Doc)},
-    {content, epers:get_field(content, Doc)},
-    {author_id, epers:get_field(author_id, Doc)}
-  ].
+-spec epers_wakeup(proplists:proplist()) -> post().
+epers_wakeup(Data) ->
+  Data.
 
 %% @doc Part of the epers_doc behavior.
 -spec epers_sleep(post()) -> proplists:proplist().

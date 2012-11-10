@@ -96,13 +96,9 @@ set(Key, Value, Author) when is_atom(Key), is_list(Author) ->
 %% eper behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Part of the epers_doc behavior.
--spec epers_wakeup(#epers_doc{}) -> author().
-epers_wakeup(#epers_doc{}=Doc) ->
-  [
-    {id, epers:get_field(id, Doc)},
-    {name, epers:get_field(name, Doc)},
-    {photo, epers:get_field(photo, Doc)}
-  ].
+-spec epers_wakeup(proplists:proplist()) -> author().
+epers_wakeup(Data) ->
+  Data.
 
 %% @doc Part of the epers_doc behavior.
 -spec epers_sleep(author()) -> proplists:proplist().

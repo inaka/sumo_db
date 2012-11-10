@@ -107,7 +107,7 @@ find(DocName, Id) ->
 find_by(DocName, Conditions, Limit, Offset) ->
   lists:reverse(lists:map(
     fun(Doc) ->
-      DocName:epers_wakeup(Doc)
+      DocName:epers_wakeup(Doc#epers_doc.fields)
     end,
     epers_repo:find_by(get_repo(DocName), DocName, Conditions, Limit, Offset)
   )).
@@ -124,9 +124,10 @@ find_by(DocName, Conditions) ->
 %% @doc Creates or updates the given Doc.
 -spec persist(epers_schema_name(), proplist:proplists()) -> ok.
 persist(DocName, State) ->
-  epers_repo:persist(
+  NewDoc = epers_repo:persist(
     get_repo(DocName), epers:new_doc(DocName, DocName:epers_sleep(State))
-  ).
+  ),
+  DocName:epers_wakeup(NewDoc#epers_doc.fields).
 
 %% @doc Deletes all docs of type DocName.
 -spec delete_all(epers_schema_name()) -> ok.

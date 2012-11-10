@@ -86,13 +86,9 @@ get(Key, Vote) when is_atom(Key), is_list(Vote) ->
 %% eper behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Part of the epers_doc behavior.
--spec epers_wakeup(#epers_doc{}) -> proplists:proplist().
-epers_wakeup(#epers_doc{}=Doc) ->
-  [
-    {id, epers:get_field(id, Doc)},
-    {post_id, epers:get_field(post_id, Doc)},
-    {reader_id, epers:get_field(reader_id, Doc)}
-  ].
+-spec epers_wakeup(proplists:proplist()) -> vote().
+epers_wakeup(Data) ->
+  Data.
 
 %% @doc Part of the epers_doc behavior.
 -spec epers_sleep(vote()) -> proplists:proplist().

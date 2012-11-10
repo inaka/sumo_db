@@ -30,7 +30,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--export([epers_schema/0, epers_wakeup/1]).
+-export([epers_schema/0, epers_sleep/1, epers_wakeup/1]).
 -export([new/1, new/2]).
 -export([id/1, name/1, photo/1, update_photo/2]).
 
@@ -103,6 +103,11 @@ epers_wakeup(#epers_doc{}=Doc) ->
     {name, epers:get_field(name, Doc)},
     {photo, epers:get_field(photo, Doc)}
   ].
+
+%% @doc Part of the epers_doc behavior.
+-spec epers_sleep(author()) -> proplists:proplist().
+epers_sleep(Author) ->
+  Author.
 
 %% @doc Part of the epers_doc behavior.
 -spec epers_schema() -> #epers_schema{}.

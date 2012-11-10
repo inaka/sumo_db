@@ -124,7 +124,9 @@ find_by(DocName, Conditions) ->
 %% @doc Creates or updates the given Doc.
 -spec persist(epers_schema_name(), proplist:proplists()) -> ok.
 persist(DocName, State) ->
-  epers_repo:persist(get_repo(DocName), epers:new_doc(DocName, State)).
+  epers_repo:persist(
+    get_repo(DocName), epers:new_doc(DocName, DocName:epers_sleep(State))
+  ).
 
 %% @doc Deletes all docs of type DocName.
 -spec delete_all(epers_schema_name()) -> ok.

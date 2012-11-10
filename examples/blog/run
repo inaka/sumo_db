@@ -50,7 +50,7 @@ main(_) ->
   io:format("Another Reader: ~p~n", [blog:find_reader(blog_reader:id(Reader))]),
 
   % Create a vote
-  Vote = blog:new_vote(blog_reader:id(Reader2), blog_post:id(Post2)).
+  _Vote = blog:new_vote(blog_reader:id(Reader2), blog_post:id(Post2)).
 
 setup_codepath() ->
   Dir = filename:dirname(escript:script_name()),

@@ -35,7 +35,7 @@
 %% @doc Returns all behavior callbacks.
 -spec behaviour_info(callbacks) -> proplists:proplist()|undefined.
 behaviour_info(callbacks) ->
-  [{epers_schema,0}, {epers_wakeup,1}];
+  [{epers_schema,0}, {epers_wakeup,1}, {epers_sleep,1}];
 
 behaviour_info(_Other) ->
   undefined.

@@ -30,7 +30,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--export([epers_schema/0, epers_wakeup/1]).
+-export([epers_schema/0, epers_sleep/1, epers_wakeup/1]).
 -export([new/2]).
 -export([id/1, post_id/1, reader_id/1]).
 
@@ -93,6 +93,11 @@ epers_wakeup(#epers_doc{}=Doc) ->
     {post_id, epers:get_field(post_id, Doc)},
     {reader_id, epers:get_field(reader_id, Doc)}
   ].
+
+%% @doc Part of the epers_doc behavior.
+-spec epers_sleep(vote()) -> proplists:proplist().
+epers_sleep(Vote) ->
+  Vote.
 
 %% @doc Part of the epers_doc behavior.
 -spec epers_schema() -> #epers_schema{}.

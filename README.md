@@ -1,5 +1,5 @@
 # About
-This is a work in progress.
+This is a work in progress. There's also [an article](http://marcelog.github.com/articles/erlang_persistence_entities.html) about epers.
 
 **epers** aims to ease db access for erlang applications. It offers a very
 simple persistance layer capable of interacting with different db's, while

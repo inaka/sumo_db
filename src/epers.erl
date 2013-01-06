@@ -124,20 +124,39 @@ find_by(DocName, Conditions) ->
 %% @doc Creates or updates the given Doc.
 -spec persist(epers_schema_name(), proplist:proplists()) -> ok.
 persist(DocName, State) ->
+  IdField = field_name(get_id_field(DocName)),
+  PropList = DocName:epers_sleep(State),
+  EventName = case proplists:get_value(IdField, PropList) of
+    undefined -> created;
+    _ -> updated
+  end,
+
   NewDoc = epers_repo:persist(
-    get_repo(DocName), epers:new_doc(DocName, DocName:epers_sleep(State))
+    get_repo(DocName), epers:new_doc(DocName, PropList)
   ),
-  DocName:epers_wakeup(NewDoc#epers_doc.fields).
+  Ret = DocName:epers_wakeup(NewDoc#epers_doc.fields),
+  epers_event:dispatch(DocName, EventName, [Ret]),
+  Ret.
 
 %% @doc Deletes all docs of type DocName.
 -spec delete_all(epers_schema_name()) -> ok.
 delete_all(DocName) ->
-  epers_repo:delete_all(get_repo(DocName), DocName).
+  case epers_repo:delete_all(get_repo(DocName), DocName) of
+    ok -> 
+      epers_event:dispatch(DocName, deleted_all),
+      ok;
+    R -> R
+  end.
 
 %% @doc Deletes the doc identified by Id.
 -spec delete(epers_schema_name(), term()) -> ok.
 delete(DocName, Id) ->
-  epers_repo:delete(get_repo(DocName), DocName, Id).
+  case epers_repo:delete(get_repo(DocName), DocName, Id) of
+    true ->
+      epers_event:dispatch(DocName, deleted, [Id]),
+      true;
+    R -> R
+  end.
 
 %% @doc Creates the schema for the docs of type DocName.
 -spec create_schema(epers_schema_name()) -> ok.
@@ -148,7 +167,12 @@ create_schema(DocName) ->
 %% repository.
 -spec create_schema(epers_schema_name(), atom()) -> ok.
 create_schema(DocName, Repo) ->
-  epers_repo:create_schema(Repo, get_schema(DocName)).
+  case epers_repo:create_schema(Repo, get_schema(DocName)) of
+    ok ->
+      epers_event:dispatch(DocName, schema_created),
+      ok;
+    R -> R
+  end.
 
 %% @doc Calls the given custom function of a repo.
 -spec call(epers_schema_name(), atom()) -> term().

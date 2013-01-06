@@ -1,4 +1,4 @@
-%%% @doc SQLite3 repository implementation.
+%%% @doc The blog post event handler.
 %%%
 %%% Copyright 2012 Marcelo Gornstein &lt;marcelog@@gmail.com&gt;
 %%%
@@ -17,60 +17,61 @@
 %%% @copyright Marcelo Gornstein <marcelog@gmail.com>
 %%% @author Marcelo Gornstein <marcelog@gmail.com>
 %%%
--module(epers_repo_sqlite3).
+-module(blog_event_handler).
 -author("Marcelo Gornstein <marcelog@gmail.com>").
 -github("https://github.com/marcelog").
 -homepage("http://marcelog.github.com/").
 -license("Apache License 2.0").
 
--include_lib("include/epers_doc.hrl").
--include_lib("sqlite3/include/sqlite3.hrl").
-
--behavior(epers_repo).
+-behavior(gen_event).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%% Public API.
 -export([
-  init/1, create_schema/2, persist/2, find_by/3, find_by/5,
-  delete/3, delete_all/2, execute/2, execute/3
+  init/1, terminate/2, handle_info/2,
+  handle_call/2, code_change/3, handle_event/2
 ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Types.
+%% gen_event functions.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--record(state, {db::pid()}).
--opaque state() :: #state{}.
+init([]) ->
+  {ok, []}.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% External API.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-persist(#epers_doc{name=DocName}=Doc, State) ->
+handle_info(_Info, State) ->
+  {ok, State}.
+
+handle_call(_Request, State) ->
+  {ok, not_implemented, State}.
+
+handle_event({blog_post, schema_created, []}, State) ->
+  lager:info("The blog post schema has been created"),
+  {ok, State};
+
+handle_event({blog_post, deleted, [Id]}, State) ->
+  lager:info("The blog post ~p has been deleted", [Id]),
+  {ok, State};
+
+handle_event({blog_post, deleted_all, []}, State) ->
+  lager:info("All blog posts entries have been deleted"),
+  {ok, State};
+
+handle_event({blog_post, created, [Entity]}, State) ->
+  Id = proplists:get_value(id, Entity),
+  lager:info("Blog post ~p created", [Id]),
+  {ok, State};
+
+handle_event({blog_post, updated, [Entity]}, State) ->
+  Id = proplists:get_value(id, Entity),
+  lager:info("Blog post ~p updated", [Id]),
+  {ok, State};
+
+handle_event(_Event, State) ->
+  {ok, State}.
+
+code_change(_OldVsn, State, _Extra) ->
+  {ok, State}.
+
+terminate(_Arg, _State) ->
   ok.
-
-delete(DocName, Id, State) ->
-  ok.
-
-delete_all(DocName, State) ->
-  ok.
-
-find_by(DocName, Conditions, Limit, Offset, State) ->
-  ok.
-
-find_by(DocName, Conditions, State) ->
-  find_by(DocName, Conditions, 0, 0, State).
-
-create_schema(#epers_schema{name=Name, fields=Fields}, State) ->
-  ok.
-
-execute(Query, Args, #state{db=Db}) when is_list(Query), is_list(Args) ->
-  ok.
-
-execute(Query, State) ->
-  execute(Query, [], State).
-
-init(Options) ->
-  {ok, #state{db=a}}.
-

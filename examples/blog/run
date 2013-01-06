@@ -7,6 +7,10 @@ main(_) ->
   setup_codepath(),
   start_apps(),
 
+  % Install our event manager and register our handlers (not mandatory).
+  {ok, _EventManagerPid} = gen_event:start({local, my_event_bus}),
+  gen_event:add_handler(my_event_bus, blog_event_handler, []),
+  
   % Let's first create our db schema. Database should be already created. All
   % other schemas are auto generated.
   ok = epers:create_schema(),

@@ -1,5 +1,4 @@
-%%% @doc SQLite3 repository implementation.
-%%%
+%%% @doc This module is in charge of the event management.
 %%% Copyright 2012 Marcelo Gornstein &lt;marcelog@@gmail.com&gt;
 %%%
 %%% Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,60 +16,50 @@
 %%% @copyright Marcelo Gornstein <marcelog@gmail.com>
 %%% @author Marcelo Gornstein <marcelog@gmail.com>
 %%%
--module(epers_repo_sqlite3).
+-module(epers_event).
 -author("Marcelo Gornstein <marcelog@gmail.com>").
 -github("https://github.com/marcelog").
 -homepage("http://marcelog.github.com/").
 -license("Apache License 2.0").
 
+%%% Include standard types.
 -include_lib("include/epers_doc.hrl").
--include_lib("sqlite3/include/sqlite3.hrl").
-
--behavior(epers_repo).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%% Public API.
--export([
-  init/1, create_schema/2, persist/2, find_by/3, find_by/5,
-  delete/3, delete_all/2, execute/2, execute/3
-]).
+-export([dispatch/2, dispatch/3]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Types.
+%% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--record(state, {db::pid()}).
--opaque state() :: #state{}.
+%% @doc Dispatchs an event through gen_event:notify/2.
+-spec dispatch(epers_schema_name(), term()) -> ok.
+dispatch(DocName, Event) ->
+  dispatch(DocName, Event, []).
+
+%% @doc Dispatchs an event through gen_event:notify/2.
+-spec dispatch(epers_schema_name(), term(), term()) -> ok.
+dispatch(DocName, Event, Args) ->
+  case get_event_manager(DocName) of
+    undefined -> ok;
+    EventManager -> gen_event:notify(EventManager, {DocName, Event, Args})
+  end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% External API.
+%% Private API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-persist(#epers_doc{name=DocName}=Doc, State) ->
-  ok.
-
-delete(DocName, Id, State) ->
-  ok.
-
-delete_all(DocName, State) ->
-  ok.
-
-find_by(DocName, Conditions, Limit, Offset, State) ->
-  ok.
-
-find_by(DocName, Conditions, State) ->
-  find_by(DocName, Conditions, 0, 0, State).
-
-create_schema(#epers_schema{name=Name, fields=Fields}, State) ->
-  ok.
-
-execute(Query, Args, #state{db=Db}) when is_list(Query), is_list(Args) ->
-  ok.
-
-execute(Query, State) ->
-  execute(Query, [], State).
-
-init(Options) ->
-  {ok, #state{db=a}}.
-
+%% @doc Returns the name of the event manager configured for the given
+%% doc, or undefined.
+-spec get_event_manager(
+  epers_schema_name()
+) -> undefined|atom()|{atom(), term()}.
+get_event_manager(DocName) ->
+  {ok, Docs} = application:get_env(epers, events),
+  case Docs of
+    undefined -> undefined;
+    EventManagers -> case proplists:get_value(DocName, EventManagers) of
+      undefined -> undefined;
+      Name -> Name
+    end
+  end.

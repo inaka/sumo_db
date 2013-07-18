@@ -1,0 +1,11 @@
+{application, sumo_db,
+ [
+  {description, "Sumo DB"},
+  {vsn, "1"},
+  {id, "sumo_db"},
+  {registered,   []},
+  {applications, [kernel,stdlib]},
+  {mod, {sumo_db_app, []}},
+  {env, []}
+ ]
+}.

@@ -1,6 +1,7 @@
 {application, sumo_db, [
   {description, "A simple persistance layer"},
   {vsn, "1"},
+  {id, "sumo_db"},
   {registered, []},
   {applications, [
     kernel,

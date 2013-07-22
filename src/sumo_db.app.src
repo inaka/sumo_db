@@ -1,0 +1,18 @@
+{application, sumo_db, [
+  {description, "A simple persistance layer"},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+    kernel,
+    stdlib,
+    sasl,
+    lager,
+    crypto,
+    emysql,
+    emongo,
+    sqlite3,
+    eredis
+  ]},
+  {mod, { sumo_app, []}},
+  {env, []}
+ ]}.

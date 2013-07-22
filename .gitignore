@@ -1,5 +1,8 @@
-.eunit
+ebin
 deps
+doc
+examples/blog/log
+.eunit
 *.o
 *.beam
 *.plt

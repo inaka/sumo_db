@@ -199,7 +199,7 @@ docs_wakeup(DocName, Docs) ->
     Docs
   )).
 
-%% @doc Returns the value of a field from an sumo_doc.
+%% @doc Returns the value of a field from a sumo_doc.
 -spec get_field(sumo_field_name(), #sumo_doc{}) -> term().
 get_field(Name, #sumo_doc{fields=Fields}) ->
   proplists:get_value(Name, Fields).
@@ -242,7 +242,7 @@ field_attrs(#sumo_field{attrs=Attributes}) ->
 field_is(What, #sumo_field{attrs=Attributes}) ->
   proplists:is_defined(What, Attributes).
 
-%% @doc Returns a new doc without any fields
+%% @doc Returns a new doc without any fields.
 -spec new_doc(sumo_schema_name()) -> #sumo_doc{}.
 new_doc(Name) ->
   new_doc(Name, []).

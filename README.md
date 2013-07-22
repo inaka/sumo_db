@@ -7,10 +7,10 @@ offering a consistent api to your code.
 
 # Overview
  * sumo_db gives you a standard way to define your db schema, no matter the
- db implementation (mongo, mysql, redis, etc).
+ db implementation (mongo, mysql, redis, or sqlite3).
  * Your entities encapsulate behavior in code (functions in module) and state
  into proplists.
- * sumo_db is the main module. It translates to and from #sumo_doc into your
+ * sumo is the main module. It translates to and from #sumo_doc records into your
  own state.
  * Each repo is a process *sumo_repo* that calls the actual db driver
  (e.g: sumo_repo_mysql).

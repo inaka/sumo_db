@@ -224,7 +224,7 @@ execute(Query, State) ->
   execute(Query, [], State).
 
 init(Options) ->
-  Pool = erlang:ref_to_list(make_ref()),
+  Pool = list_to_atom(erlang:ref_to_list(make_ref())),
   emysql:add_pool(
     Pool, 1,
     proplists:get_value(username, Options),

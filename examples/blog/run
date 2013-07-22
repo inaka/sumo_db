@@ -42,7 +42,7 @@ main(_) ->
 
   % Call a specific method of a repo (not handled by the generic repo,
   % i.e: a "complex" work).
-  io:format("Total number of posts: ~p~n", [blog:total_posts()]),
+  % io:format("Total number of posts: ~p~n", [blog:total_posts()]),
 
   % Create a blog reader, in a nother repo and backend.
   Reader = blog:new_reader("Marcelo Gornstein", "marcelo@inakanetworks.com"),

@@ -107,5 +107,5 @@ sumo_schema() ->
   sumo:new_schema(?MODULE, [
     sumo:new_field(id, integer, [not_null, auto_increment, id]),
     sumo:new_field(name, string, [{length, 128}, not_null, unique]),
-    sumo:new_field(email, string, [index])
+    sumo:new_field(email, string, [{length, 128}, index])
   ]).

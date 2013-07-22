@@ -55,7 +55,7 @@ dispatch(DocName, Event, Args) ->
   sumo_schema_name()
 ) -> undefined|atom()|{atom(), term()}.
 get_event_manager(DocName) ->
-  {ok, Docs} = application:get_env(sumo, events),
+  {ok, Docs} = application:get_env(sumo_db, events),
   case Docs of
     undefined -> undefined;
     EventManagers -> case proplists:get_value(DocName, EventManagers) of

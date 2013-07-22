@@ -128,3 +128,4 @@ new_reader(Name, Email) ->
 -spec new_vote(blog_reader:id(), blog_post:id()) -> blog_vote:vote().
 new_vote(ReaderId, PostId) ->
   sumo:persist(blog_vote, blog_vote:new(ReaderId, PostId)).
+

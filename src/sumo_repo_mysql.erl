@@ -37,6 +37,7 @@
   init/1, create_schema/2, persist/2, find_by/3, find_by/5,
   delete/3, delete_all/2, execute/2, execute/3
 ]).
+% -export([count/2]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
@@ -138,7 +139,6 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
 find_by(DocName, Conditions, State) ->
   find_by(DocName, Conditions, 0, 0, State).
 
-%%
 %% XXX: Refactor:
 %% Requires {length, X} to be the first field attribute in order to form the
 %% correct query. :P
@@ -214,6 +214,15 @@ create_index(Name, index) ->
 
 create_index(_, _) ->
   none.
+
+% -spec total_posts(sumo_schema_name(), term() ) -> {ok, {raw, pos_integer}, term()} | {ok, error, term()}.
+% count(DocName, State) ->
+%   Sql = "SELECT COUNT(1) FROM `" ++ atom_to_list(DocName) ++ "`",
+%   Result = sumo_repo_mysql:execute(Sql, State),
+%   case Result of
+%     #result_packet{rows=[[N]]} -> {ok, {raw, N}, State};
+%     _ -> {ok, error, State}
+%   end.
 
 execute(Query, Args, #state{pool=Pool}) when is_list(Query), is_list(Args) ->
   ok = emysql:prepare(stmt, list_to_binary(Query)),

@@ -120,3 +120,4 @@ sumo_schema() ->
     sumo:new_field(content, text),
     sumo:new_field(author_id, integer, [index])
   ]).
+

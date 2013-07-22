@@ -23,14 +23,14 @@
 -homepage("http://marcelog.github.com/").
 -license("Apache License 2.0").
 
--include_lib("include/epers_doc.hrl").
+-include_lib("include/sumo_doc.hrl").
 
--behavior(epers_doc).
+-behavior(sumo_doc).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--export([epers_schema/0, epers_sleep/1, epers_wakeup/1]).
+-export([sumo_schema/0, sumo_sleep/1, sumo_wakeup/1]).
 -export([new/2]).
 -export([id/1, post_id/1, reader_id/1]).
 
@@ -83,23 +83,23 @@ get(Key, Vote) when is_atom(Key), is_list(Vote) ->
 %  lists:keyreplace(Key, 1, Vote, {Key, Value}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% eper behavior follows.
+%% sumo behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% @doc Part of the epers_doc behavior.
--spec epers_wakeup(proplists:proplist()) -> vote().
-epers_wakeup(Data) ->
+%% @doc Part of the sumo_doc behavior.
+-spec sumo_wakeup(proplists:proplist()) -> vote().
+sumo_wakeup(Data) ->
   Data.
 
-%% @doc Part of the epers_doc behavior.
--spec epers_sleep(vote()) -> proplists:proplist().
-epers_sleep(Vote) ->
+%% @doc Part of the sumo_doc behavior.
+-spec sumo_sleep(vote()) -> proplists:proplist().
+sumo_sleep(Vote) ->
   Vote.
 
-%% @doc Part of the epers_doc behavior.
--spec epers_schema() -> #epers_schema{}.
-epers_schema() ->
-  epers:new_schema(?MODULE, [
-    epers:new_field(id, integer, [not_null, auto_increment, id]),
-    epers:new_field(post_id, integer),
-    epers:new_field(reader_id, integer)
+%% @doc Part of the sumo_doc behavior.
+-spec sumo_schema() -> #sumo_schema{}.
+sumo_schema() ->
+  sumo:new_schema(?MODULE, [
+    sumo:new_field(id, integer, [not_null, auto_increment, id]),
+    sumo:new_field(post_id, integer),
+    sumo:new_field(reader_id, integer)
   ]).

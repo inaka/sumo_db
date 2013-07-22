@@ -1,8 +1,4 @@
-%%% @doc A blog post repository, it aims to show how to make more complicated
-%%% repo queries, but in this case it depends on having the posts on
-%%% a mysql. It brings its own functionality while mantaining the generic
-%%% repo features.
-%%%
+%%% @doc This module is in charge of the event management.
 %%% Copyright 2012 Marcelo Gornstein &lt;marcelog@@gmail.com&gt;
 %%%
 %%% Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,33 +16,50 @@
 %%% @copyright Marcelo Gornstein <marcelog@gmail.com>
 %%% @author Marcelo Gornstein <marcelog@gmail.com>
 %%%
--module(blog_post_repo).
+-module(sumo_event).
 -author("Marcelo Gornstein <marcelog@gmail.com>").
 -github("https://github.com/marcelog").
 -homepage("http://marcelog.github.com/").
 -license("Apache License 2.0").
 
--include_lib("emysql/include/emysql.hrl").
--include_lib("sumo_doc.hrl").
-
--extends(sumo_repo_mysql).
+%%% Include standard types.
+-include_lib("include/sumo_doc.hrl").
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--export([total_posts/2]).
+-export([dispatch/2, dispatch/3]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% @doc Returns the total number of posts.
--spec total_posts(
-  sumo_schema_name(), term()
-) -> {ok, {raw, pos_integer}, term()} | {ok, error, term()}.
-total_posts(DocName, State) ->
-  Sql = "SELECT COUNT(1) FROM `" ++ atom_to_list(DocName) ++ "`",
-  Result = sumo_repo_mysql:execute(Sql, State),
-  case Result of
-    #result_packet{rows=[[N]]} -> {ok, {raw, N}, State};
-    _ -> {ok, error, State}
+%% @doc Dispatchs an event through gen_event:notify/2.
+-spec dispatch(sumo_schema_name(), term()) -> ok.
+dispatch(DocName, Event) ->
+  dispatch(DocName, Event, []).
+
+%% @doc Dispatchs an event through gen_event:notify/2.
+-spec dispatch(sumo_schema_name(), term(), term()) -> ok.
+dispatch(DocName, Event, Args) ->
+  case get_event_manager(DocName) of
+    undefined -> ok;
+    EventManager -> gen_event:notify(EventManager, {DocName, Event, Args})
+  end.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Private API.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% @doc Returns the name of the event manager configured for the given
+%% doc, or undefined.
+-spec get_event_manager(
+  sumo_schema_name()
+) -> undefined|atom()|{atom(), term()}.
+get_event_manager(DocName) ->
+  {ok, Docs} = application:get_env(sumo, events),
+  case Docs of
+    undefined -> undefined;
+    EventManagers -> case proplists:get_value(DocName, EventManagers) of
+      undefined -> undefined;
+      Name -> Name
+    end
   end.

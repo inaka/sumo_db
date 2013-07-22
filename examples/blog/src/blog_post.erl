@@ -23,14 +23,14 @@
 -homepage("http://marcelog.github.com/").
 -license("Apache License 2.0").
 
--include_lib("include/epers_doc.hrl").
+-include_lib("include/sumo_doc.hrl").
 
--behavior(epers_doc).
+-behavior(sumo_doc).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--export([epers_schema/0, epers_sleep/1, epers_wakeup/1]).
+-export([sumo_schema/0, sumo_sleep/1, sumo_wakeup/1]).
 -export([new/3]).
 -export([id/1, author/1, title/1, content/1, update_content/2, update_title/2]).
 
@@ -99,24 +99,24 @@ set(Key, Value, Post) when is_atom(Key), is_list(Post) ->
   lists:keyreplace(Key, 1, Post, {Key, Value}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% eper behavior follows.
+%% sumo behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% @doc Part of the epers_doc behavior.
--spec epers_wakeup(proplists:proplist()) -> post().
-epers_wakeup(Data) ->
+%% @doc Part of the sumo_doc behavior.
+-spec sumo_wakeup(proplists:proplist()) -> post().
+sumo_wakeup(Data) ->
   Data.
 
-%% @doc Part of the epers_doc behavior.
--spec epers_sleep(post()) -> proplists:proplist().
-epers_sleep(Post) ->
+%% @doc Part of the sumo_doc behavior.
+-spec sumo_sleep(post()) -> proplists:proplist().
+sumo_sleep(Post) ->
   Post.
 
-%% @doc Part of the epers_doc behavior.
--spec epers_schema() -> #epers_schema{}.
-epers_schema() ->
-  epers:new_schema(?MODULE, [
-    epers:new_field(id, integer, [not_null, auto_increment, id]),
-    epers:new_field(title, string, [{length, 128}, not_null, unique]),
-    epers:new_field(content, text),
-    epers:new_field(author_id, integer, [index])
+%% @doc Part of the sumo_doc behavior.
+-spec sumo_schema() -> #sumo_schema{}.
+sumo_schema() ->
+  sumo:new_schema(?MODULE, [
+    sumo:new_field(id, integer, [not_null, auto_increment, id]),
+    sumo:new_field(title, string, [{length, 128}, not_null, unique]),
+    sumo:new_field(content, text),
+    sumo:new_field(author_id, integer, [index])
   ]).

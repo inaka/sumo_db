@@ -23,14 +23,14 @@
 -homepage("http://marcelog.github.com/").
 -license("Apache License 2.0").
 
--include_lib("include/epers_doc.hrl").
+-include_lib("include/sumo_doc.hrl").
 
--behavior(epers_doc).
+-behavior(sumo_doc).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--export([epers_schema/0, epers_sleep/1, epers_wakeup/1]).
+-export([sumo_schema/0, sumo_sleep/1, sumo_wakeup/1]).
 -export([new/1, new/2]).
 -export([id/1, name/1, photo/1, update_photo/2]).
 
@@ -93,23 +93,23 @@ set(Key, Value, Author) when is_atom(Key), is_list(Author) ->
   lists:keyreplace(Key, 1, Author, {Key, Value}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% eper behavior follows.
+%% sumo behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% @doc Part of the epers_doc behavior.
--spec epers_wakeup(proplists:proplist()) -> author().
-epers_wakeup(Data) ->
+%% @doc Part of the sumo_doc behavior.
+-spec sumo_wakeup(proplists:proplist()) -> author().
+sumo_wakeup(Data) ->
   Data.
 
-%% @doc Part of the epers_doc behavior.
--spec epers_sleep(author()) -> proplists:proplist().
-epers_sleep(Author) ->
+%% @doc Part of the sumo_doc behavior.
+-spec sumo_sleep(author()) -> proplists:proplist().
+sumo_sleep(Author) ->
   Author.
 
-%% @doc Part of the epers_doc behavior.
--spec epers_schema() -> #epers_schema{}.
-epers_schema() ->
-  epers:new_schema(?MODULE, [
-    epers:new_field(id, integer, [not_null, auto_increment, id]),
-    epers:new_field(name, string, [{length, 128}, not_null]),
-    epers:new_field(photo, binary)
+%% @doc Part of the sumo_doc behavior.
+-spec sumo_schema() -> #sumo_schema{}.
+sumo_schema() ->
+  sumo:new_schema(?MODULE, [
+    sumo:new_field(id, integer, [not_null, auto_increment, id]),
+    sumo:new_field(name, string, [{length, 128}, not_null]),
+    sumo:new_field(photo, binary)
   ]).

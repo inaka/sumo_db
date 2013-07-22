@@ -1,7 +1,4 @@
-%%% @doc A blog post repository, it aims to show how to make more complicated
-%%% repo queries, but in this case it depends on having the posts on
-%%% a mysql. It brings its own functionality while mantaining the generic
-%%% repo features.
+%%% @doc SQLite3 repository implementation.
 %%%
 %%% Copyright 2012 Marcelo Gornstein &lt;marcelog@@gmail.com&gt;
 %%%
@@ -20,33 +17,60 @@
 %%% @copyright Marcelo Gornstein <marcelog@gmail.com>
 %%% @author Marcelo Gornstein <marcelog@gmail.com>
 %%%
--module(blog_post_repo).
+-module(sumo_repo_sqlite3).
 -author("Marcelo Gornstein <marcelog@gmail.com>").
 -github("https://github.com/marcelog").
 -homepage("http://marcelog.github.com/").
 -license("Apache License 2.0").
 
--include_lib("emysql/include/emysql.hrl").
--include_lib("sumo_doc.hrl").
+-include_lib("include/sumo_doc.hrl").
+-include_lib("sqlite3/include/sqlite3.hrl").
 
--extends(sumo_repo_mysql).
+-behavior(sumo_repo).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--export([total_posts/2]).
+
+%% Public API.
+-export([
+  init/1, create_schema/2, persist/2, find_by/3, find_by/5,
+  delete/3, delete_all/2, execute/2, execute/3
+]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Code starts here.
+%% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% @doc Returns the total number of posts.
--spec total_posts(
-  sumo_schema_name(), term()
-) -> {ok, {raw, pos_integer}, term()} | {ok, error, term()}.
-total_posts(DocName, State) ->
-  Sql = "SELECT COUNT(1) FROM `" ++ atom_to_list(DocName) ++ "`",
-  Result = sumo_repo_mysql:execute(Sql, State),
-  case Result of
-    #result_packet{rows=[[N]]} -> {ok, {raw, N}, State};
-    _ -> {ok, error, State}
-  end.
+-record(state, {db::pid()}).
+-opaque state() :: #state{}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% External API.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+persist(#sumo_doc{name=DocName}=Doc, State) ->
+  ok.
+
+delete(DocName, Id, State) ->
+  ok.
+
+delete_all(DocName, State) ->
+  ok.
+
+find_by(DocName, Conditions, Limit, Offset, State) ->
+  ok.
+
+find_by(DocName, Conditions, State) ->
+  find_by(DocName, Conditions, 0, 0, State).
+
+create_schema(#sumo_schema{name=Name, fields=Fields}, State) ->
+  ok.
+
+execute(Query, Args, #state{db=Db}) when is_list(Query), is_list(Args) ->
+  ok.
+
+execute(Query, State) ->
+  execute(Query, [], State).
+
+init(Options) ->
+  {ok, #state{db=a}}.
+

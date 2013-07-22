@@ -1,7 +1,4 @@
-%%% @doc A blog post repository, it aims to show how to make more complicated
-%%% repo queries, but in this case it depends on having the posts on
-%%% a mysql. It brings its own functionality while mantaining the generic
-%%% repo features.
+%%% @doc Repository supervisor.
 %%%
 %%% Copyright 2012 Marcelo Gornstein &lt;marcelog@@gmail.com&gt;
 %%%
@@ -20,33 +17,38 @@
 %%% @copyright Marcelo Gornstein <marcelog@gmail.com>
 %%% @author Marcelo Gornstein <marcelog@gmail.com>
 %%%
--module(blog_post_repo).
+-module(sumo_repo_sup).
 -author("Marcelo Gornstein <marcelog@gmail.com>").
 -github("https://github.com/marcelog").
 -homepage("http://marcelog.github.com/").
 -license("Apache License 2.0").
 
--include_lib("emysql/include/emysql.hrl").
--include_lib("sumo_doc.hrl").
-
--extends(sumo_repo_mysql).
+-define(CLD(Name, Module, Options), {
+  Module, {sumo_repo, start_link, [Name, Module, Options]},
+  permanent, 5000, worker, [Module]
+}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--export([total_posts/2]).
+-export([start_link/0]).
+-export([init/1]).
+
+-behaviour(supervisor).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% @doc Returns the total number of posts.
--spec total_posts(
-  sumo_schema_name(), term()
-) -> {ok, {raw, pos_integer}, term()} | {ok, error, term()}.
-total_posts(DocName, State) ->
-  Sql = "SELECT COUNT(1) FROM `" ++ atom_to_list(DocName) ++ "`",
-  Result = sumo_repo_mysql:execute(Sql, State),
-  case Result of
-    #result_packet{rows=[[N]]} -> {ok, {raw, N}, State};
-    _ -> {ok, error, State}
-  end.
+start_link() ->
+  supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+
+init([]) ->
+  {ok, Repositories} = application:get_env(repositories),
+  Children = lists:map(
+    fun({Name, Module, Options}) ->
+      lager:debug("Starting repository: ~s (~s)", [Name, Module]),
+      ?CLD(Name, Module, Options)
+    end,
+    Repositories
+  ),
+  {ok, { {one_for_one, 5, 10}, Children} }.

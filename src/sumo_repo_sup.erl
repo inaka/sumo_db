@@ -43,7 +43,7 @@ start_link() ->
   supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-  {ok, Repositories} = application:get_env(repositories),
+  {ok, Repositories} = application:get_env(sumo_db, repositories),
   Children = lists:map(
     fun({Name, Module, Options}) ->
       lager:debug("Starting repository: ~s (~s)", [Name, Module]),

@@ -164,6 +164,9 @@ create_schema(#sumo_schema{name=Name, fields=Fields}, State) ->
 create_column(#sumo_field{name=Name, type=integer, attrs=Attrs}) ->
   "`" ++ atom_to_list(Name) ++ "` INT(11) " ++ create_column_options(Attrs);
 
+create_column(#sumo_field{name=Name, type=float, attrs=Attrs}) ->
+  "`" ++ atom_to_list(Name) ++ "` FLOAT " ++ create_column_options(Attrs);
+
 create_column(#sumo_field{name=Name, type=text, attrs=Attrs}) ->
   "`" ++ atom_to_list(Name) ++ "` TEXT " ++ create_column_options(Attrs);
 

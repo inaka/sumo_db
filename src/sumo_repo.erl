@@ -131,7 +131,7 @@ handle_call(
   #state{handler=Handler,handler_state=HState}=State
 ) ->
   {ok, DocState, NewState} = Handler:persist(Doc, HState),
-  {reply, DocName:sumo_wakeup(DocState), State#state{handler_state=NewState}};
+  {reply, DocState, State#state{handler_state=NewState}};
 
 handle_call(
   {delete, DocName, Id}, _From,

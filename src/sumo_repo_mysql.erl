@@ -171,7 +171,13 @@ create_column(#sumo_field{name=Name, type=binary, attrs=Attrs}) ->
   "`" ++ atom_to_list(Name) ++ "` BLOB " ++ create_column_options(Attrs);
 
 create_column(#sumo_field{name=Name, type=string, attrs=Attrs}) ->
-  "`" ++ atom_to_list(Name) ++ "` VARCHAR " ++ create_column_options(Attrs).
+  "`" ++ atom_to_list(Name) ++ "` VARCHAR " ++ create_column_options(Attrs);
+
+create_column(#sumo_field{name=Name, type=date, attrs=Attrs}) ->
+  "`" ++ atom_to_list(Name) ++ "` DATE " ++ create_column_options(Attrs);
+
+create_column(#sumo_field{name=Name, type=datetime, attrs=Attrs}) ->
+  "`" ++ atom_to_list(Name) ++ "` DATETIME " ++ create_column_options(Attrs).
 
 create_column_options(Attrs) ->
   lists:filter(fun(T) -> is_list(T) end, lists:map(

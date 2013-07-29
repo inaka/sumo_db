@@ -130,10 +130,7 @@ persist(DocName, State) ->
     undefined -> created;
     _ -> updated
   end,
-
-  NewDoc = sumo_repo:persist(
-    get_repo(DocName), sumo:new_doc(DocName, PropList)
-  ),
+  NewDoc = sumo_repo:persist(get_repo(DocName), sumo:new_doc(DocName, PropList)),
   Ret = DocName:sumo_wakeup(NewDoc#sumo_doc.fields),
   sumo_event:dispatch(DocName, EventName, [Ret]),
   Ret.
@@ -194,7 +191,7 @@ call(DocName, Function, Args) ->
 docs_wakeup(DocName, Docs) ->
   lists:reverse(lists:map(
     fun(Doc) ->
-      DocName:sumo_wakeup(Doc)
+      DocName:sumo_wakeup(Doc#sumo_doc.fields)
     end,
     Docs
   )).

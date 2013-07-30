@@ -81,7 +81,15 @@ persist(#sumo_doc{name=DocName}=Doc, State) ->
   Ok = execute(
     Dql, lists:append(ColumnValues, ColumnValues), State
   ),
-  LastId = Ok#ok_packet.insert_id,
+  % XXX TODO darle una vuelta mas de rosca
+  % para el manejo general de cuando te devuelve el primary key
+  % considerar el caso cuando la primary key (campo id) no es integer
+  % tenes que poner unique index en lugar de primary key
+  % la mejor solucion es que el PK siempre sea un integer, como hace mongo
+  LastId = case Ok#ok_packet.insert_id of
+    0 -> NewId;
+    I -> I
+  end,
   IdField = sumo:field_name(sumo:get_id_field(DocName)),
   {ok, sumo:set_field(IdField, LastId, Doc), State}.
 

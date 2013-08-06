@@ -116,7 +116,7 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
     Conditions
   ),
   Sql1 = "SELECT * FROM `" ++ atom_to_list(DocName) ++ "` WHERE "
-    ++ string:join(Sqls, ","),
+    ++ string:join(Sqls, " AND "),
   Sql = case Limit of
     0 -> Sql1;
     _ ->

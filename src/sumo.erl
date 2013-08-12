@@ -101,11 +101,21 @@ find(DocName, Id) ->
 
 %% @doc Returns all docs from the given repo.
 find_all(DocName) ->
-  sumo_repo:find_all(get_repo(DocName), DocName).
+  lists:reverse(lists:map(
+    fun(Doc) ->
+      DocName:sumo_wakeup(Doc#sumo_doc.fields)
+    end,
+    sumo_repo:find_all(get_repo(DocName), DocName)
+  )).
 
 %% @doc Returns Limit docs from the given repo, starting at offset.
 find_all(DocName, OrderField, Limit, Offset) ->
-  sumo_repo:find_all(get_repo(DocName), DocName, OrderField, Limit, Offset).
+  lists:reverse(lists:map(
+    fun(Doc) ->
+      DocName:sumo_wakeup(Doc#sumo_doc.fields)
+    end,
+    sumo_repo:find_all(get_repo(DocName), DocName, OrderField, Limit, Offset)
+  )).
 
 %% @doc Returns Limit number of docs that match Conditions, starting at
 %% offset Offset.

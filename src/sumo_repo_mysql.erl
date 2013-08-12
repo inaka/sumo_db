@@ -110,22 +110,23 @@ find_all(DocName, State) ->
 
 find_all(DocName, OrderField, Limit, Offset, State) ->
   Sql0 =
-    "SELECT * FROM `" ++ atom_to_list(DocName) ++ "` ",
+    ["SELECT * FROM `", atom_to_list(DocName), "` "],
   Sql1 =
     case OrderField of
       undefined ->
         Sql0;
       _ ->
-        Sql0 ++ " ORDER BY `" ++ OrderField ++ "` "
+        [Sql0, " ORDER BY `", atom_to_list(OrderField), "` "]
     end,
   Sql2 =
     case Limit of
       0 ->
         Sql1;
       _ ->
-        Sql1 ++ " LIMIT " ++ integer_to_list(Offset) ++ "," ++ integer_to_list(Limit)
+        [Sql1, " LIMIT ", integer_to_list(Offset), ",", integer_to_list(Limit)]
     end,
-  Result = execute(Sql2, Values, State),
+  Query  = binary_to_list(iolist_to_binary(Sql2)),
+  Result = execute(Query, State),
   Rows   = Result#result_packet.rows,
   Fields = Result#result_packet.field_list,
   Docs   = lists:foldl(

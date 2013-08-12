@@ -35,7 +35,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Public API.
 -export([
-  create_schema/2, persist/2, find_by/3, find_by/5,
+  create_schema/2, persist/2, find_all/2, find_all/5, find_by/3, find_by/5,
   delete/3, delete_all/2, call/4
 ]).
 -export([start_link/3]).
@@ -82,6 +82,15 @@ delete(Name, DocName, Id) ->
 -spec delete_all(atom(), sumo_schema_name()) -> ok.
 delete_all(Name, DocName) ->
   gen_server:call(Name, {delete_all, DocName}).
+
+%% @doc Returns all docs from the given repositoru name.
+find_all(Name, DocName) ->
+  gen_server:call(Name, {find_all, DocName}).
+
+%% @doc Returns Limit docs starting at Offset from the given repository name, ordered by OrderField.
+%% OrderField may be 'undefined'.
+find_all(Name, DocName, OrderField, Limit, Offset) ->
+  gen_server:call(Name, {find_all, DocName, OrderField, Limit, Offset}).
 
 %% @doc Finds documents that match the given conditions in the given
 %% repository name.
@@ -146,6 +155,20 @@ handle_call(
 ) ->
   {ok, NewState} = Handler:delete_all(DocName, HState),
   {reply, ok, State#state{handler_state=NewState}};
+
+handle_call(
+  {find_all, DocName}, _From,
+  #state{handler=Handler, handler_state=HState}=State
+) ->
+  {ok, Docs, NewState} = Handler:find_all(DocName, HState),
+  {reply, Docs, State#state{handler_state = NewState}};
+
+handle_call(
+  {find_all, DocName, OrderField, Limit, Offset}, _From,
+  #state{handler=Handler, handler_state=HState}=State
+) ->
+  {ok, Docs, NewState} = Handler:find_all(DocName, OrderField, Limit, Offset, HState),
+  {reply, Docs, State#state{handler_state = NewState}};
 
 handle_call(
   {find_by, DocName, Conditions}, _From,

@@ -42,7 +42,7 @@
 
 %%% API for standard CRUD functions.
 -export([persist/2, delete/2, delete_all/1]).
--export([find/2, find_by/2, find_by/4, find_one/2]).
+-export([find/2, find_all/1, find_all/4, find_by/2, find_by/4, find_one/2]).
 
 %%% API for repo handling.
 -export([get_repo/1]).
@@ -98,6 +98,14 @@ find_one(DocName, Conditions) ->
 find(DocName, Id) ->
   IdField = get_id_field(get_schema(DocName)),
   find_one(DocName, [{IdField#sumo_field.name, Id}]).
+
+%% @doc Returns all docs from the given repo.
+find_all(DocName) ->
+  sumo_repo:find_all(get_repo(DocName), DocName).
+
+%% @doc Returns Limit docs from the given repo, starting at offset.
+find_all(DocName, OrderField, Limit, Offset) ->
+  sumo_repo:find_all(get_repo(DocName), DocName, OrderField, Limit, Offset).
 
 %% @doc Returns Limit number of docs that match Conditions, starting at
 %% offset Offset.

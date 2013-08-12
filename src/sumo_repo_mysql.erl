@@ -34,8 +34,8 @@
 
 %% Public API.
 -export([
-  init/1, create_schema/2, persist/2, find_by/3, find_by/5,
-  delete/3, delete_all/2, execute/2, execute/3
+  init/1, create_schema/2, persist/2, find_all/2, find_all/5, find_by/3,
+  find_by/5, delete/3, delete_all/2, execute/2, execute/3
 ]).
 % -export([count/2]).
 
@@ -105,6 +105,48 @@ delete_all(DocName, State) ->
   #ok_packet{} = execute(Sql, State),
   {ok, State}.
 
+find_all(DocName, State) ->
+  find_all(DocName, undefined, 0, 0, State).
+
+find_all(DocName, OrderField, Limit, Offset, State) ->
+  Sql0 =
+    ["SELECT * FROM `", atom_to_list(DocName), "` "],
+  Sql1 =
+    case OrderField of
+      undefined ->
+        Sql0;
+      _ ->
+        [Sql0, " ORDER BY `", atom_to_list(OrderField), "` "]
+    end,
+  Sql2 =
+    case Limit of
+      0 ->
+        Sql1;
+      _ ->
+        [Sql1, " LIMIT ", integer_to_list(Offset), ",", integer_to_list(Limit)]
+    end,
+  Query  = binary_to_list(iolist_to_binary(Sql2)),
+  Result = execute(Query, State),
+  Rows   = Result#result_packet.rows,
+  Fields = Result#result_packet.field_list,
+  Docs   = lists:foldl(
+    fun(Row, DocList) ->
+      NewDoc = lists:foldl(
+        fun(Field, [Doc,N]) ->
+          FieldRecord = lists:nth(N, Fields),
+          FieldName = list_to_atom(binary_to_list(FieldRecord#field.name)),
+          [sumo:set_field(FieldName, Field, Doc), N+1]
+        end,
+        [sumo:new_doc(DocName), 1],
+        Row
+      ),
+      [hd(NewDoc)|DocList]
+    end,
+    [],
+    Rows
+  ),
+  {ok, lists:reverse(Docs), State}.
+
 %% XXX We should have a DSL here, to allow querying in a known language
 %% to be translated by each driver into its own.
 find_by(DocName, Conditions, Limit, Offset, State) ->
@@ -115,8 +157,9 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
     [[],[]],
     Conditions
   ),
-  Sql1 = "SELECT * FROM `" ++ atom_to_list(DocName) ++ "` WHERE "
-    ++ string:join(Sqls, " AND "),
+  Sql1 =
+    "SELECT * FROM `" ++ atom_to_list(DocName) ++
+    "` WHERE "++ string:join(Sqls, " AND "),
   Sql = case Limit of
     0 -> Sql1;
     _ ->

@@ -214,8 +214,8 @@ call(DocName, Function) ->
 -spec call(sumo_schema_name(), atom(), [term()]) -> term().
 call(DocName, Function, Args) ->
   case sumo_repo:call(get_repo(DocName), DocName, Function, Args) of
-    {ok,    {docs, Docs}} -> docs_wakeup(DocName, Docs);
-    {error, {raw, Value}} -> Value
+    {ok, {docs, Docs}} -> docs_wakeup(DocName, Docs);
+    {ok, {raw, Value}} -> Value
   end.
 
 %% @doc Transforms the given #sumo_docs{} into proplists.

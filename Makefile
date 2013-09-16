@@ -1,6 +1,6 @@
 CWD=$(shell pwd)
 NAME=$(shell basename ${CWD})
-REBAR?=/usr/bin/env rebar
+REBAR?=./rebar
 
 all: getdeps compile edoc
 	${REBAR} compile

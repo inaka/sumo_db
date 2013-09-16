@@ -16,9 +16,9 @@ main(_) ->
   ok = sumo:create_schema(),
 
   % Cleanup authors and posts, so we can have a fresh runup.
-  ok = blog:del_author(),
-  ok = blog:del_post(),
-  ok = blog:del_reader(),
+  _NumRows1 = blog:del_author(),
+  _NumRows2 = blog:del_post(),
+  _NumRows3 = blog:del_reader(),
 
   % Let's create a new blog author and a new blog entry. The result is the
   % same author and post with their new id's filled in.

@@ -78,32 +78,37 @@ persist(#sumo_doc{name=DocName}=Doc, State) ->
       ColumnDqls
     ), ","),
   emysql:prepare(insert_stmt, list_to_binary(Dql)),
-  Ok = execute(
-    Dql, lists:append(ColumnValues, ColumnValues), State
-  ),
-  % XXX TODO darle una vuelta mas de rosca
-  % para el manejo general de cuando te devuelve el primary key
-  % considerar el caso cuando la primary key (campo id) no es integer
-  % tenes que poner unique index en lugar de primary key
-  % la mejor solucion es que el PK siempre sea un integer, como hace mongo
-  LastId = case Ok#ok_packet.insert_id of
-    0 -> NewId;
-    I -> I
-  end,
-  IdField = sumo:field_name(sumo:get_id_field(DocName)),
-  {ok, sumo:set_field(IdField, LastId, Doc), State}.
+  case execute(Dql, lists:append(ColumnValues, ColumnValues), State) of
+    #ok_packet{insert_id = InsertId} ->
+      % XXX TODO darle una vuelta mas de rosca
+      % para el manejo general de cuando te devuelve el primary key
+      % considerar el caso cuando la primary key (campo id) no es integer
+      % tenes que poner unique index en lugar de primary key
+      % la mejor solucion es que el PK siempre sea un integer, como hace mongo
+      LastId = case InsertId of
+        0 -> NewId;
+        I -> I
+      end,
+      IdField = sumo:field_name(sumo:get_id_field(DocName)),
+      {ok, sumo:set_field(IdField, LastId, Doc), State};
+    Error -> evaluate_execute_result(Error, State)
+  end.
 
 delete(DocName, Id, State) ->
   Sql = "DELETE FROM `" ++ atom_to_list(DocName)
     ++ "` WHERE `" ++ atom_to_list(sumo:field_name(sumo:get_id_field(DocName)))
     ++ "`=? LIMIT 1",
-  Result = execute(Sql, [Id], State),
-  {ok, Result#ok_packet.affected_rows > 0, State}.
+  case execute(Sql, [Id], State) of
+    #ok_packet{affected_rows = NumRows} -> {ok, NumRows > 0, State};
+    Error -> evaluate_execute_result(Error, State)
+  end.
 
 delete_all(DocName, State) ->
   Sql = "DELETE FROM `" ++ atom_to_list(DocName) ++ "`",
-  #ok_packet{} = execute(Sql, State),
-  {ok, State}.
+  case execute(Sql, State) of
+    #ok_packet{affected_rows = NumRows} -> {ok, NumRows, State};
+    Error -> evaluate_execute_result(Error, State)
+  end.
 
 find_all(DocName, State) ->
   find_all(DocName, undefined, 0, 0, State).
@@ -126,26 +131,27 @@ find_all(DocName, OrderField, Limit, Offset, State) ->
         [Sql1, " LIMIT ", integer_to_list(Offset), ",", integer_to_list(Limit)]
     end,
   Query  = binary_to_list(iolist_to_binary(Sql2)),
-  Result = execute(Query, State),
-  Rows   = Result#result_packet.rows,
-  Fields = Result#result_packet.field_list,
-  Docs   = lists:foldl(
-    fun(Row, DocList) ->
-      NewDoc = lists:foldl(
-        fun(Field, [Doc,N]) ->
-          FieldRecord = lists:nth(N, Fields),
-          FieldName = list_to_atom(binary_to_list(FieldRecord#field.name)),
-          [sumo:set_field(FieldName, Field, Doc), N+1]
+  case execute(Query, State) of
+    #result_packet{rows = Rows, field_list = Fields} ->
+      Docs   = lists:foldl(
+        fun(Row, DocList) ->
+          NewDoc = lists:foldl(
+            fun(Field, [Doc,N]) ->
+              FieldRecord = lists:nth(N, Fields),
+              FieldName = list_to_atom(binary_to_list(FieldRecord#field.name)),
+              [sumo:set_field(FieldName, Field, Doc), N+1]
+            end,
+            [sumo:new_doc(DocName), 1],
+            Row
+          ),
+          [hd(NewDoc)|DocList]
         end,
-        [sumo:new_doc(DocName), 1],
-        Row
+        [],
+        Rows
       ),
-      [hd(NewDoc)|DocList]
-    end,
-    [],
-    Rows
-  ),
-  {ok, lists:reverse(Docs), State}.
+      {ok, lists:reverse(Docs), State};
+    Error -> evaluate_execute_result(Error, State)
+  end.
 
 %% XXX We should have a DSL here, to allow querying in a known language
 %% to be translated by each driver into its own.
@@ -166,26 +172,27 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
       Sql1 ++ " LIMIT " ++ integer_to_list(Offset) ++ ","
       ++ integer_to_list(Limit)
   end,
-  Result = execute(Sql, Values, State),
-  Rows = Result#result_packet.rows,
-  Fields = Result#result_packet.field_list,
-  Docs = lists:foldl(
-    fun(Row, DocList) ->
-      NewDoc = lists:foldl(
-        fun(Field, [Doc,N]) ->
-          FieldRecord = lists:nth(N, Fields),
-          FieldName = list_to_atom(binary_to_list(FieldRecord#field.name)),
-          [sumo:set_field(FieldName, Field, Doc), N+1]
+  case execute(Sql, Values, State) of
+    #result_packet{rows = Rows, field_list = Fields} ->
+      Docs = lists:foldl(
+        fun(Row, DocList) ->
+          NewDoc = lists:foldl(
+            fun(Field, [Doc,N]) ->
+              FieldRecord = lists:nth(N, Fields),
+              FieldName = list_to_atom(binary_to_list(FieldRecord#field.name)),
+              [sumo:set_field(FieldName, Field, Doc), N+1]
+            end,
+            [sumo:new_doc(DocName), 1],
+            Row
+          ),
+          [hd(NewDoc)|DocList]
         end,
-        [sumo:new_doc(DocName), 1],
-        Row
+        [],
+        Rows
       ),
-      [hd(NewDoc)|DocList]
-    end,
-    [],
-    Rows
-  ),
-  {ok, lists:reverse(Docs), State}.
+      {ok, lists:reverse(Docs), State};
+    Error -> evaluate_execute_result(Error, State)
+  end.
 
 find_by(DocName, Conditions, State) ->
   find_by(DocName, Conditions, 0, 0, State).
@@ -209,8 +216,10 @@ create_schema(#sumo_schema{name=Name, fields=Fields}, State) ->
   ++ ","
   ++ string:join(Indexes, ",")
   ++ ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8",
-  execute(Dql, State),
-  {ok, State}.
+  case execute(Dql, State) of
+    #ok_packet{} -> {ok, State};
+    Error -> evaluate_execute_result(Error, State)
+  end.
 
 create_column(#sumo_field{name=Name, type=integer, attrs=Attrs}) ->
   "`" ++ atom_to_list(Name) ++ "` INT(11) " ++ create_column_options(Attrs);
@@ -275,15 +284,6 @@ create_index(Name, index) ->
 create_index(_, _) ->
   none.
 
-% -spec total_posts(sumo_schema_name(), term() ) -> {ok, {raw, pos_integer}, term()} | {ok, error, term()}.
-% count(DocName, State) ->
-%   Sql = "SELECT COUNT(1) FROM `" ++ atom_to_list(DocName) ++ "`",
-%   Result = sumo_repo_mysql:execute(Sql, State),
-%   case Result of
-%     #result_packet{rows=[[N]]} -> {ok, {raw, N}, State};
-%     _ -> {ok, error, State}
-%   end.
-
 execute(Query, Args, #state{pool=Pool}) when is_list(Query), is_list(Args) ->
   ok = emysql:prepare(stmt, list_to_binary(Query)),
   lager:debug("Query: ~s ->  ~p ~n", [Query, Args]),
@@ -291,6 +291,11 @@ execute(Query, Args, #state{pool=Pool}) when is_list(Query), is_list(Args) ->
 
 execute(Query, State) ->
   execute(Query, [], State).
+
+%% @doc We can extend this to wrap around emysql records, so they don't end up
+%% leaking details in all the repo.
+evaluate_execute_result(#error_packet{status = Status, msg = Msg}, State) ->
+  {error, <<Status/binary, ":", (list_to_binary(Msg))/binary>>, State}.
 
 init(Options) ->
   Pool = list_to_atom(erlang:ref_to_list(make_ref())),

@@ -70,7 +70,7 @@ delete(DocName, Id, #state{pool=Pool}=State) ->
 delete_all(DocName, #state{pool=Pool}=State) ->
   lager:debug("Dropping collection: ~p", [DocName]),
   ok = emongo:delete(Pool, atom_to_list(DocName)),
-  {ok, State}.
+  {ok, unknown, State}.
 
 find_by(DocName, Conditions, Limit, Offset, #state{pool=Pool}=State) ->
   Options = case Offset of

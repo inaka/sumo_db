@@ -49,8 +49,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--record(state, {handler, handler_state}).
-
+-record(state, {
+  handler = undefined:: module(),
+  handler_state = undefined:: any()
+}).
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -136,71 +138,76 @@ init([Module, Options]) ->
 %% @doc handles calls.
 -spec handle_call(term(), pid(), #state{}) -> term().
 handle_call(
-  {persist, #sumo_doc{name=DocName}=Doc}, _From,
+  {persist, #sumo_doc{}=Doc}, _From,
   #state{handler=Handler,handler_state=HState}=State
 ) ->
-  {ok, DocState, NewState} = Handler:persist(Doc, HState),
-  {reply, DocState, State#state{handler_state=NewState}};
+  {OkOrError, Reply, NewState} = Handler:persist(Doc, HState),
+  {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(
   {delete, DocName, Id}, _From,
   #state{handler=Handler,handler_state=HState}=State
 ) ->
-  {ok, Success, NewState} = Handler:delete(DocName, Id, HState),
-  {reply, Success, State#state{handler_state=NewState}};
+  {OkOrError, Reply, NewState} = Handler:delete(DocName, Id, HState),
+  {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(
   {delete_all, DocName}, _From,
   #state{handler=Handler,handler_state=HState}=State
 ) ->
-  {ok, NewState} = Handler:delete_all(DocName, HState),
-  {reply, ok, State#state{handler_state=NewState}};
+  {OkOrError, Reply, NewState} = Handler:delete_all(DocName, HState),
+  {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(
   {find_all, DocName}, _From,
   #state{handler=Handler, handler_state=HState}=State
 ) ->
-  {ok, Docs, NewState} = Handler:find_all(DocName, HState),
-  {reply, Docs, State#state{handler_state = NewState}};
+  {OkOrError, Reply, NewState} = Handler:find_all(DocName, HState),
+  {reply, {OkOrError, Reply}, State#state{handler_state = NewState}};
 
 handle_call(
   {find_all, DocName, OrderField, Limit, Offset}, _From,
   #state{handler=Handler, handler_state=HState}=State
 ) ->
-  {ok, Docs, NewState} = Handler:find_all(DocName, OrderField, Limit, Offset, HState),
-  {reply, Docs, State#state{handler_state = NewState}};
+  {OkOrError, Reply, NewState} = Handler:find_all(
+    DocName, OrderField, Limit, Offset, HState
+  ),
+  {reply, {OkOrError, Reply}, State#state{handler_state = NewState}};
 
 handle_call(
   {find_by, DocName, Conditions}, _From,
   #state{handler=Handler,handler_state=HState}=State
 ) ->
-  {ok, Docs, NewState} = Handler:find_by(DocName, Conditions, HState),
-  {reply, Docs, State#state{handler_state=NewState}};
+  {OkOrError, Reply, NewState} = Handler:find_by(DocName, Conditions, HState),
+  {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(
   {find_by, DocName, Conditions, Limit, Offset}, _From,
   #state{handler=Handler,handler_state=HState}=State
 ) ->
-  {ok, Docs, NewState} = Handler:find_by(
+  {OkOrError, Reply, NewState} = Handler:find_by(
     DocName, Conditions, Limit, Offset, HState
   ),
-  {reply, Docs, State#state{handler_state=NewState}};
+  {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(
   {call, DocName, Function, Args}, _From,
   #state{handler=Handler,handler_state=HState}=State
 ) ->
   RealArgs = lists:append(Args, [DocName, HState]),
-  {ok, Result, NewState} = erlang:apply(Handler, Function, RealArgs),
-  {reply, Result, State#state{handler_state=NewState}};
+  {OkOrError, Reply, NewState} = erlang:apply(Handler, Function, RealArgs),
+  {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(
   {create_schema, #sumo_schema{name=Name}=Schema}, _From,
   #state{handler=Handler,handler_state=HState}=State
 ) ->
   lager:info("Creating schema for: ~p", [Name]),
-  {ok, NewState} = Handler:create_schema(Schema, HState),
-  {reply, ok, State#state{handler_state=NewState}}.
+  {Result, NewState} = case Handler:create_schema(Schema, HState) of
+    {ok, NewState_} -> {ok, NewState_};
+    {error, Error, NewState_} -> {{error, Error}, NewState_}
+  end,
+  {reply, Result, State#state{handler_state=NewState}}.
 
 handle_cast(_Msg, State) ->
   {noreply, State}.

@@ -72,7 +72,10 @@ get_repo(#sumo_doc{name=Name}) ->
 create_schema() ->
   lists:foreach(
     fun({DocName, Repo}) ->
-      sumo:create_schema(DocName, Repo)
+      case sumo:create_schema(DocName, Repo) of
+        ok -> ok;
+        Error -> throw(Error)
+      end
     end,
     get_docs()
   ),
@@ -101,21 +104,23 @@ find(DocName, Id) ->
 
 %% @doc Returns all docs from the given repo.
 find_all(DocName) ->
-  lists:reverse(lists:map(
-    fun(Doc) ->
-      DocName:sumo_wakeup(Doc#sumo_doc.fields)
-    end,
-    sumo_repo:find_all(get_repo(DocName), DocName)
-  )).
+  case sumo_repo:find_all(get_repo(DocName), DocName) of
+    {ok, Docs} ->
+      lists:reverse(lists:map(
+        fun(Doc) -> DocName:sumo_wakeup(Doc#sumo_doc.fields) end, Docs
+      ));
+    Error -> throw(Error)
+  end.
 
 %% @doc Returns Limit docs from the given repo, starting at offset.
 find_all(DocName, OrderField, Limit, Offset) ->
-  lists:reverse(lists:map(
-    fun(Doc) ->
-      DocName:sumo_wakeup(Doc#sumo_doc.fields)
-    end,
-    sumo_repo:find_all(get_repo(DocName), DocName, OrderField, Limit, Offset)
-  )).
+  case sumo_repo:find_all(get_repo(DocName), DocName, OrderField, Limit, Offset) of
+    {ok, Docs} ->
+      lists:reverse(lists:map(
+        fun(Doc) -> DocName:sumo_wakeup(Doc#sumo_doc.fields) end, Docs
+      ));
+    Error -> throw(Error)
+  end.
 
 %% @doc Returns Limit number of docs that match Conditions, starting at
 %% offset Offset.
@@ -123,21 +128,23 @@ find_all(DocName, OrderField, Limit, Offset) ->
   sumo_schema_name(), proplists:proplist(), pos_integer(), pos_integer()
 ) -> [proplists:proplist()].
 find_by(DocName, Conditions, Limit, Offset) ->
-  lists:reverse(lists:map(
-    fun(Doc) ->
-      DocName:sumo_wakeup(Doc#sumo_doc.fields)
-    end,
-    sumo_repo:find_by(get_repo(DocName), DocName, Conditions, Limit, Offset)
-  )).
+  case sumo_repo:find_by(get_repo(DocName), DocName, Conditions, Limit, Offset) of
+    {ok, Docs} ->
+      lists:reverse(lists:map(
+        fun(Doc) -> DocName:sumo_wakeup(Doc#sumo_doc.fields) end, Docs
+      ));
+    Error -> throw(Error)
+  end.
 
 %% @doc Returns *all* docs that match Conditions.
 -spec find_by(
   sumo_schema_name(), proplists:proplist()
 ) -> [proplists:proplist()].
 find_by(DocName, Conditions) ->
-  docs_wakeup(
-    DocName, sumo_repo:find_by(get_repo(DocName), DocName, Conditions)
-  ).
+  case sumo_repo:find_by(get_repo(DocName), DocName, Conditions) of
+    {ok, Docs} -> docs_wakeup(DocName, Docs);
+    Error -> throw(Error)
+  end.
 
 %% @doc Creates or updates the given Doc.
 -spec persist(sumo_schema_name(), proplist:proplists()) -> ok.
@@ -148,29 +155,38 @@ persist(DocName, State) ->
     undefined -> created;
     _ -> updated
   end,
-  NewDoc = sumo_repo:persist(get_repo(DocName), sumo:new_doc(DocName, PropList)),
-  Ret = DocName:sumo_wakeup(NewDoc#sumo_doc.fields),
-  sumo_event:dispatch(DocName, EventName, [Ret]),
-  Ret.
+  case sumo_repo:persist(get_repo(DocName), sumo:new_doc(DocName, PropList)) of
+    {ok, NewDoc} ->
+      Ret = DocName:sumo_wakeup(NewDoc#sumo_doc.fields),
+      sumo_event:dispatch(DocName, EventName, [Ret]),
+      Ret;
+    Error -> throw(Error)
+  end.
 
 %% @doc Deletes all docs of type DocName.
 -spec delete_all(sumo_schema_name()) -> ok.
 delete_all(DocName) ->
   case sumo_repo:delete_all(get_repo(DocName), DocName) of
-    ok ->
-      sumo_event:dispatch(DocName, deleted_all),
-      ok;
-    R -> R
+    {ok, NumRows} ->
+      if
+        NumRows > 0 -> sumo_event:dispatch(DocName, deleted_all);
+        true -> ok
+      end,
+      NumRows;
+    Error -> throw(Error)
   end.
 
 %% @doc Deletes the doc identified by Id.
 -spec delete(sumo_schema_name(), term()) -> ok.
 delete(DocName, Id) ->
   case sumo_repo:delete(get_repo(DocName), DocName, Id) of
-    true ->
-      sumo_event:dispatch(DocName, deleted, [Id]),
-      true;
-    R -> R
+    {ok, Result} ->
+      case Result of
+        true -> sumo_event:dispatch(DocName, deleted, [Id]);
+        false -> ok
+      end,
+      Result;
+    Error -> throw(Error)
   end.
 
 %% @doc Creates the schema for the docs of type DocName.
@@ -186,7 +202,7 @@ create_schema(DocName, Repo) ->
     ok ->
       sumo_event:dispatch(DocName, schema_created),
       ok;
-    R -> R
+    Error -> throw(Error)
   end.
 
 %% @doc Calls the given custom function of a repo.

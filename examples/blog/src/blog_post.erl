@@ -121,3 +121,14 @@ sumo_schema() ->
     sumo:new_field(author_id, integer, [index])
   ]).
 
+%% We don't have the extends module attribute in R16, so this was moved out from
+%% the old blog_post_repo in the example, we should allocate some time to create
+%% a proper parse transform for this.
+% -spec total_posts(sumo_schema_name(), term() ) -> {ok, {raw, pos_integer}, term()} | {ok, error, term()}.
+% count(DocName, State) ->
+%   Sql = "SELECT COUNT(1) FROM `" ++ atom_to_list(DocName) ++ "`",
+%   Result = sumo_repo_mysql:execute(Sql, State),
+%   case Result of
+%     #result_packet{rows=[[N]]} -> {ok, {raw, N}, State};
+%     _ -> {ok, error, State}
+%   end.

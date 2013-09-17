@@ -33,11 +33,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Public API.
--export([
-  init/1, create_schema/2, persist/2, find_all/2, find_all/5, find_by/3,
-  find_by/5, delete/3, delete_all/2, execute/2, execute/3
-]).
-% -export([count/2]).
+-export([init/1]).
+-export([create_schema/2]).
+-export([persist/2]).
+-export([delete/3, delete_all/2]).
+-export([prepare/2, execute/2, execute/3]).
+-export([find_all/2, find_all/5, find_by/3, find_by/5]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
@@ -67,7 +68,7 @@ persist(#sumo_doc{name=DocName}=Doc, State) ->
     NewDoc#sumo_doc.fields
   ),
 
-  Dql = [
+  Sql = [
     "INSERT INTO ", escape(atom_to_list(DocName)), " (",
     string:join(ColumnDqls, ","), ")",
     " VALUES (", string:join(ColumnSqls, ","), ")",
@@ -79,8 +80,8 @@ persist(#sumo_doc{name=DocName}=Doc, State) ->
       ColumnDqls
     ), ",")
   ],
-  emysql:prepare(insert_stmt, list_to_binary(Dql)),
-  case execute(Dql, lists:append(ColumnValues, ColumnValues), State) of
+  prepare(insert, Sql),
+  case execute(insert, lists:append(ColumnValues, ColumnValues), State) of
     #ok_packet{insert_id = InsertId} ->
       % XXX TODO darle una vuelta mas de rosca
       % para el manejo general de cuando te devuelve el primary key
@@ -102,14 +103,16 @@ delete(DocName, Id, State) ->
     " WHERE ", escape(atom_to_list(sumo:field_name(sumo:get_id_field(DocName)))),
     "=? LIMIT 1"
   ],
-  case execute(Sql, [Id], State) of
+  prepare(delete, Sql),
+  case execute(delete, [Id], State) of
     #ok_packet{affected_rows = NumRows} -> {ok, NumRows > 0, State};
     Error -> evaluate_execute_result(Error, State)
   end.
 
 delete_all(DocName, State) ->
   Sql = ["DELETE FROM ", escape(atom_to_list(DocName))],
-  case execute(Sql, State) of
+  prepare(delete_all, Sql),
+  case execute(delete_all, State) of
     #ok_packet{affected_rows = NumRows} -> {ok, NumRows, State};
     Error -> evaluate_execute_result(Error, State)
   end.
@@ -135,8 +138,8 @@ find_all(DocName, OrderField, Limit, Offset, State) ->
       _ ->
         [Sql1, " LIMIT ", integer_to_list(Offset), ",", integer_to_list(Limit)]
     end,
-  Query  = binary_to_list(iolist_to_binary(Sql2)),
-  case execute(Query, State) of
+  prepare(find_all, Sql2),
+  case execute(find_all, State) of
     #result_packet{rows = Rows, field_list = Fields} ->
       Docs   = lists:foldl(
         fun(Row, DocList) ->
@@ -176,11 +179,12 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
     "SELECT * FROM ", escape(atom_to_list(DocName)),
     " WHERE ", string:join(Sqls, " AND ")
   ],
-  Sql = case Limit of
+  Sql2 = case Limit of
     0 -> Sql1;
     _ -> [Sql1|[" LIMIT ", integer_to_list(Offset), ",", integer_to_list(Limit)]]
   end,
-  case execute(Sql, Values, State) of
+  prepare(find_by, Sql2),
+  case execute(find_by, Values, State) of
     #result_packet{rows = Rows, field_list = Fields} ->
       Docs = lists:foldl(
         fun(Row, DocList) ->
@@ -291,13 +295,24 @@ create_index(Name, index) ->
 create_index(_, _) ->
   none.
 
-execute(Query, Args, #state{pool=Pool}) when is_list(Query), is_list(Args) ->
-  ok = emysql:prepare(stmt, iolist_to_binary(Query)),
-  lager:debug("Query: ~s ->  ~p ~n", [Query, Args]),
-  emysql:execute(Pool, stmt, Args).
+execute(PreName, Args, #state{pool=Pool}) when is_atom(PreName), is_list(Args) ->
+  Name = list_to_atom(atom_to_list(PreName) ++ "_stmt"),
+  lager:debug("Prepared Query: ~s -> ~p", [Name, Args]),
+  emysql:execute(Pool, Name, Args).
 
-execute(Query, State) ->
-  execute(Query, [], State).
+execute(Name, State) when is_atom(Name) ->
+  execute(Name, [], State);
+
+execute(PreQuery, #state{pool=Pool}) when is_list(PreQuery)->
+  Query = iolist_to_binary(PreQuery),
+  lager:debug("Query: ~s", [Query]),
+  emysql:execute(Pool, Query).
+
+prepare(PreName, PreQuery) ->
+  Query = iolist_to_binary(PreQuery),
+  Name = list_to_atom(atom_to_list(PreName) ++ "_stmt"),
+  lager:debug("Preparing query: ~p: ~p", [Name, Query]),
+  ok = emysql:prepare(Name, Query).
 
 %% @doc We can extend this to wrap around emysql records, so they don't end up
 %% leaking details in all the repo.

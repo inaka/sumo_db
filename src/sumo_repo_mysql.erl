@@ -37,7 +37,7 @@
 -export([create_schema/2]).
 -export([persist/2]).
 -export([delete/3, delete_all/2]).
--export([prepare/2, execute/2, execute/3]).
+-export([prepare/3, execute/2, execute/3]).
 -export([find_all/2, find_all/5, find_by/3, find_by/5]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -57,31 +57,32 @@ persist(#sumo_doc{name=DocName}=Doc, State) ->
     Id -> Id
   end,
   NewDoc = sumo:set_field(IdField, NewId, Doc),
-
-  [ColumnDqls, ColumnSqls, ColumnValues] = lists:foldl(
-    fun({Name, Value}, [Dqls, Sqls, Values]) ->
-      Dql = [escape(atom_to_list(Name))],
-      Sql = "?",
-      [[Dql|Dqls], [Sql|Sqls], [Value|Values]]
-    end,
-    [[], [], []],
-    NewDoc#sumo_doc.fields
-  ),
-
-  Sql = [
-    "INSERT INTO ", escape(atom_to_list(DocName)), " (",
-    string:join(ColumnDqls, ","), ")",
-    " VALUES (", string:join(ColumnSqls, ","), ")",
-    " ON DUPLICATE KEY UPDATE ",
-    string:join(lists:map(
-      fun(ColumnName) ->
-        [ColumnName, "=?"]
+  % Needed because the queries will carry different number of arguments.
+  Statement = case NewId of
+    0 -> insert;
+    NewId -> update
+  end,
+  StatementName = prepare(DocName, Statement, fun() ->
+    [ColumnDqls, ColumnSqls] = lists:foldl(
+      fun({Name, _Value}, [Dqls, Sqls]) ->
+        Dql = [escape(atom_to_list(Name))],
+        Sql = "?",
+        [[Dql|Dqls], [Sql|Sqls]]
       end,
-      ColumnDqls
-    ), ",")
-  ],
-  prepare(insert, Sql),
-  case execute(insert, lists:append(ColumnValues, ColumnValues), State) of
+      [[], []],
+      NewDoc#sumo_doc.fields
+    ),
+    [
+      "INSERT INTO ", escape(atom_to_list(DocName)),
+      " (", string:join(ColumnDqls, ","), ")",
+      " VALUES (", string:join(ColumnSqls, ","), ")",
+      " ON DUPLICATE KEY UPDATE ",
+      string:join([[ColumnName, "=?"] || ColumnName <- ColumnDqls], ",")
+    ]
+  end),
+
+  ColumnValues = lists:reverse([V || {_K, V} <- NewDoc#sumo_doc.fields]),
+  case execute(StatementName, lists:append(ColumnValues, ColumnValues), State) of
     #ok_packet{insert_id = InsertId} ->
       % XXX TODO darle una vuelta mas de rosca
       % para el manejo general de cuando te devuelve el primary key
@@ -98,21 +99,21 @@ persist(#sumo_doc{name=DocName}=Doc, State) ->
   end.
 
 delete(DocName, Id, State) ->
-  Sql = [
+  StatementName = prepare(DocName, delete, fun() -> [
     "DELETE FROM ", escape(atom_to_list(DocName)),
     " WHERE ", escape(atom_to_list(sumo:field_name(sumo:get_id_field(DocName)))),
     "=? LIMIT 1"
-  ],
-  prepare(delete, Sql),
-  case execute(delete, [Id], State) of
+  ] end),
+  case execute(StatementName, [Id], State) of
     #ok_packet{affected_rows = NumRows} -> {ok, NumRows > 0, State};
     Error -> evaluate_execute_result(Error, State)
   end.
 
 delete_all(DocName, State) ->
-  Sql = ["DELETE FROM ", escape(atom_to_list(DocName))],
-  prepare(delete_all, Sql),
-  case execute(delete_all, State) of
+  StatementName = prepare(DocName, delete_all, fun() ->
+    ["DELETE FROM ", escape(atom_to_list(DocName))]
+  end),
+  case execute(StatementName, State) of
     #ok_packet{affected_rows = NumRows} -> {ok, NumRows, State};
     Error -> evaluate_execute_result(Error, State)
   end.
@@ -122,24 +123,19 @@ find_all(DocName, State) ->
 
 find_all(DocName, OrderField, Limit, Offset, State) ->
   % Select * is not good...
-  Sql0 =
-    ["SELECT * FROM ", escape(atom_to_list(DocName)), " "],
-  Sql1 =
-    case OrderField of
-      undefined ->
-        Sql0;
-      _ ->
-        [Sql0, " ORDER BY ", escape(atom_to_list(OrderField)), " "]
+  StatementName = prepare(DocName, find_all, fun() ->
+    Sql0 = ["SELECT * FROM ", escape(atom_to_list(DocName)), " "],
+    Sql1 = case OrderField of
+      undefined -> Sql0;
+      _ -> [Sql0, " ORDER BY ", escape(atom_to_list(OrderField)), " "]
     end,
-  Sql2 =
-    case Limit of
-      0 ->
-        Sql1;
-      _ ->
-        [Sql1, " LIMIT ", integer_to_list(Offset), ",", integer_to_list(Limit)]
+    Sql2 = case Limit of
+      0 -> Sql1;
+      _ -> [Sql1, " LIMIT ", integer_to_list(Offset), ",", integer_to_list(Limit)]
     end,
-  prepare(find_all, Sql2),
-  case execute(find_all, State) of
+    Sql2
+  end),
+  case execute(StatementName, State) of
     #result_packet{rows = Rows, field_list = Fields} ->
       Docs   = lists:foldl(
         fun(Row, DocList) ->
@@ -164,27 +160,21 @@ find_all(DocName, OrderField, Limit, Offset, State) ->
 %% XXX We should have a DSL here, to allow querying in a known language
 %% to be translated by each driver into its own.
 find_by(DocName, Conditions, Limit, Offset, State) ->
-  [Sqls, Values] = lists:foldl(
-    fun({Key, Value}, [CondSqls, CondValues]) ->
-      [
-        [[escape(atom_to_list(Key)), "=?"]|CondSqls],
-        [Value|CondValues]
-      ]
+  Values = [V || {_K, V} <- Conditions],
+  StatementName = prepare(DocName, find_by, fun() ->
+    Sqls = [[escape(atom_to_list(K)), "=?"] || {K, _V} <- Conditions],
+    % Select * is not good.. 
+    Sql1 =[
+      "SELECT * FROM ", escape(atom_to_list(DocName)),
+      " WHERE ", string:join(Sqls, " AND ")
+    ],
+    Sql2 = case Limit of
+      0 -> Sql1;
+      _ -> [Sql1|[" LIMIT ", integer_to_list(Offset), ",", integer_to_list(Limit)]]
     end,
-    [[],[]],
-    Conditions
-  ),
-  % Select * is not good.. 
-  Sql1 =[
-    "SELECT * FROM ", escape(atom_to_list(DocName)),
-    " WHERE ", string:join(Sqls, " AND ")
-  ],
-  Sql2 = case Limit of
-    0 -> Sql1;
-    _ -> [Sql1|[" LIMIT ", integer_to_list(Offset), ",", integer_to_list(Limit)]]
-  end,
-  prepare(find_by, Sql2),
-  case execute(find_by, Values, State) of
+    Sql2
+  end),
+  case execute(StatementName, Values, State) of
     #result_packet{rows = Rows, field_list = Fields} ->
       Docs = lists:foldl(
         fun(Row, DocList) ->
@@ -295,9 +285,9 @@ create_index(Name, index) ->
 create_index(_, _) ->
   none.
 
-execute(PreName, Args, #state{pool=Pool}) when is_atom(PreName), is_list(Args) ->
-  Name = list_to_atom(atom_to_list(PreName) ++ "_stmt"),
-  lager:debug("Prepared Query: ~s -> ~p", [Name, Args]),
+%% @doc Call prepare/3 first, to get a well formed statement name.
+execute(Name, Args, #state{pool=Pool}) when is_atom(Name), is_list(Args) ->
+  lager:debug("Executing Query: ~s -> ~p", [Name, Args]),
   emysql:execute(Pool, Name, Args).
 
 execute(Name, State) when is_atom(Name) ->
@@ -308,11 +298,16 @@ execute(PreQuery, #state{pool=Pool}) when is_list(PreQuery)->
   lager:debug("Query: ~s", [Query]),
   emysql:execute(Pool, Query).
 
-prepare(PreName, PreQuery) ->
-  Query = iolist_to_binary(PreQuery),
-  Name = list_to_atom(atom_to_list(PreName) ++ "_stmt"),
-  lager:debug("Preparing query: ~p: ~p", [Name, Query]),
-  ok = emysql:prepare(Name, Query).
+prepare(DocName, PreName, Fun) when is_atom(PreName), is_function(Fun) ->
+  Name = statement_name(DocName, PreName),
+  case emysql_statements:fetch(Name) of
+    undefined ->
+      Query = iolist_to_binary(Fun()),
+      lager:debug("Preparing query: ~p: ~p", [Name, Query]),
+      ok = emysql:prepare(Name, Query);
+    Q -> lager:debug("Using already prepared query: ~p: ~p", [Name, Q])
+  end,
+  Name.
 
 %% @doc We can extend this to wrap around emysql records, so they don't end up
 %% leaking details in all the repo.
@@ -337,3 +332,8 @@ init(Options) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 escape(String) ->
   ["`", String, "`"].
+
+statement_name(DocName, StatementName) ->
+  list_to_atom(string:join(
+    [atom_to_list(DocName), atom_to_list(StatementName), "stmt"], "_"
+  )).

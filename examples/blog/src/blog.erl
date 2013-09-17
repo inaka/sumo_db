@@ -34,8 +34,8 @@
 
 %%% Author API.
 -export([
-  new_author/2, save_author/1, del_author/0, del_author/1, find_author/1,
-  find_all_authors/2, find_authors_by_name/3
+  new_author/2, save_author/1, del_author/0, del_author/1, del_author_by_name/1,
+  find_author/1, find_all_authors/2, find_authors_by_name/3
 ]).
 
 %%% Reader API.
@@ -90,6 +90,11 @@ del_post() ->
 -spec del_reader() -> ok.
 del_reader() ->
   sumo:delete_all(blog_reader).
+
+%% @doc Deletes the given author.
+-spec del_author_by_name(string()) -> pos_integer().
+del_author_by_name(Name) ->
+  sumo:delete_by(blog_author, [{name, Name}]).
 
 %% @doc Deletes the given author.
 -spec del_author(blog_author:author()) -> ok.

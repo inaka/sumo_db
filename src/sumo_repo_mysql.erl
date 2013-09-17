@@ -36,7 +36,7 @@
 -export([init/1]).
 -export([create_schema/2]).
 -export([persist/2]).
--export([delete/3, delete_all/2]).
+-export([delete/3, delete_by/3, delete_all/2]).
 -export([prepare/3, execute/2, execute/3]).
 -export([find_all/2, find_all/5, find_by/3, find_by/5]).
 
@@ -106,6 +106,18 @@ delete(DocName, Id, State) ->
   ] end),
   case execute(StatementName, [Id], State) of
     #ok_packet{affected_rows = NumRows} -> {ok, NumRows > 0, State};
+    Error -> evaluate_execute_result(Error, State)
+  end.
+
+delete_by(DocName, Conditions, State) ->
+  StatementName = prepare(DocName, delete_by, fun() -> [
+    "DELETE FROM ", escape(atom_to_list(DocName)),
+    " WHERE ",
+    [[escape(atom_to_list(K)), "=?"] || {K, _V} <- Conditions]
+  ] end),
+  Values = [V || {_K, V} <- Conditions],
+  case execute(StatementName, Values, State) of
+    #ok_packet{affected_rows = NumRows} -> {ok, NumRows, State};
     Error -> evaluate_execute_result(Error, State)
   end.
 

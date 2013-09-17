@@ -59,7 +59,7 @@ persist(#sumo_doc{name=DocName}=Doc, State) ->
 
   [ColumnDqls, ColumnSqls, ColumnValues] = lists:foldl(
     fun({Name, Value}, [Dqls, Sqls, Values]) ->
-      Dql = "`" ++ atom_to_list(Name) ++ "`",
+      Dql = [escape(atom_to_list(Name))],
       Sql = "?",
       [[Dql|Dqls], [Sql|Sqls], [Value|Values]]
     end,
@@ -67,16 +67,18 @@ persist(#sumo_doc{name=DocName}=Doc, State) ->
     NewDoc#sumo_doc.fields
   ),
 
-  Dql = "INSERT INTO `"
-    ++ atom_to_list(DocName) ++ "` (" ++ string:join(ColumnDqls, ",") ++ ")"
-    ++ " VALUES (" ++ string:join(ColumnSqls, ",") ++ ")"
-    ++ " ON DUPLICATE KEY UPDATE "
-    ++ string:join(lists:map(
+  Dql = [
+    "INSERT INTO ", escape(atom_to_list(DocName)), " (",
+    string:join(ColumnDqls, ","), ")",
+    " VALUES (", string:join(ColumnSqls, ","), ")",
+    " ON DUPLICATE KEY UPDATE ",
+    string:join(lists:map(
       fun(ColumnName) ->
-        ColumnName ++ "=?"
+        [ColumnName, "=?"]
       end,
       ColumnDqls
-    ), ","),
+    ), ",")
+  ],
   emysql:prepare(insert_stmt, list_to_binary(Dql)),
   case execute(Dql, lists:append(ColumnValues, ColumnValues), State) of
     #ok_packet{insert_id = InsertId} ->
@@ -95,16 +97,18 @@ persist(#sumo_doc{name=DocName}=Doc, State) ->
   end.
 
 delete(DocName, Id, State) ->
-  Sql = "DELETE FROM `" ++ atom_to_list(DocName)
-    ++ "` WHERE `" ++ atom_to_list(sumo:field_name(sumo:get_id_field(DocName)))
-    ++ "`=? LIMIT 1",
+  Sql = [
+    "DELETE FROM ", escape(atom_to_list(DocName)),
+    " WHERE ", escape(atom_to_list(sumo:field_name(sumo:get_id_field(DocName)))),
+    "=? LIMIT 1"
+  ],
   case execute(Sql, [Id], State) of
     #ok_packet{affected_rows = NumRows} -> {ok, NumRows > 0, State};
     Error -> evaluate_execute_result(Error, State)
   end.
 
 delete_all(DocName, State) ->
-  Sql = "DELETE FROM `" ++ atom_to_list(DocName) ++ "`",
+  Sql = ["DELETE FROM ", escape(atom_to_list(DocName))],
   case execute(Sql, State) of
     #ok_packet{affected_rows = NumRows} -> {ok, NumRows, State};
     Error -> evaluate_execute_result(Error, State)
@@ -114,14 +118,15 @@ find_all(DocName, State) ->
   find_all(DocName, undefined, 0, 0, State).
 
 find_all(DocName, OrderField, Limit, Offset, State) ->
+  % Select * is not good...
   Sql0 =
-    ["SELECT * FROM `", atom_to_list(DocName), "` "],
+    ["SELECT * FROM ", escape(atom_to_list(DocName)), " "],
   Sql1 =
     case OrderField of
       undefined ->
         Sql0;
       _ ->
-        [Sql0, " ORDER BY `", atom_to_list(OrderField), "` "]
+        [Sql0, " ORDER BY ", escape(atom_to_list(OrderField)), " "]
     end,
   Sql2 =
     case Limit of
@@ -158,19 +163,22 @@ find_all(DocName, OrderField, Limit, Offset, State) ->
 find_by(DocName, Conditions, Limit, Offset, State) ->
   [Sqls, Values] = lists:foldl(
     fun({Key, Value}, [CondSqls, CondValues]) ->
-      [["`" ++ atom_to_list(Key) ++ "`=?"|CondSqls], [Value|CondValues]]
+      [
+        [[escape(atom_to_list(Key)), "=?"]|CondSqls],
+        [Value|CondValues]
+      ]
     end,
     [[],[]],
     Conditions
   ),
-  Sql1 =
-    "SELECT * FROM `" ++ atom_to_list(DocName) ++
-    "` WHERE "++ string:join(Sqls, " AND "),
+  % Select * is not good.. 
+  Sql1 =[
+    "SELECT * FROM ", escape(atom_to_list(DocName)),
+    " WHERE ", string:join(Sqls, " AND ")
+  ],
   Sql = case Limit of
     0 -> Sql1;
-    _ ->
-      Sql1 ++ " LIMIT " ++ integer_to_list(Offset) ++ ","
-      ++ integer_to_list(Limit)
+    _ -> [Sql1|[" LIMIT ", integer_to_list(Offset), ",", integer_to_list(Limit)]]
   end,
   case execute(Sql, Values, State) of
     #result_packet{rows = Rows, field_list = Fields} ->
@@ -210,37 +218,36 @@ create_schema(#sumo_schema{name=Name, fields=Fields}, State) ->
     fun(T) -> length(T) > 0 end,
     lists:map(fun create_index/1, Fields)
   ),
-  Dql = "CREATE TABLE IF NOT EXISTS "
-  ++ "`" ++ atom_to_list(Name) ++ "` ("
-  ++ string:join(FieldsDql, ",")
-  ++ ","
-  ++ string:join(Indexes, ",")
-  ++ ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8",
+  Dql = [
+    "CREATE TABLE IF NOT EXISTS ", escape(atom_to_list(Name)), " (",
+    string:join(FieldsDql, ","), ",", string:join(Indexes, ","),
+    ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8"
+  ],
   case execute(Dql, State) of
     #ok_packet{} -> {ok, State};
     Error -> evaluate_execute_result(Error, State)
   end.
 
 create_column(#sumo_field{name=Name, type=integer, attrs=Attrs}) ->
-  "`" ++ atom_to_list(Name) ++ "` INT(11) " ++ create_column_options(Attrs);
+  [escape(atom_to_list(Name)), " INT(11) ", create_column_options(Attrs)];
 
 create_column(#sumo_field{name=Name, type=float, attrs=Attrs}) ->
-  "`" ++ atom_to_list(Name) ++ "` FLOAT " ++ create_column_options(Attrs);
+  [escape(atom_to_list(Name)), " FLOAT ", create_column_options(Attrs)];
 
 create_column(#sumo_field{name=Name, type=text, attrs=Attrs}) ->
-  "`" ++ atom_to_list(Name) ++ "` TEXT " ++ create_column_options(Attrs);
+  [escape(atom_to_list(Name)), " TEXT ", create_column_options(Attrs)];
 
 create_column(#sumo_field{name=Name, type=binary, attrs=Attrs}) ->
-  "`" ++ atom_to_list(Name) ++ "` BLOB " ++ create_column_options(Attrs);
+  [escape(atom_to_list(Name)), " BLOB ", create_column_options(Attrs)];
 
 create_column(#sumo_field{name=Name, type=string, attrs=Attrs}) ->
-  "`" ++ atom_to_list(Name) ++ "` VARCHAR " ++ create_column_options(Attrs);
+  [escape(atom_to_list(Name)), " VARCHAR ", create_column_options(Attrs)];
 
 create_column(#sumo_field{name=Name, type=date, attrs=Attrs}) ->
-  "`" ++ atom_to_list(Name) ++ "` DATE " ++ create_column_options(Attrs);
+  [escape(atom_to_list(Name)), " DATE ", create_column_options(Attrs)];
 
 create_column(#sumo_field{name=Name, type=datetime, attrs=Attrs}) ->
-  "`" ++ atom_to_list(Name) ++ "` DATETIME " ++ create_column_options(Attrs).
+  [escape(atom_to_list(Name)), " DATETIME ", create_column_options(Attrs)].
 
 create_column_options(Attrs) ->
   lists:filter(fun(T) -> is_list(T) end, lists:map(
@@ -251,13 +258,13 @@ create_column_options(Attrs) ->
   )).
 
 create_column_option(auto_increment) ->
-  "AUTO_INCREMENT ";
+  ["AUTO_INCREMENT "];
 
 create_column_option(not_null) ->
-  " NOT NULL ";
+  [" NOT NULL "];
 
 create_column_option({length, X}) ->
-  "(" ++ integer_to_list(X) ++ ") ";
+  ["(", integer_to_list(X), ") "];
 
 create_column_option(_Option) ->
   none.
@@ -271,21 +278,21 @@ create_index(#sumo_field{name=Name, attrs=Attrs}) ->
   )).
 
 create_index(Name, id) ->
-  "PRIMARY KEY(`" ++ atom_to_list(Name) ++ "`)";
+  ["PRIMARY KEY(", escape(atom_to_list(Name)), ")"];
 
 create_index(Name, unique) ->
   List = atom_to_list(Name),
-  "UNIQUE KEY `" ++ List ++ "` (`" ++ List ++ "`)";
+  ["UNIQUE KEY ", escape(List), " (", escape(List), ")"];
 
 create_index(Name, index) ->
   List = atom_to_list(Name),
-  "KEY `" ++ List ++ "` (`" ++ List ++ "`)";
+  ["KEY ", escape(List), " (", escape(List), ")"];
 
 create_index(_, _) ->
   none.
 
 execute(Query, Args, #state{pool=Pool}) when is_list(Query), is_list(Args) ->
-  ok = emysql:prepare(stmt, list_to_binary(Query)),
+  ok = emysql:prepare(stmt, iolist_to_binary(Query)),
   lager:debug("Query: ~s ->  ~p ~n", [Query, Args]),
   emysql:execute(Pool, stmt, Args).
 
@@ -310,3 +317,8 @@ init(Options) ->
   ),
   {ok, #state{pool=Pool}}.
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Private API.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+escape(String) ->
+  ["`", String, "`"].

@@ -8,11 +8,7 @@
     stdlib,
     sasl,
     lager,
-    crypto,
-    emysql,
-    emongo,
-    sqlite3,
-    eredis
+    crypto
   ]},
   {mod, { sumo_app, []}},
   {env, []}

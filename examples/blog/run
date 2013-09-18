@@ -31,12 +31,15 @@ main(_) ->
 
   % Let's create them again
   Author2 = blog:new_author("Pepe Gorostiga", <<"some binary jpg">>),
+  Author3 = blog:new_author("Some other guy", <<"some other photo">>),
   Post2 = blog:new_post("How awesome sumo_db is", "It just make things easy", Author2),
 
   % Update author and post.
   blog:save_author(blog_author:update_photo(<<"new photo">>, Author2)),
   blog:save_post(blog_post:update_title("My new shiny title", Post2)),
 
+  io:format("Authors by name: ~p~n", [blog:find_authors_by_name("Pepe Gorostiga", 10, 0)]),
+  io:format("Authors: ~p~n", [blog:find_all_authors(10, 0)]),
   io:format("A blog: ~p~n", [blog:find_post(blog_post:id(Post2))]),
   io:format("An author: ~p~n", [blog:find_author(blog_author:id(Author2))]),
 

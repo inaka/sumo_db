@@ -33,7 +33,7 @@
 %%% Public API.
 -export([
   init/1, create_schema/2, persist/2, find_by/3, find_by/5,
-  delete/3, delete_all/2
+  delete/3, delete_by/3, delete_all/2
 ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -66,6 +66,10 @@ delete(DocName, Id, #state{pool=Pool}=State) ->
     Pool, atom_to_list(DocName), [{atom_to_list(IdField), Id}]
   ),
   {ok, 1, State}.
+
+delete_by(DocName, Conditions, #state{pool=Pool}=State) ->
+  throw(not_implemented),
+  {ok, 0, State}.
 
 delete_all(DocName, #state{pool=Pool}=State) ->
   lager:debug("Dropping collection: ~p", [DocName]),

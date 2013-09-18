@@ -35,7 +35,7 @@
 %% Public API.
 -export([
   init/1, create_schema/2, persist/2, find_by/3, find_by/5,
-  delete/3, delete_all/2, execute/2, execute/3
+  delete/3, delete_by/3, delete_all/2, execute/2, execute/3
 ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -51,6 +51,9 @@ persist(#sumo_doc{name=DocName}=Doc, State) ->
   ok.
 
 delete(DocName, Id, State) ->
+  ok.
+
+delete_by(DocName, Conditions, State) ->
   ok.
 
 delete_all(DocName, State) ->

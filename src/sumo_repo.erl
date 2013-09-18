@@ -34,10 +34,11 @@
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Public API.
--export([
-  create_schema/2, persist/2, find_all/2, find_all/5, find_by/3, find_by/5,
-  delete/3, delete_all/2, call/4
-]).
+-export([create_schema/2]).
+-export([persist/2]).
+-export([find_all/2, find_all/5, find_by/3, find_by/5]).
+-export([delete/3, delete_by/3, delete_all/2]).
+-export([call/4]).
 -export([start_link/3]).
 
 %%% Exports for gen_server
@@ -60,8 +61,8 @@
 -spec behaviour_info(callbacks) -> proplists:proplist()|undefined.
 behaviour_info(callbacks) ->
   [
-    {init,1}, {persist,2}, {delete,3}, {find_by,3}, {find_by,5},
-    {create_schema,2}
+    {init,1}, {persist,2}, {delete,3}, {delete_by, 3}, {delete_all, 2},
+    {find_by,3}, {find_by,5}, {create_schema,2}
   ];
 
 behaviour_info(_Other) ->
@@ -79,6 +80,11 @@ persist(Name, #sumo_doc{}=Doc) ->
 -spec delete(atom(), sumo_schema_name(), term()) -> ok.
 delete(Name, DocName, Id) ->
   gen_server:call(Name, {delete, DocName, Id}).
+
+%% @doc Deletes the docs identified by the given conditions.
+-spec delete_by(atom(), sumo_schema_name(), proplists:proplist()) -> ok.
+delete_by(Name, DocName, Conditions) ->
+  gen_server:call(Name, {delete_by, DocName, Conditions}).
 
 %% @doc Deletes all docs in the given repository name.
 -spec delete_all(atom(), sumo_schema_name()) -> ok.
@@ -149,6 +155,13 @@ handle_call(
   #state{handler=Handler,handler_state=HState}=State
 ) ->
   {OkOrError, Reply, NewState} = Handler:delete(DocName, Id, HState),
+  {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
+
+handle_call(
+  {delete_by, DocName, Conditions}, _From,
+  #state{handler=Handler,handler_state=HState}=State
+) ->
+  {OkOrError, Reply, NewState} = Handler:delete_by(DocName, Conditions, HState),
   {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(

@@ -41,7 +41,7 @@
 -export([create_schema/0, create_schema/1, create_schema/2]).
 
 %%% API for standard CRUD functions.
--export([persist/2, delete/2, delete_all/1]).
+-export([persist/2, delete/2, delete_by/2, delete_all/1]).
 -export([find/2, find_all/1, find_all/4, find_by/2, find_by/4, find_one/2]).
 
 %%% API for repo handling.
@@ -179,13 +179,18 @@ delete_all(DocName) ->
 %% @doc Deletes the doc identified by Id.
 -spec delete(sumo_schema_name(), term()) -> ok.
 delete(DocName, Id) ->
-  case sumo_repo:delete(get_repo(DocName), DocName, Id) of
-    {ok, Result} ->
-      case Result of
-        true -> sumo_event:dispatch(DocName, deleted, [Id]);
-        false -> ok
-      end,
-      Result;
+  IdField = sumo:field_name(sumo:get_id_field(DocName)),
+  case delete_by(DocName, [{IdField, Id}]) of
+    1 -> sumo_event:dispatch(DocName, deleted, [Id]), true;
+    0 -> false
+  end.
+
+%% @doc Deletes the doc identified by Conditions.
+-spec delete_by(sumo_schema_name(), term()) -> ok.
+delete_by(DocName, Conditions) ->
+  case sumo_repo:delete_by(get_repo(DocName), DocName, Conditions) of
+    {ok, 0} -> 0;
+    {ok, NumRows} -> sumo_event:dispatch(DocName, deleted, [NumRows]), NumRows;
     Error -> throw(Error)
   end.
 

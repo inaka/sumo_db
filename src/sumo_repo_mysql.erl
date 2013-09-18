@@ -151,7 +151,12 @@ find_all(DocName, OrderField, Limit, Offset, State) ->
     end,
     Sql2
   end),
-  case execute(StatementName, [atom_to_list(OrderField), Offset, Limit], State) of
+  ExecArgs =
+    case Limit of
+      0 -> [atom_to_list(OrderField)];
+      Limit -> [atom_to_list(OrderField), Offset, Limit]
+    end,
+  case execute(StatementName, ExecArgs, State) of
     #result_packet{rows = Rows, field_list = Fields} ->
       Docs   = lists:foldl(
         fun(Row, DocList) ->
@@ -185,7 +190,7 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
   ),
   StatementName = prepare(DocName, list_to_atom("find_by" ++ PreStatementName), fun() ->
     Sqls = [[escape(atom_to_list(K)), "=?"] || K <- DocFields],
-    % Select * is not good.. 
+    % Select * is not good..
     Sql1 =[
       "SELECT * FROM ", escape(atom_to_list(DocName)),
       " WHERE ", string:join(Sqls, " AND ")
@@ -196,7 +201,13 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
     end,
     Sql2
   end),
-  case execute(StatementName, lists:flatten([Values|[Offset, Limit]]), State) of
+  ExecArgs =
+    case Limit of
+      0 -> Values;
+      Limit -> lists:flatten([Values|[Offset, Limit]])
+    end,
+
+  case execute(StatementName, ExecArgs, State) of
     #result_packet{rows = Rows, field_list = Fields} ->
       Docs = lists:foldl(
         fun(Row, DocList) ->

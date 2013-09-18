@@ -110,7 +110,11 @@ delete(DocName, Id, State) ->
   end.
 
 delete_by(DocName, Conditions, State) ->
-  StatementName = prepare(DocName, delete_by, fun() -> [
+  PreStatementName = list_to_atom("delete_by_" ++ string:join(
+    [atom_to_list(K) || {K, _V} <- Conditions],
+    "_"
+  )),
+  StatementName = prepare(DocName, PreStatementName, fun() -> [
     "DELETE FROM ", escape(atom_to_list(DocName)),
     " WHERE ",
     [[escape(atom_to_list(K)), "=?"] || {K, _V} <- Conditions]

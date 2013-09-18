@@ -160,9 +160,15 @@ find_all(DocName, OrderField, Limit, Offset, State) ->
 %% XXX We should have a DSL here, to allow querying in a known language
 %% to be translated by each driver into its own.
 find_by(DocName, Conditions, Limit, Offset, State) ->
-  Values = [V || {_K, V} <- Conditions],
-  StatementName = prepare(DocName, find_by, fun() ->
-    Sqls = [[escape(atom_to_list(K)), "=?"] || {K, _V} <- Conditions],
+  {PreStatementName, DocFields, Values} = lists:foldl(
+    fun({K, V}, {SName, Fs, Vs}) ->
+      {SName ++ "_" ++ atom_to_list(K), [K|Fs], [V|Vs]}
+    end,
+    {"", [], []},
+    Conditions
+  ),
+  StatementName = prepare(DocName, list_to_atom("find_by" ++ PreStatementName), fun() ->
+    Sqls = [[escape(atom_to_list(K)), "=?"] || K <- DocFields],
     % Select * is not good.. 
     Sql1 =[
       "SELECT * FROM ", escape(atom_to_list(DocName)),

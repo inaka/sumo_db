@@ -35,7 +35,7 @@
 %%% Author API.
 -export([
   new_author/2, save_author/1, del_author/0, del_author/1, find_author/1,
-  find_all_authors/2
+  find_all_authors/2, find_authors_by_name/3
 ]).
 
 %%% Reader API.
@@ -51,6 +51,10 @@
 -spec find_all_authors(pos_integer(), pos_integer()) -> [blog_author:author()].
 find_all_authors(Limit, Offset) ->
   sumo:find_all(blog_author, name, Limit, Offset).
+
+-spec find_authors_by_name(string(), pos_integer(), pos_integer()) -> [blog_author:author()].
+find_authors_by_name(Name, Limit, Offset) ->
+  sumo:find_by(blog_author, [{name, list_to_atom(Name)}], Limit, Offset).
 
 %% @doc Finds a post given the id.
 -spec find_post(blog_post:id()) -> blog_post:post()|notfound.

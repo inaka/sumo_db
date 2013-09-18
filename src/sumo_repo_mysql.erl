@@ -127,15 +127,15 @@ find_all(DocName, OrderField, Limit, Offset, State) ->
     Sql0 = ["SELECT * FROM ", escape(atom_to_list(DocName)), " "],
     Sql1 = case OrderField of
       undefined -> Sql0;
-      _ -> [Sql0, " ORDER BY ", escape(atom_to_list(OrderField)), " "]
+      _ -> [Sql0, " ORDER BY ? "]
     end,
     Sql2 = case Limit of
       0 -> Sql1;
-      _ -> [Sql1, " LIMIT ", integer_to_list(Offset), ",", integer_to_list(Limit)]
+      _ -> [Sql1, " LIMIT ?,?"]
     end,
     Sql2
   end),
-  case execute(StatementName, State) of
+  case execute(StatementName, [atom_to_list(OrderField), Offset, Limit], State) of
     #result_packet{rows = Rows, field_list = Fields} ->
       Docs   = lists:foldl(
         fun(Row, DocList) ->
@@ -170,11 +170,11 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
     ],
     Sql2 = case Limit of
       0 -> Sql1;
-      _ -> [Sql1|[" LIMIT ", integer_to_list(Offset), ",", integer_to_list(Limit)]]
+      _ -> [Sql1|[" LIMIT ?,?"]]
     end,
     Sql2
   end),
-  case execute(StatementName, Values, State) of
+  case execute(StatementName, lists:flatten([Values|[Offset, Limit]]), State) of
     #result_packet{rows = Rows, field_list = Fields} ->
       Docs = lists:foldl(
         fun(Row, DocList) ->

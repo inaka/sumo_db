@@ -114,11 +114,18 @@ delete_by(DocName, Conditions, State) ->
     [atom_to_list(K) || {K, _V} <- Conditions],
     "_"
   )),
-  StatementName = prepare(DocName, PreStatementName, fun() -> [
-    "DELETE FROM ", escape(atom_to_list(DocName)),
-    " WHERE ",
-    [[escape(atom_to_list(K)), "=?"] || {K, _V} <- Conditions]
-  ] end),
+  StatementFun =
+    fun() ->
+      [ "DELETE FROM ", escape(atom_to_list(DocName)), " WHERE ",
+        string:join(
+          [  [escape(atom_to_list(K)), "=?"]
+          || {K, _V} <- Conditions
+          ],
+          " AND "
+          )
+      ]
+    end,
+  StatementName = prepare(DocName, PreStatementName, StatementFun),
   Values = [V || {_K, V} <- Conditions],
   case execute(StatementName, Values, State) of
     #ok_packet{affected_rows = NumRows} -> {ok, NumRows, State};

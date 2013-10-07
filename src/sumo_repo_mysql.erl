@@ -146,24 +146,21 @@ find_all(DocName, State) ->
 
 find_all(DocName, OrderField, Limit, Offset, State) ->
   % Select * is not good...
-  StatementName = prepare(DocName, find_all, fun() ->
-    Sql0 = ["SELECT * FROM ", escape(atom_to_list(DocName)), " "],
-    Sql1 = case OrderField of
-      undefined -> Sql0;
-      _ -> [Sql0, " ORDER BY ? "]
+  Sql0 = ["SELECT * FROM ", escape(atom_to_list(DocName)), " "],
+  {Sql1, ExecArgs1} =
+    case OrderField of
+      undefined -> {Sql0, []};
+      _         -> {[Sql0, " ORDER BY ? "], [atom_to_list(OrderField)]}
     end,
-    Sql2 = case Limit of
-      0 -> Sql1;
-      _ -> [Sql1, " LIMIT ?,?"]
-    end,
-    Sql2
-  end),
-  ExecArgs =
+  {Sql2, ExecArgs2} =
     case Limit of
-      0 -> [atom_to_list(OrderField)];
-      Limit -> [atom_to_list(OrderField), Offset, Limit]
+      0     -> {Sql1, ExecArgs1};
+      Limit -> {[Sql1, " LIMIT ?,?"], lists:append(ExecArgs1, [Offset, Limit])}
     end,
-  case execute(StatementName, ExecArgs, State) of
+
+  StatementName = prepare(DocName, find_all, fun() -> Sql2 end),
+
+  case execute(StatementName, ExecArgs2, State) of
     #result_packet{rows = Rows, field_list = Fields} ->
       Docs   = lists:foldl(
         fun(Row, DocList) ->

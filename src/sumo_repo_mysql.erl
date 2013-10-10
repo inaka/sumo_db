@@ -356,7 +356,8 @@ evaluate_execute_result(#error_packet{status = Status, msg = Msg}, State) ->
 init(Options) ->
   Pool = list_to_atom(erlang:ref_to_list(make_ref())),
   emysql:add_pool(
-    Pool, 1,
+    Pool,
+    proplists:get_value(poolsize, Options, 1),
     proplists:get_value(username, Options),
     proplists:get_value(password, Options),
     proplists:get_value(host, Options, "localhost"),

@@ -354,9 +354,11 @@ evaluate_execute_result(#error_packet{status = Status, msg = Msg}, State) ->
   {error, <<Status/binary, ":", (list_to_binary(Msg))/binary>>, State}.
 
 init(Options) ->
-  Pool = list_to_atom(erlang:ref_to_list(make_ref())),
+  Pool     = list_to_atom(erlang:ref_to_list(make_ref())),
+  PoolSize = application:get_env(sumo_db, emysql_pool_size, 1),
   emysql:add_pool(
-    Pool, 1,
+    Pool,
+    PoolSize,
     proplists:get_value(username, Options),
     proplists:get_value(password, Options),
     proplists:get_value(host, Options, "localhost"),

@@ -324,16 +324,18 @@ create_index(_, _) ->
 
 %% @doc Call prepare/3 first, to get a well formed statement name.
 execute(Name, Args, #state{pool=Pool}) when is_atom(Name), is_list(Args) ->
-  lager:debug("Executing Query: ~s -> ~p", [Name, Args]),
-  emysql:execute(Pool, Name, Args).
+  {Time, Value} = timer:tc( emysql, execute, [Pool, Name, Args] ),
+  lager:debug("Executed Query: ~s -> ~p (~pms)", [Name, Args, Time]),
+  Value.
 
 execute(Name, State) when is_atom(Name) ->
   execute(Name, [], State);
 
 execute(PreQuery, #state{pool=Pool}) when is_list(PreQuery)->
   Query = iolist_to_binary(PreQuery),
-  lager:debug("Query: ~s", [Query]),
-  emysql:execute(Pool, Query).
+  {Time, Value} = timer:tc( emysql, execute, [Pool, Query] ),
+  lager:debug("Executed Query: ~s (~pms)", [Query, Time]),
+  Value.
 
 prepare(DocName, PreName, Fun) when is_atom(PreName), is_function(Fun) ->
   Name = statement_name(DocName, PreName),

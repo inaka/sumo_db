@@ -380,7 +380,7 @@ statement_name(DocName, StatementName) ->
   )).
 
 log(Msg, Args) ->
-  case application:get_env(log_queries) of
+  case application:get_env(sumo_db, log_queries) of
     true -> lager:debug(Msg, Args);
     _    -> ok
   end.

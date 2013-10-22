@@ -325,7 +325,7 @@ create_index(_, _) ->
 %% @doc Call prepare/3 first, to get a well formed statement name.
 execute(Name, Args, #state{pool=Pool}) when is_atom(Name), is_list(Args) ->
   {Time, Value} = timer:tc( emysql, execute, [Pool, Name, Args] ),
-  lager:debug("Executed Query: ~s -> ~p (~pms)", [Name, Args, Time/1000]),
+  log("Executed Query: ~s -> ~p (~pms)", [Name, Args, Time]),
   Value.
 
 execute(Name, State) when is_atom(Name) ->
@@ -334,7 +334,7 @@ execute(Name, State) when is_atom(Name) ->
 execute(PreQuery, #state{pool=Pool}) when is_list(PreQuery)->
   Query = iolist_to_binary(PreQuery),
   {Time, Value} = timer:tc( emysql, execute, [Pool, Query] ),
-  lager:debug("Executed Query: ~s (~pms)", [Query, Time/1000]),
+  log("Executed Query: ~s (~pms)", [Query, Time/1000]),
   Value.
 
 prepare(DocName, PreName, Fun) when is_atom(PreName), is_function(Fun) ->
@@ -342,9 +342,10 @@ prepare(DocName, PreName, Fun) when is_atom(PreName), is_function(Fun) ->
   case emysql_statements:fetch(Name) of
     undefined ->
       Query = iolist_to_binary(Fun()),
-      lager:debug("Preparing query: ~p: ~p", [Name, Query]),
+      log("Preparing query: ~p: ~p", [Name, Query]),
       ok = emysql:prepare(Name, Query);
-    Q -> lager:debug("Using already prepared query: ~p: ~p", [Name, Q])
+    Q ->
+      log("Using already prepared query: ~p: ~p", [Name, Q])
   end,
   Name.
 
@@ -377,3 +378,9 @@ statement_name(DocName, StatementName) ->
   list_to_atom(string:join(
     [atom_to_list(DocName), atom_to_list(StatementName), "stmt"], "_"
   )).
+
+log(Msg, Args) ->
+  case application:get_env(sumo_db, log_queries) of
+    true -> lager:debug(Msg, Args);
+    _    -> ok
+  end.

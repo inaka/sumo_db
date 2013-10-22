@@ -334,7 +334,7 @@ execute(Name, State) when is_atom(Name) ->
 execute(PreQuery, #state{pool=Pool}) when is_list(PreQuery)->
   Query = iolist_to_binary(PreQuery),
   {Time, Value} = timer:tc( emysql, execute, [Pool, Query] ),
-  log("Executed Query: ~s (~pms)", [Query, Time]),
+  log("Executed Query: ~s (~pms)", [Query, Time/1000]),
   Value.
 
 prepare(DocName, PreName, Fun) when is_atom(PreName), is_function(Fun) ->

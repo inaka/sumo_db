@@ -12,7 +12,8 @@
     emysql,
     emongo,
     sqlite3,
-    eredis
+    eredis,
+    worker_pool
   ]},
   {mod, { sumo_app, []}},
   {env, []}

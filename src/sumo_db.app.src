@@ -9,10 +9,6 @@
     sasl,
     lager,
     crypto,
-    emysql,
-    emongo,
-    sqlite3,
-    eredis,
     worker_pool
   ]},
   {mod, { sumo_app, []}},

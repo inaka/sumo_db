@@ -24,7 +24,8 @@
 -license("Apache License 2.0").
 
 -define(CLD(Name, Module, Options), {
-  Module, {sumo_repo, start_link, [Name, Module, Options]},
+  Module,
+  {sumo_repo, start_link, [Name, Module, Options]},
   permanent, 5000, worker, [Module]
 }).
 

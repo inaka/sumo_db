@@ -43,24 +43,23 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--record(state, {pool:: pid()}).
+
+-record(state, {pool :: atom() | pid()}).
 -type state() :: #state{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% External API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 init(Options) ->
-  Pool = list_to_atom(erlang:ref_to_list(make_ref())),
-  emysql:add_pool(
-    Pool,
-    1, % poolsize
-    proplists:get_value(username, Options),
-    proplists:get_value(password, Options),
-    proplists:get_value(host, Options, "localhost"),
-    proplists:get_value(port, Options, 3306),
-    proplists:get_value(database, Options),
-    proplists:get_value(encoding, Options, utf8)
-  ),
+  % The storage backend key in the options specifies the name of the process
+  % which creates and initializes the storage backend.
+  lager:critical("getting storage_backend value"),
+  Backend = proplists:get_value(storage_backend, Options),
+  lager:critical("storage backedn value: ~p", [Backend]),
+  lager:critical("getting pool value"),
+  Pool    = sumo_backend_mysql:get_pool(Backend),
+  lager:critical("pool value: ~p", [Pool]),
   {ok, #state{pool=Pool}}.
 
 persist(#sumo_doc{name=DocName}=Doc, State) ->
@@ -273,7 +272,6 @@ create_schema(#sumo_schema{name=Name, fields=Fields}, State) ->
     Error -> evaluate_execute_result(Error, State)
   end.
 
-
 create_column(#sumo_field{name=Name, type=integer, attrs=Attrs}) ->
   [escape(atom_to_list(Name)), " INT(11) ", create_column_options(Attrs)];
 
@@ -337,6 +335,18 @@ create_index(Name, index) ->
 create_index(_, _) ->
   none.
 
+prepare(DocName, PreName, Fun) when is_atom(PreName), is_function(Fun) ->
+  Name = statement_name(DocName, PreName),
+  case emysql_statements:fetch(Name) of
+    undefined ->
+      Query = iolist_to_binary(Fun()),
+      log("Preparing query: ~p: ~p", [Name, Query]),
+      ok = emysql:prepare(Name, Query);
+    Q ->
+      log("Using already prepared query: ~p: ~p", [Name, Q])
+  end,
+  Name.
+
 %% @doc Call prepare/3 first, to get a well formed statement name.
 execute(Name, Args, #state{pool=Pool}) when is_atom(Name), is_list(Args) ->
   {Time, Value} = timer:tc( emysql, execute, [Pool, Name, Args] ),
@@ -352,26 +362,15 @@ execute(PreQuery, #state{pool=Pool}) when is_list(PreQuery)->
   log("Executed Query: ~s (~pms)", [Query, Time/1000]),
   Value.
 
-prepare(DocName, PreName, Fun) when is_atom(PreName), is_function(Fun) ->
-  Name = statement_name(DocName, PreName),
-  case emysql_statements:fetch(Name) of
-    undefined ->
-      Query = iolist_to_binary(Fun()),
-      log("Preparing query: ~p: ~p", [Name, Query]),
-      ok = emysql:prepare(Name, Query);
-    Q ->
-      log("Using already prepared query: ~p: ~p", [Name, Q])
-  end,
-  Name.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Private API.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% @doc We can extend this to wrap around emysql records, so they don't end up
 %% leaking details in all the repo.
 evaluate_execute_result(#error_packet{status = Status, msg = Msg}, State) ->
   {error, <<Status/binary, ":", (list_to_binary(Msg))/binary>>, State}.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Private API.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 escape(String) ->
   ["`", String, "`"].
 

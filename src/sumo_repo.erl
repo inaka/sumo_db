@@ -33,13 +33,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%% Public API.
+-export([start_link/3]).
 -export([create_schema/2]).
 -export([persist/2]).
--export([find_all/2, find_all/5, find_by/3, find_by/5]).
 -export([delete/3, delete_by/3, delete_all/2]).
+-export([find_all/2, find_all/5, find_by/3, find_by/5]).
 -export([call/4]).
--export([start_link/3]).
 
 %%% Exports for gen_server
 -export([
@@ -50,13 +51,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 -record(state, {
   handler = undefined:: module(),
   handler_state = undefined:: any()
 }).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% @doc Returns all behavior callbacks.
 -spec behaviour_info(callbacks) -> proplists:proplist()|undefined.
 behaviour_info(callbacks) ->
@@ -75,13 +79,18 @@ behaviour_info(_Other) ->
 %% @doc Starts and links a new process for the given repo implementation.
 -spec start_link(atom(), module(), [term()]) -> {ok, pid()}.
 start_link(Name, Module, Options) ->
-  Poolsize     = proplists:get_value(poolsize, Options, 100),
+  Poolsize     = proplists:get_value(workers, Options, 100),
   WPoolOptions = [ {overrun_warning, infinity}
                  , {overrun_handler, {error_logger, warning_report}}
                  , {workers, Poolsize}
                  , {worker, {?MODULE, [Module, Options]}}
                  ],
   wpool:start_pool(Name, WPoolOptions).
+
+%% @doc Creates the schema of the given docs in the given repository name.
+-spec create_schema(atom(), #sumo_schema{}) -> ok.
+create_schema(Name, #sumo_schema{}=Schema) ->
+  wpool:call(Name, {create_schema, Schema}).
 
 %% @doc Persist the given doc with the given repository name.
 -spec persist(atom(), #sumo_doc{}) -> #sumo_doc{}.
@@ -134,14 +143,10 @@ find_by(Name, DocName, Conditions) ->
 call(Name, DocName, Function, Args) ->
   wpool:call(Name, {call, DocName, Function, Args}).
 
-%% @doc Creates the schema of the given docs in the given repository name.
--spec create_schema(atom(), #sumo_schema{}) -> ok.
-create_schema(Name, #sumo_schema{}=Schema) ->
-  wpool:call(Name, {create_schema, Schema}).
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% gen_server stuff.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% @doc Called by start_link.
 -spec init([term()]) -> {ok, #state{}}.
 init([Module, Options]) ->

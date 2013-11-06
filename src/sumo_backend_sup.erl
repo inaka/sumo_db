@@ -1,4 +1,4 @@
-%%% @doc Main supervisor.
+%%% @doc Repository supervisor.
 %%%
 %%% Copyright 2012 Marcelo Gornstein &lt;marcelog@@gmail.com&gt;
 %%%
@@ -17,38 +17,40 @@
 %%% @copyright Marcelo Gornstein <marcelog@gmail.com>
 %%% @author Marcelo Gornstein <marcelog@gmail.com>
 %%%
--module(sumo_sup).
+-module(sumo_backend_sup).
 -author("Marcelo Gornstein <marcelog@gmail.com>").
 -github("https://github.com/marcelog").
 -homepage("http://marcelog.github.com/").
 -license("Apache License 2.0").
 
--behaviour(supervisor).
+-define(CLD(Name, Module, Options), {
+  Module,
+  {gen_server, start_link, [{local, Name}, Module, Options, []]},
+  permanent, 5000, worker, [Module]
+}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% API
 -export([start_link/0]).
-
-%% Supervisor callbacks
 -export([init/1]).
 
-%% Helper macro for declaring children of supervisor
--define(CLD(I), {I, {I, start_link, []}, permanent, 5000, worker, [I]}).
--define(SUP(I), {I, {I, start_link, []}, permanent, infinity, supervisor, [I]}).
+-behaviour(supervisor).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 start_link() ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+  supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 init([]) ->
-  {ok, {
-    {one_for_one, 5, 10},
-    [ ?SUP(sumo_backend_sup)
-    , ?SUP(sumo_repo_sup)
-    ]
-  }}.
-
+  {ok, Backends} = application:get_env(sumo_db, storage_backends),
+  Children = lists:map(
+    fun({Name, Module, Options}) ->
+      lager:debug("Starting backend: ~s (~s)", [Name, Module]),
+      lager:critical("backend child spec: ~p", [?CLD(Name, Module, Options)]),
+      ?CLD(Name, Module, Options)
+    end,
+    Backends
+  ),
+  {ok, { {one_for_one, 5, 10}, Children} }.

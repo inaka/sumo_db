@@ -54,12 +54,8 @@
 init(Options) ->
   % The storage backend key in the options specifies the name of the process
   % which creates and initializes the storage backend.
-  lager:critical("getting storage_backend value"),
   Backend = proplists:get_value(storage_backend, Options),
-  lager:critical("storage backedn value: ~p", [Backend]),
-  lager:critical("getting pool value"),
   Pool    = sumo_backend_mysql:get_pool(Backend),
-  lager:critical("pool value: ~p", [Pool]),
   {ok, #state{pool=Pool}}.
 
 persist(#sumo_doc{name=DocName}=Doc, State) ->

@@ -47,8 +47,7 @@ init([]) ->
   {ok, Backends} = application:get_env(sumo_db, storage_backends),
   Children = lists:map(
     fun({Name, Module, Options}) ->
-      lager:debug("Starting backend: ~s (~s)", [Name, Module]),
-      lager:critical("backend child spec: ~p", [?CLD(Name, Module, Options)]),
+      lager:debug("starting backend: ~s (~s)", [Name, Module]),
       ?CLD(Name, Module, Options)
     end,
     Backends

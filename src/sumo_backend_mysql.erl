@@ -66,9 +66,7 @@ get_pool(Name) ->
 
 -spec init([term()]) -> {ok, #state{}}.
 init(Options) ->
-  lager:critical("getting poolsize value"),
   PoolSize = proplists:get_value(poolsize, Options),
-  lager:critical("poolsize value is: ~p", [PoolSize]),
   Pool     = list_to_atom(erlang:ref_to_list(make_ref())),
   emysql:add_pool(
     Pool,
@@ -84,7 +82,6 @@ init(Options) ->
 
 -spec handle_call(term(), term(), state()) -> {reply, term(), #state{}}.
 handle_call(get_pool, _From, State = #state{pool=Pool}) ->
-  lager:critical("handling get pool request, returning: ~p", [Pool]),
   {reply, Pool, State}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

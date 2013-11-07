@@ -227,7 +227,7 @@ handle_call(
   {create_schema, #sumo_schema{name=Name}=Schema}, _From,
   #state{handler=Handler,handler_state=HState}=State
 ) ->
-  lager:info("Creating schema for: ~p", [Name]),
+  lager:info("creating schema for: ~p", [Name]),
   {Result, NewState} = case Handler:create_schema(Schema, HState) of
     {ok, NewState_} -> {ok, NewState_};
     {error, Error, NewState_} -> {{error, Error}, NewState_}

@@ -21,6 +21,11 @@ offering a consistent api to your code.
  Also when a schema is created and when all entities of a given type are
  deleted. Events are described in [this article](http://marcelog.github.com/articles/erlang_epers_persist_entities_domain_events.html)
 
+# About dependencies
+In order to avoid having sumo_db require the db drivers (like emysql, emongo, etc),
+**you** should include them in your application. Currently, sumo_db has been tested
+with the following drivers and versions.
+
 # DB's supported
  * mysql (uses [emysql](https://github.com/Eonblast/Emysql))
  * mongodb (uses [emongo](https://github.com/JacobVorreuter/emongo))

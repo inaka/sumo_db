@@ -6,6 +6,8 @@ all: getdeps compile edoc
 	${REBAR} compile
 
 blog:
+	${REBAR} -C examples/blog/rebar.config get
+	${REBAR} -C examples/blog/rebar.config compile
 	(cd examples/blog && ./run)
 
 edoc:

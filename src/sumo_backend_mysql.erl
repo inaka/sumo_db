@@ -18,9 +18,6 @@
 %%% @author Marcelo Gornstein <marcelog@gmail.com>
 %%%
 -module(sumo_backend_mysql).
--author("Marcelo Gornstein <marcelog@gmail.com>").
--github("https://github.com/marcelog").
--homepage("http://marcelog.github.com/").
 -license("Apache License 2.0").
 
 -behaviour(gen_server).

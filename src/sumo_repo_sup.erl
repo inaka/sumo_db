@@ -46,10 +46,7 @@ start_link() ->
 init([]) ->
   {ok, Repositories} = application:get_env(sumo_db, repositories),
   Children = lists:map(
-    fun({Name, Module, Options}) ->
-      lager:debug("starting repository: [name: ~s | module: ~s]", [Name, Module]),
-      ?CLD(Name, Module, Options)
-    end,
+    fun({Name, Module, Options}) -> ?CLD(Name, Module, Options) end,
     Repositories
   ),
   {ok, { {one_for_one, 5, 10}, Children} }.

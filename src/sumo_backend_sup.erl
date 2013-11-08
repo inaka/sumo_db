@@ -18,9 +18,6 @@
 %%% @author Marcelo Gornstein <marcelog@gmail.com>
 %%%
 -module(sumo_backend_sup).
--author("Marcelo Gornstein <marcelog@gmail.com>").
--github("https://github.com/marcelog").
--homepage("http://marcelog.github.com/").
 -license("Apache License 2.0").
 
 -define(CLD(Name, Module, Options), {
@@ -46,10 +43,7 @@ start_link() ->
 init([]) ->
   {ok, Backends} = application:get_env(sumo_db, storage_backends),
   Children = lists:map(
-    fun({Name, Module, Options}) ->
-      lager:debug("starting backend: ~s (~s)", [Name, Module]),
-      ?CLD(Name, Module, Options)
-    end,
+    fun({Name, Module, Options}) -> ?CLD(Name, Module, Options) end,
     Backends
   ),
   {ok, { {one_for_one, 5, 10}, Children} }.

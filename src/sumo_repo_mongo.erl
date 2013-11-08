@@ -129,7 +129,7 @@ create_schema(
         [],
         Attrs
       ),
-      lager:debug("Creating index: ~p for ~p", [Name, SchemaName]),
+      lager:debug("creating index: ~p for ~p", [Name, SchemaName]),
       ok = emongo:ensure_index(
         Pool, atom_to_list(SchemaName), [{atom_to_list(Name), 1}]
       )

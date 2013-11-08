@@ -33,13 +33,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %%% Public API.
+-export([start_link/3]).
 -export([create_schema/2]).
 -export([persist/2]).
--export([find_all/2, find_all/5, find_by/3, find_by/5]).
 -export([delete/3, delete_by/3, delete_all/2]).
+-export([find_all/2, find_all/5, find_by/3, find_by/5]).
 -export([call/4]).
--export([start_link/3]).
 
 %%% Exports for gen_server
 -export([
@@ -50,13 +51,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 -record(state, {
   handler = undefined:: module(),
   handler_state = undefined:: any()
 }).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% @doc Returns all behavior callbacks.
 -spec behaviour_info(callbacks) -> proplists:proplist()|undefined.
 behaviour_info(callbacks) ->
@@ -71,34 +75,51 @@ behaviour_info(_Other) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% External API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% @doc Starts and links a new process for the given repo implementation.
+-spec start_link(atom(), module(), [term()]) -> {ok, pid()}.
+start_link(Name, Module, Options) ->
+  Poolsize     = proplists:get_value(workers, Options, 100),
+  WPoolOptions = [ {overrun_warning, infinity}
+                 , {overrun_handler, {error_logger, warning_report}}
+                 , {workers, Poolsize}
+                 , {worker, {?MODULE, [Module, Options]}}
+                 ],
+  wpool:start_pool(Name, WPoolOptions).
+
+%% @doc Creates the schema of the given docs in the given repository name.
+-spec create_schema(atom(), #sumo_schema{}) -> ok.
+create_schema(Name, #sumo_schema{}=Schema) ->
+  wpool:call(Name, {create_schema, Schema}).
+
 %% @doc Persist the given doc with the given repository name.
 -spec persist(atom(), #sumo_doc{}) -> #sumo_doc{}.
 persist(Name, #sumo_doc{}=Doc) ->
-  gen_server:call(Name, {persist, Doc}).
+  wpool:call(Name, {persist, Doc}).
 
 %% @doc Deletes the doc identified by id in the given repository name.
 -spec delete(atom(), sumo_schema_name(), term()) -> ok.
 delete(Name, DocName, Id) ->
-  gen_server:call(Name, {delete, DocName, Id}).
+  wpool:call(Name, {delete, DocName, Id}).
 
 %% @doc Deletes the docs identified by the given conditions.
 -spec delete_by(atom(), sumo_schema_name(), proplists:proplist()) -> ok.
 delete_by(Name, DocName, Conditions) ->
-  gen_server:call(Name, {delete_by, DocName, Conditions}).
+  wpool:call(Name, {delete_by, DocName, Conditions}).
 
 %% @doc Deletes all docs in the given repository name.
 -spec delete_all(atom(), sumo_schema_name()) -> ok.
 delete_all(Name, DocName) ->
-  gen_server:call(Name, {delete_all, DocName}).
+  wpool:call(Name, {delete_all, DocName}).
 
 %% @doc Returns all docs from the given repositoru name.
 find_all(Name, DocName) ->
-  gen_server:call(Name, {find_all, DocName}).
+  wpool:call(Name, {find_all, DocName}).
 
-%% @doc Returns Limit docs starting at Offset from the given repository name, ordered by OrderField.
-%% OrderField may be 'undefined'.
+%% @doc Returns Limit docs starting at Offset from the given repository name,
+%% ordered by OrderField. OrderField may be 'undefined'.
 find_all(Name, DocName, OrderField, Limit, Offset) ->
-  gen_server:call(Name, {find_all, DocName, OrderField, Limit, Offset}).
+  wpool:call(Name, {find_all, DocName, OrderField, Limit, Offset}).
 
 %% @doc Finds documents that match the given conditions in the given
 %% repository name.
@@ -107,7 +128,7 @@ find_all(Name, DocName, OrderField, Limit, Offset) ->
   pos_integer(), pos_integer()
 ) -> [#sumo_doc{}].
 find_by(Name, DocName, Conditions, Limit, Offset) ->
-  gen_server:call(Name, {find_by, DocName, Conditions, Limit, Offset}).
+  wpool:call(Name, {find_by, DocName, Conditions, Limit, Offset}).
 
 %% @doc Finds documents that match the given conditions in the given
 %% repository name.
@@ -115,26 +136,17 @@ find_by(Name, DocName, Conditions, Limit, Offset) ->
   atom(), sumo_schema_name(), proplists:proplist()
 ) -> [#sumo_doc{}].
 find_by(Name, DocName, Conditions) ->
-  gen_server:call(Name, {find_by, DocName, Conditions}).
+  wpool:call(Name, {find_by, DocName, Conditions}).
 
 %% @doc Calls a custom function in the given repository name.
 -spec call(atom(), sumo_schema_name(), atom(), [term()]) -> term().
 call(Name, DocName, Function, Args) ->
-  gen_server:call(Name, {call, DocName, Function, Args}).
-
-%% @doc Creates the schema of the given docs in the given repository name.
--spec create_schema(atom(), #sumo_schema{}) -> ok.
-create_schema(Name, #sumo_schema{}=Schema) ->
-  gen_server:call(Name, {create_schema, Schema}).
-
-%% @doc Starts and links a new process for the given repo implementation.
--spec start_link(atom(), module(), [term()]) -> {ok, pid()}.
-start_link(Name, Module, Options) ->
-  gen_server:start_link({local, Name}, ?MODULE, [Module,Options], []).
+  wpool:call(Name, {call, DocName, Function, Args}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% gen_server stuff.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% @doc Called by start_link.
 -spec init([term()]) -> {ok, #state{}}.
 init([Module, Options]) ->
@@ -215,7 +227,7 @@ handle_call(
   {create_schema, #sumo_schema{name=Name}=Schema}, _From,
   #state{handler=Handler,handler_state=HState}=State
 ) ->
-  lager:info("Creating schema for: ~p", [Name]),
+  lager:info("creating schema for: ~p", [Name]),
   {Result, NewState} = case Handler:create_schema(Schema, HState) of
     {ok, NewState_} -> {ok, NewState_};
     {error, Error, NewState_} -> {{error, Error}, NewState_}

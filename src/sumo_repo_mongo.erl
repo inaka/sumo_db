@@ -72,7 +72,7 @@ delete_by(DocName, Conditions, #state{pool=Pool}=State) ->
   {ok, 0, State}.
 
 delete_all(DocName, #state{pool=Pool}=State) ->
-  lager:debug("Dropping collection: ~p", [DocName]),
+  lager:debug("dropping collection: ~p", [DocName]),
   ok = emongo:delete(Pool, atom_to_list(DocName)),
   {ok, unknown, State}.
 
@@ -129,7 +129,7 @@ create_schema(
         [],
         Attrs
       ),
-      lager:debug("Creating index: ~p for ~p", [Name, SchemaName]),
+      lager:debug("creating index: ~p for ~p", [Name, SchemaName]),
       ok = emongo:ensure_index(
         Pool, atom_to_list(SchemaName), [{atom_to_list(Name), 1}]
       )

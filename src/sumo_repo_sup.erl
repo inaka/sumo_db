@@ -24,7 +24,8 @@
 -license("Apache License 2.0").
 
 -define(CLD(Name, Module, Options), {
-  Module, {sumo_repo, start_link, [Name, Module, Options]},
+  Module,
+  {sumo_repo, start_link, [Name, Module, Options]},
   permanent, 5000, worker, [Module]
 }).
 
@@ -45,10 +46,7 @@ start_link() ->
 init([]) ->
   {ok, Repositories} = application:get_env(sumo_db, repositories),
   Children = lists:map(
-    fun({Name, Module, Options}) ->
-      lager:debug("Starting repository: ~s (~s)", [Name, Module]),
-      ?CLD(Name, Module, Options)
-    end,
+    fun({Name, Module, Options}) -> ?CLD(Name, Module, Options) end,
     Repositories
   ),
   {ok, { {one_for_one, 5, 10}, Children} }.

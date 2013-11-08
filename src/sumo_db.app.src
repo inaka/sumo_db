@@ -8,7 +8,8 @@
     stdlib,
     sasl,
     lager,
-    crypto
+    crypto,
+    worker_pool
   ]},
   {mod, { sumo_app, []}},
   {env, []}

@@ -141,7 +141,12 @@ find_by(Name, DocName, Conditions) ->
 %% @doc Calls a custom function in the given repository name.
 -spec call(atom(), sumo_schema_name(), atom(), [term()]) -> term().
 call(Name, DocName, Function, Args) ->
-  wpool:call(Name, {call, DocName, Function, Args}).
+  {ok, Timeout} = application:get_env(sumo_db, query_timeout),
+  wpool:call(
+    Name,
+    {call, DocName, Function, Args},
+    wpool:default_strategy(),
+    Timeout).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% gen_server stuff.

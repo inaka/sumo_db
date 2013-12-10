@@ -20,11 +20,15 @@
 -module(sumo_backend_sup).
 -license("Apache License 2.0").
 
--define(CLD(Name, Module, Options), {
-  Module,
-  {gen_server, start_link, [{local, Name}, Module, Options, []]},
-  permanent, 5000, worker, [Module]
-}).
+-define(CLD(Name, Module, Options),
+  { Name                                                           % Child Id
+  , {gen_server, start_link, [{local, Name}, Module, Options, []]} % Start Fun
+  , permanent                                                      % Restart
+  , 5000                                                           % Shutdown
+  , worker                                                         % Type
+  , [Module]                                                       % Modules
+  }
+).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.

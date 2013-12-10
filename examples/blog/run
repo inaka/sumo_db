@@ -64,7 +64,8 @@ main(_) ->
 setup_codepath() ->
   Dir = filename:dirname(escript:script_name()),
   Deps = [
-    "lager", "goldrush", "emysql", "emongo", "eredis", "sqlite3"
+    "lager", "goldrush", "worker_pool", "emysql", "emongo",
+    "eredis", "sqlite3"
   ],
   DepsDir = filename:absname(Dir ++ "/../../deps/"),
   code:add_patha(filename:absname(Dir ++ "/../../ebin")),
@@ -73,6 +74,7 @@ setup_codepath() ->
 start_apps() ->
   Apps = [
     sasl, compiler, syntax_tools, lager, crypto,
-    emysql, emongo, eredis, sqlite3, sumo_db
+    emysql, emongo, eredis, sqlite3, worker_pool,
+    sumo_db
   ],
   [ ok = application:start(X) || X <- Apps].

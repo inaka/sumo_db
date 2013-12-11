@@ -149,17 +149,8 @@ create_index(_Attr) ->
   none.
 
 init(Options) ->
-  Pool = erlang:ref_to_list(make_ref()),
-  ok = emongo:add_pool(
-    Pool,
-    proplists:get_value(host, Options, "localhost"),
-    proplists:get_value(port, Options, 27017),
-    proplists:get_value(database, Options),
-    1
-  ),
-  emongo:auth(
-    Pool,
-    proplists:get_value(username, Options),
-    proplists:get_value(password, Options)
-  ),
+  % The storage backend key in the options specifies the name of the process
+  % which creates and initializes the storage backend.
+  Backend = proplists:get_value(storage_backend, Options),
+  Pool    = sumo_backend_mysql:get_pool(Backend),
   {ok, #state{pool=Pool}}.

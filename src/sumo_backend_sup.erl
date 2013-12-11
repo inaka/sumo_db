@@ -22,7 +22,7 @@
 
 -define(CLD(Name, Module, Options),
   { Name                                                           % Child Id
-  , {gen_server, start_link, [{local, Name}, Module, Options, []]} % Start Fun
+  , {Module, start_link, [Name, Options]}                          % Start Fun
   , permanent                                                      % Restart
   , 5000                                                           % Shutdown
   , worker                                                         % Type

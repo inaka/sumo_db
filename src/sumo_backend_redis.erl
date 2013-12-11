@@ -1,4 +1,4 @@
-%%% @doc Storage backend for mysql.
+%%% @doc Storage backend for redis.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;
 %%%
@@ -16,7 +16,7 @@
 %%% @end
 %%% @copyright Inaka <hello@inaka.net>
 %%%
--module(sumo_backend_mysql).
+-module(sumo_backend_redis).
 -author("Marcelo Gornstein <marcelog@gmail.com>").
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
@@ -52,16 +52,14 @@
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -record(state, {
-  pool = undefined :: atom()
+  pool = undefined :: atom(),
+  eredis = undefined:: undefined|pid()
 }).
 -type state() :: #state{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% External API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--spec start_link(atom(), proplists:proplist()) -> {ok, pid()}|term().
-start_link(Name, Options) ->
-  gen_server:start_link({local, Name}, ?MODULE, Options, []).
 
 -spec get_pool(atom() | pid()) -> atom().
 get_pool(Name) ->
@@ -70,22 +68,22 @@ get_pool(Name) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% gen_server stuff.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+-spec start_link(atom(), proplists:proplist()) -> {ok, pid()}|term().
+start_link(Name, Options) ->
+  lager:debug("SSS: ~p", [Options]),
+  Poolsize     = proplists:get_value(poolsize, Options, 100),
+  WPoolOptions = [ {overrun_warning, infinity}
+                 , {overrun_handler, {error_logger, warning_report}}
+                 , {workers, Poolsize}
+                 , {worker, {?MODULE, Options}}
+                 ],
+  wpool:start_pool(Name, WPoolOptions).
 
 -spec init([term()]) -> {ok, #state{}}.
 init(Options) ->
-  PoolSize = proplists:get_value(poolsize, Options),
-  Pool     = list_to_atom(erlang:ref_to_list(make_ref())),
-  emysql:add_pool(
-    Pool,
-    PoolSize,
-    proplists:get_value(username, Options),
-    proplists:get_value(password, Options),
-    proplists:get_value(host,     Options, "localhost"),
-    proplists:get_value(port,     Options, 3306),
-    proplists:get_value(database, Options),
-    proplists:get_value(encoding, Options, utf8)
-  ),
-  {ok, #state{pool=Pool}}.
+  Pool = list_to_atom(erlang:ref_to_list(make_ref())),
+  {ok, Pid} = eredis:start_link(Options),
+  {ok, #state{pool=Pool, eredis=Pid}}.
 
 -spec handle_call(term(), term(), state()) -> {reply, term(), #state{}}.
 handle_call(get_pool, _From, State = #state{pool=Pool}) ->

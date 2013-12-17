@@ -25,48 +25,59 @@
 %%% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Public API.
--export([i/3, u/4, d/3]).
--export([s/8, s_count/5]).
+-export([i/2, u/3, d/2]).
+-export([s/7, s_count/4]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Public API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Returns number of results, useful for pagination.
 -spec s_count(
-  atom(), string(), [string()|atom()], proplists:proplist(), string()
-) -> iolist().
-s_count(QueryName, TableName, SelectFields, Conditions, ExtraWhere) ->
+  string(), [string()|atom()], proplists:proplist(), string()
+) -> {iolist(), [term()]}.
+s_count(TableName, SelectFields, Conditions, ExtraWhere) ->
   {_Select, Where, WValues} = form_select_query(SelectFields, Conditions, ExtraWhere),
-  ["SELECT COUNT(1) AS `count` FROM ", escape(TableName), " WHERE ", Where].
+  {
+    ["SELECT COUNT(1) AS `count` FROM ", escape(TableName), " WHERE ", Where],
+    WValues
+  }.
 
 %% @doc Generic select function.
 -spec s(
-  atom(), string(), [string()|atom()],
+  string(), [string()|atom()],
   proplists:proplist(), string(), pos_integer(), pos_integer(), string()
-) -> iolist().
-s(QueryName, TableName, SelectFields, Conditions, ExtraWhere, Page, PageSize, OrderBy) ->
+) -> {iolist(), [term()]}.
+s(TableName, SelectFields, Conditions, ExtraWhere, Page, PageSize, OrderBy) ->
   Paging = [" LIMIT ", integer_to_list((Page-1) * PageSize), ",", integer_to_list(PageSize)],
   {Select, Where, WValues} = form_select_query(SelectFields, Conditions, ExtraWhere),
-  ["SELECT ", Select, " FROM ", escape(TableName), " WHERE ", Where, " ", OrderBy, " ", Paging].
+  {
+    ["SELECT ", Select, " FROM ", escape(TableName), " WHERE ", Where, " ", OrderBy, " ", Paging],
+    WValues
+  }.
 
 %% @doc INSERT.
--spec i(atom(), string(), proplists:proplist()) -> iolist().
-i(QueryName, TableName, Proplist) ->
-  {Fields, Values, Args} = lists:foldl(
+-spec i(string(), proplists:proplist()) -> {iolist(), [term()]}.
+i(TableName, Proplist) ->
+  {Fields, Values, Args} = lists:foldr(
     fun({K, V}, {Fs, Vs, Args}) ->
       {[escape(K)|Fs], [V|Vs], ["?"|Args]}
     end,
     {[], [], []},
     Proplist
   ),
-  [
-    "INSERT IGNORE INTO ", escape(TableName), " (", string:join(Fields, ","), ") ",
-    "VALUES (", string:join(Args, ","),")"
-  ].
+  {
+    [
+      "INSERT INTO ", escape(TableName), " (", string:join(Fields, ","), ") ",
+      "VALUES (", string:join(Args, ","),")"
+    ],
+    Values
+  }.
 
 %% @doc UPDATE.
--spec u(atom(), string(), proplists:proplist(), proplists:proplist()) -> iolist().
-u(QueryName, TableName, UpdateFields, WhereFields) ->
+-spec u(
+  string(), proplists:proplist(), proplists:proplist()
+) -> {iolist(), [term()], [term()]}.
+u(TableName, UpdateFields, WhereFields) ->
   {WFields, WValues} = lists:foldl(
     fun({K, V}, {Fs, Vs}) ->
       {[escape(K) ++ "=?"|Fs], [V|Vs]}
@@ -83,12 +94,12 @@ u(QueryName, TableName, UpdateFields, WhereFields) ->
   ),
   Where = string:join(WFields, " AND "),
   Update = string:join(UFields, ","),
-  ["UPDATE ", escape(TableName), " SET ", Update, " WHERE ", Where].
+  {["UPDATE ", escape(TableName), " SET ", Update, " WHERE ", Where], UValues, WValues}. 
 
 %% @doc DELETE.
--spec d(atom(), string(), proplists:proplist()) -> iolist().
-d(QueryName, TableName, WhereFields) ->
-  {WFields, WValues} = lists:foldl(
+-spec d(string(), proplists:proplist()) -> {iolist(), [term()]}.
+d(TableName, WhereFields) ->
+  {WFields, WValues} = lists:foldr(
     fun({K, V}, {Fs, Vs}) ->
       {[escape(K) ++ "=?"|Fs], [V|Vs]}
     end,
@@ -96,7 +107,7 @@ d(QueryName, TableName, WhereFields) ->
     WhereFields
   ),
   Where = string:join(WFields, " AND "),
-  ["DELETE FROM ", escape(TableName), " WHERE ", Where].
+  {["DELETE FROM ", escape(TableName), " WHERE ", Where], WValues}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Private API.
@@ -140,7 +151,7 @@ form_condition({Key, {any, Values}}) ->
   Conditions = [{Key, V} || V <- Values],
   form_condition({'or', Conditions});
 
-form_condition({Key, {_, undefined}}) ->
+form_condition({_Key, {_, undefined}}) ->
   "";
 
 form_condition({Key, {le, _Value}}) ->
@@ -152,7 +163,7 @@ form_condition({Key, {gt, _Value}}) ->
 form_condition({Key, {ge, _Value}}) ->
   lists:flatten(["(", escape(Key), ">=?", ")"]);
 
-form_condition({Key, undefined}) ->
+form_condition({_Key, undefined}) ->
   "";
 
 form_condition({Key, _Value}) ->

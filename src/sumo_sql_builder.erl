@@ -149,8 +149,20 @@ form_condition({Key, {gt, _Value}}) ->
 form_condition({Key, {ge, _Value}}) ->
   lists:flatten(["(", escape(Key), ">=?", ")"]);
 
+form_condition({Key, {lt, _Value}}) ->
+  lists:flatten(["(", escape(Key), "<?", ")"]);
+
 form_condition({_Key, undefined}) ->
   "";
+
+form_condition({Key, {'not', _Value}}) ->
+  lists:flatten(["(", escape(Key), "!=?", ")"]);
+
+form_condition({Key, is_null}) ->
+  lists:flatten(["(", escape(Key), " IS NULL", ")"]);
+
+form_condition({Key, not_null}) ->
+  lists:flatten(["(", escape(Key), " IS NOT NULL", ")"]);
 
 form_condition({Key, _Value}) ->
   lists:flatten(["(", escape(Key), "=?", ")"]).
@@ -187,11 +199,23 @@ condition_values([{_Key, {any, Values}}|Rest], Acc) ->
 condition_values([{_Key, {gt, Value}}|Rest], Acc) ->
   condition_values(Rest, [Value|Acc]);
 
+condition_values([{_Key, {lt, Value}}|Rest], Acc) ->
+  condition_values(Rest, [Value|Acc]);
+
 condition_values([{_Key, {ge, Value}}|Rest], Acc) ->
   condition_values(Rest, [Value|Acc]);
 
 condition_values([{_Key, {le, Value}}|Rest], Acc) ->
   condition_values(Rest, [Value|Acc]);
+
+condition_values([{_Key, {'not', Value}}|Rest], Acc) ->
+  condition_values(Rest, [Value|Acc]);
+
+condition_values([{_Key, is_null}|Rest], Acc) ->
+  condition_values(Rest, Acc);
+
+condition_values([{_Key, not_null}|Rest], Acc) ->
+  condition_values(Rest, Acc);
 
 condition_values([{_Key, Value}|Rest], Acc) ->
   condition_values(Rest, [Value|Acc]).

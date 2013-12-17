@@ -77,36 +77,22 @@ i(TableName, Proplist) ->
 -spec u(
   string(), proplists:proplist(), proplists:proplist()
 ) -> {iolist(), [term()], [term()]}.
-u(TableName, UpdateFields, WhereFields) ->
-  {WFields, WValues} = lists:foldl(
-    fun({K, V}, {Fs, Vs}) ->
-      {[escape(K) ++ "=?"|Fs], [V|Vs]}
-    end,
-    {[], []},
-    WhereFields
-  ),
-  {UFields, UValues} = lists:foldl(
+u(TableName, UpdateFields, Conditions) ->
+  {_Select, Where, WValues} = form_select_query([], Conditions, ""),
+  {UFields, UValues} = lists:foldr(
     fun({K, V}, {Fs, Vs}) ->
       {[escape(K) ++ "=?"|Fs], [V|Vs]}
     end,
     {[], []},
     UpdateFields
   ),
-  Where = string:join(WFields, " AND "),
   Update = string:join(UFields, ","),
   {["UPDATE ", escape(TableName), " SET ", Update, " WHERE ", Where], UValues, WValues}. 
 
 %% @doc DELETE.
 -spec d(string(), proplists:proplist()) -> {iolist(), [term()]}.
-d(TableName, WhereFields) ->
-  {WFields, WValues} = lists:foldr(
-    fun({K, V}, {Fs, Vs}) ->
-      {[escape(K) ++ "=?"|Fs], [V|Vs]}
-    end,
-    {[], []},
-    WhereFields
-  ),
-  Where = string:join(WFields, " AND "),
+d(TableName, Conditions) ->
+  {_Select, Where, WValues} = form_select_query([], Conditions, ""),
   {["DELETE FROM ", escape(TableName), " WHERE ", Where], WValues}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

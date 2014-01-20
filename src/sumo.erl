@@ -188,7 +188,7 @@ delete(DocName, Id) ->
 delete_by(DocName, Conditions) ->
   case sumo_repo:delete_by(get_repo(DocName), DocName, Conditions) of
     {ok, 0} -> 0;
-    {ok, NumRows} -> sumo_event:dispatch(DocName, deleted, [NumRows]), NumRows;
+    {ok, NumRows} -> sumo_event:dispatch(DocName, deleted_total, [NumRows]), NumRows;
     Error -> throw(Error)
   end.
 

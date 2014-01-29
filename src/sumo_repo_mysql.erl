@@ -192,14 +192,22 @@ find_all(DocName, OrderField, Limit, Offset, State) ->
 %% XXX We should have a DSL here, to allow querying in a known language
 %% to be translated by each driver into its own.
 find_by(DocName, Conditions, Limit, Offset, State) ->
-  {PreStatementName, DocFields, Values} = lists:foldl(
+  FoldFun =
     fun({K, V}, {SName, Fs, Vs}) ->
       {SName ++ "_" ++ atom_to_list(K), [K|Fs], [V|Vs]}
     end,
-    {"", [], []},
-    Conditions
-  ),
-  StatementName = prepare(DocName, list_to_atom("find_by" ++ PreStatementName), fun() ->
+  {PreStatementName0, DocFields, Values} =
+    lists:foldl(FoldFun, {"", [], []}, Conditions),
+
+  PreStatementName1 =
+    case Limit of
+      0     -> PreStatementName0;
+      Limit -> PreStatementName0 ++ "_limit"
+    end,
+
+  PreName = list_to_atom("find_by" ++ PreStatementName1),
+
+  Fun = fun() ->
     Sqls = [[escape(atom_to_list(K)), "=?"] || K <- DocFields],
     % Select * is not good..
     Sql1 =[
@@ -211,11 +219,14 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
       _ -> [Sql1|[" LIMIT ?,?"]]
     end,
     Sql2
-  end),
+  end,
+
+  StatementName = prepare(DocName, PreName, Fun),
+
   ExecArgs =
     case Limit of
-      0 -> Values;
-      Limit -> lists:flatten([Values|[Offset, Limit]])
+      0     -> Values;
+      Limit -> lists:flatten([Values | [Offset, Limit]])
     end,
 
   case execute(StatementName, ExecArgs, State) of

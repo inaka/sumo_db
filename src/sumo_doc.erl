@@ -22,19 +22,7 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Exports.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--export([behaviour_info/1]).
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Code starts here.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Returns all behavior callbacks.
--spec behaviour_info(callbacks) -> proplists:proplist()|undefined.
-behaviour_info(callbacks) ->
-  [{sumo_schema,0}, {sumo_wakeup,1}, {sumo_sleep,1}];
-
-behaviour_info(_Other) ->
-  undefined.
-
+-callback sumo_schema() -> sumo:schema().
+-callback sumo_wakeup(proplists:proplist()) -> term().
+-callback sumo_sleep(term()) -> proplists:proplist().

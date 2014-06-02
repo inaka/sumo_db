@@ -45,33 +45,32 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% External API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-persist(#sumo_doc{name=DocName}=Doc, State) ->
-  ok.
+persist(_Doc, State) ->
+  {error, not_implemented, State}.
 
-delete(DocName, Id, State) ->
-  ok.
+delete(_DocName, _Id, State) ->
+  {error, not_implemented, State}.
 
-delete_by(DocName, Conditions, State) ->
-  ok.
+delete_by(_DocName, _Conditions, State) ->
+  {error, not_implemented, State}.
 
-delete_all(DocName, State) ->
-  ok.
+delete_all(_DocName, State) ->
+  {error, not_implemented, State}.
 
-find_by(DocName, Conditions, Limit, Offset, State) ->
-  ok.
+find_by(_DocName, _Conditions, _Limit, _Offset, State) ->
+  {error, not_implemented, State}.
 
 find_by(DocName, Conditions, State) ->
   find_by(DocName, Conditions, 0, 0, State).
 
-create_schema(#sumo_schema{name=Name, fields=Fields}, State) ->
-  ok.
+create_schema(_Schema, State) ->
+  {ok, State}.
 
-execute(Query, Args, #state{db=Db}) when is_list(Query), is_list(Args) ->
-  ok.
+execute(_Query, _Args, State) ->
+  {error, not_implemented, State}.
 
 execute(Query, State) ->
   execute(Query, [], State).
 
-init(Options) ->
-  {ok, #state{db=a}}.
-
+init(_Options) ->
+  {ok, #state{}}.

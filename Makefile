@@ -5,6 +5,7 @@ REBAR?=./rebar
 ERL?=/usr/bin/env erl
 HOST?=$(shell hostname)
 NODE?=${NAME}@${HOST}
+DIALYZER_OUT?=${NAME}.plt
 
 ERL_ARGS?=-pa ebin -pa deps/*/ebin -name ${NODE}
 
@@ -37,3 +38,13 @@ test: compile
 clean:
 	${REBAR} clean
 
+${DIALYZER_OUT}:
+	dialyzer --verbose --build_plt -pa deps/*/ebin --output_plt ${DIALYZER_OUT} \
+	 --apps stdlib erts compiler crypto edoc gs syntax_tools tools runtime_tools \
+	 inets xmerl ssl mnesia webtool kernel
+
+analyze: compile ${DIALYZER_OUT} xref
+	dialyzer --verbose --plt ${DIALYZER_OUT} -Werror_handling `find ebin -name "sumo_*.beam" | grep -v SUITE`
+
+xref:
+	${REBAR} skip_deps=true --verbose compile xref

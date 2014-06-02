@@ -21,6 +21,10 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
+-type field() :: string() | atom().
+-type condition() ::
+  {'and', [condition()]} | {'or', [condition()]} | {field(), term()}.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -32,9 +36,7 @@
 %%% Public API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Returns number of results, useful for pagination.
--spec s_count(
-  string(), [string()|atom()], proplists:proplist(), string()
-) -> {iolist(), [term()]}.
+-spec s_count(string(), [field()], condition(), string()) -> {iolist(), [term()]}.
 s_count(TableName, SelectFields, Conditions, ExtraWhere) ->
   {_Select, Where, WValues} = form_select_query(SelectFields, Conditions, ExtraWhere),
   {
@@ -44,8 +46,7 @@ s_count(TableName, SelectFields, Conditions, ExtraWhere) ->
 
 %% @doc Generic select function.
 -spec s(
-  string(), [string()|atom()],
-  proplists:proplist(), string(), pos_integer(), pos_integer(), string()
+  string(), [field()], condition(), string(), pos_integer(), pos_integer(), string()
 ) -> {iolist(), [term()]}.
 s(TableName, SelectFields, Conditions, ExtraWhere, Page, PageSize, OrderBy) ->
   Paging = [" LIMIT ", integer_to_list((Page-1) * PageSize), ",", integer_to_list(PageSize)],
@@ -75,7 +76,7 @@ i(TableName, Proplist) ->
 
 %% @doc UPDATE.
 -spec u(
-  string(), proplists:proplist(), proplists:proplist()
+  string(), proplists:proplist(), condition()
 ) -> {iolist(), [term()], [term()]}.
 u(TableName, UpdateFields, Conditions) ->
   {_Select, Where, WValues} = form_select_query([], Conditions, ""),
@@ -90,7 +91,7 @@ u(TableName, UpdateFields, Conditions) ->
   {["UPDATE ", escape(TableName), " SET ", Update, " WHERE ", Where], UValues, WValues}. 
 
 %% @doc DELETE.
--spec d(string(), proplists:proplist()) -> {iolist(), [term()]}.
+-spec d(string(), condition()) -> {iolist(), [term()]}.
 d(TableName, Conditions) ->
   {_Select, Where, WValues} = form_select_query([], Conditions, ""),
   {["DELETE FROM ", escape(TableName), " WHERE ", Where], WValues}.
@@ -102,16 +103,14 @@ d(TableName, Conditions) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Query generator.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--spec escape(string()) -> string().
+-spec escape(field()) -> string().
 escape(Field) when is_atom(Field) ->
   escape(atom_to_list(Field));
 
 escape(Field) when is_list(Field) ->
   lists:flatten(["`", Field, "`"]).
 
--spec form_select_query(
-  [string()|atom()], proplists:proplist(), string()
-) -> {string(), string(), [string()]}.
+-spec form_select_query([field()], condition(), string()) -> {string(), string(), [string()]}.
 form_select_query(SelectFields, Conditions, ExtraWhere) ->
   WhereTmp = form_condition(Conditions),
   WValues = lists:reverse(condition_values([Conditions])),

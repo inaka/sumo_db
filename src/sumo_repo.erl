@@ -21,8 +21,6 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
--export([behaviour_info/1]).
-
 -include_lib("include/sumo_doc.hrl").
 
 -behaviour(gen_server).
@@ -56,19 +54,27 @@
 }).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Code starts here.
+%% Callback
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% @doc Returns all behavior callbacks.
--spec behaviour_info(callbacks) -> proplists:proplist()|undefined.
-behaviour_info(callbacks) ->
-  [
-    {init,1}, {persist,2}, {delete,3}, {delete_by, 3}, {delete_all, 2},
-    {find_by,3}, {find_by,5}, {create_schema,2}
-  ];
+-type result(R, S) :: {ok, R, S} | {error, term(), S}.
+-type result(S) :: {ok, S} | {error, term(), S}.
+-type affected_rows() :: unknown | non_neg_integer().
 
-behaviour_info(_Other) ->
-  undefined.
+-callback init(term()) -> {ok, term()}.
+-callback persist(sumo:doc(), State) -> result(sumo:doc(), State).
+-callback delete(sumo_schema_name(), term(), State) ->
+            result(affected_rows(), State).
+-callback delete_by(sumo_schema_name(), proplists:proplist(), State) ->
+            result(affected_rows(), State).
+-callback delete_all(sumo_schema_name(), State) ->
+            result(affected_rows(), State).
+-callback find_by(sumo_schema_name(), proplists:proplist(), State) ->
+            result([sumo:doc()], State).
+-callback find_by(sumo_schema_name(), proplists:proplist(), non_neg_integer(),
+                  non_neg_integer(), State) ->
+            result([sumo:doc()], State).
+-callback create_schema(sumo:schema(), State) -> result(State).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% External API.
@@ -86,12 +92,12 @@ start_link(Name, Module, Options) ->
   wpool:start_pool(Name, WPoolOptions).
 
 %% @doc Creates the schema of the given docs in the given repository name.
--spec create_schema(atom(), #sumo_schema{}) -> ok.
-create_schema(Name, #sumo_schema{}=Schema) ->
+-spec create_schema(atom(), sumo:schema()) -> ok.
+create_schema(Name, Schema) ->
   wpool:call(Name, {create_schema, Schema}).
 
 %% @doc Persist the given doc with the given repository name.
--spec persist(atom(), #sumo_doc{}) -> #sumo_doc{}.
+-spec persist(atom(), sumo:doc()) -> sumo:doc().
 persist(Name, #sumo_doc{}=Doc) ->
   wpool:call(Name, {persist, Doc}).
 
@@ -124,7 +130,7 @@ find_all(Name, DocName, OrderField, Limit, Offset) ->
 -spec find_by(
   atom(), sumo_schema_name(), proplists:proplist(),
   pos_integer(), pos_integer()
-) -> [#sumo_doc{}].
+) -> [sumo:doc()].
 find_by(Name, DocName, Conditions, Limit, Offset) ->
   wpool:call(Name, {find_by, DocName, Conditions, Limit, Offset}).
 
@@ -132,7 +138,7 @@ find_by(Name, DocName, Conditions, Limit, Offset) ->
 %% repository name.
 -spec find_by(
   atom(), sumo_schema_name(), proplists:proplist()
-) -> [#sumo_doc{}].
+) -> [sumo:doc()].
 find_by(Name, DocName, Conditions) ->
   wpool:call(Name, {find_by, DocName, Conditions}).
 
@@ -157,7 +163,7 @@ init([Module, Options]) ->
   {ok, #state{handler=Module, handler_state=HState}}.
 
 %% @doc handles calls.
--spec handle_call(term(), pid(), #state{}) -> term().
+-spec handle_call(term(), _, #state{}) -> {reply, tuple(), #state{}}.
 handle_call(
   {persist, #sumo_doc{}=Doc}, _From,
   #state{handler=Handler,handler_state=HState}=State
@@ -227,10 +233,9 @@ handle_call(
   {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(
-  {create_schema, #sumo_schema{name=Name}=Schema}, _From,
+  {create_schema, Schema}, _From,
   #state{handler=Handler,handler_state=HState}=State
 ) ->
-  lager:info("creating schema for: ~p", [Name]),
   {Result, NewState} = case Handler:create_schema(Schema, HState) of
     {ok, NewState_} -> {ok, NewState_};
     {error, Error, NewState_} -> {{error, Error}, NewState_}

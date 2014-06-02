@@ -65,17 +65,17 @@ persist(#sumo_doc{name=DocName, fields=Fields}=Doc, State) ->
   ),
   {ok, NewDoc, State}.
 
-delete_by(_DocName, _Conditions, _State) ->
-  ok.
+delete_by(_DocName, _Conditions, State) ->
+  {ok, unknown, State}.
 
-delete(_DocName, _Id, _State) ->
-  ok.
+delete(_DocName, _Id, State) ->
+  {ok, unknown, State}.
 
-delete_all(_DocName, _State) ->
-  ok.
+delete_all(_DocName, State) ->
+  {ok, unknown, State}.
 
-find_by(_DocName, _Conditions, _Limit, _Offset, _State) ->
-  ok.
+find_by(_DocName, _Conditions, _Limit, _Offset, State) ->
+  {ok, [], State}.
 
 find_by(DocName, Conditions, State) ->
   find_by(DocName, Conditions, 0, 0, State).
@@ -86,7 +86,6 @@ create_schema(_Schema, State) ->
 execute(Query, Args, #state{c=C}) when is_list(Query), is_list(Args) ->
   case eredis:q(C, [Query|Args]) of
     {ok, Result} -> Result;
-    {ok} -> ok;
     Error -> {error, Error}
   end.
 

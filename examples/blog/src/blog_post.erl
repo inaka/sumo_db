@@ -110,7 +110,7 @@ sumo_sleep(Post) ->
   Post.
 
 %% @doc Part of the sumo_doc behavior.
--spec sumo_schema() -> #sumo_schema{}.
+-spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
   sumo:new_schema(?MODULE, [
     sumo:new_field(id, integer, [not_null, auto_increment, id]),

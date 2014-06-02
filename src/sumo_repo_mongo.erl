@@ -66,8 +66,9 @@ delete(DocName, Id, #state{pool=Pool}=State) ->
   {ok, 1, State}.
 
 delete_by(DocName, Conditions, #state{pool=Pool}=State) ->
-  throw(not_implemented),
-  {ok, 0, State}.
+  Args = [?MODULE, DocName, Conditions, State],
+  lager:critical("Unimplemented function: ~p:delete_by(~p, ~p, ~p)", Args),
+  {error, not_implemented, State}.
 
 delete_all(DocName, #state{pool=Pool}=State) ->
   lager:debug("dropping collection: ~p", [DocName]),

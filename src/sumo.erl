@@ -46,6 +46,12 @@
 -export([get_repo/1]).
 -export([call/2, call/3]).
 
+-opaque schema()  :: #sumo_schema{}.
+-opaque doc()     :: #sumo_doc{}.
+-opaque field()   :: #sumo_field{}.
+
+-export_type([schema/0, doc/0, field/0]).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -58,7 +64,7 @@ get_docs() ->
 
 %% @doc Returns the process name that handles persistence for the given
 %% Doc or DocName.
--spec get_repo(sumo_schema_name() | #sumo_doc{}) -> atom().
+-spec get_repo(sumo_schema_name() | doc()) -> atom().
 get_repo(DocName) when is_atom(DocName) ->
   proplists:get_value(DocName, get_docs());
 
@@ -80,7 +86,7 @@ create_schema() ->
   ok.
 
 %% @doc Returns the schema for a given DocName.
--spec get_schema(sumo_schema_name()) -> #sumo_schema{}.
+-spec get_schema(sumo_schema_name()) -> schema().
 get_schema(DocName) ->
   DocName:sumo_schema().
 
@@ -223,7 +229,7 @@ call(DocName, Function, Args) ->
 
 %% @doc Transforms the given #sumo_docs{} into proplists.
 -spec docs_wakeup(
-  sumo_schema_name(), [#sumo_doc{}]
+  sumo_schema_name(), [doc()]
 ) -> [proplists:proplist()].
 docs_wakeup(DocName, Docs) ->
   lists:reverse(lists:map(
@@ -234,17 +240,17 @@ docs_wakeup(DocName, Docs) ->
   )).
 
 %% @doc Returns the value of a field from a sumo_doc.
--spec get_field(sumo_field_name(), #sumo_doc{}) -> term().
+-spec get_field(sumo_field_name(), doc()) -> term().
 get_field(Name, #sumo_doc{fields=Fields}) ->
   proplists:get_value(Name, Fields).
 
 %% @doc Sets a value in an sumo_doc.
--spec set_field(sumo_field_name(), term(), #sumo_doc{}) -> #sumo_doc{}.
+-spec set_field(sumo_field_name(), term(), doc()) -> doc().
 set_field(FieldName, Value, #sumo_doc{fields=Fields, name=Name}) ->
   new_doc(Name, lists:keystore(FieldName, 1, Fields, {FieldName, Value})).
 
 %% @doc Returns field marked as ID for the given schema or doc name.
--spec get_id_field(#sumo_schema{}) -> #sumo_field{}.
+-spec get_id_field(schema()) -> field().
 get_id_field(#sumo_schema{fields=Fields}) ->
   hd(lists:filter(
     fun(#sumo_field{attrs=Attributes}) ->
@@ -257,48 +263,48 @@ get_id_field(DocName) when is_atom(DocName) ->
   get_id_field(get_schema(DocName)).
 
 %% @doc Returns the name of the given field.
--spec field_name(#sumo_field{}) -> sumo_field_name().
+-spec field_name(field()) -> sumo_field_name().
 field_name(#sumo_field{name=Name}) ->
   Name.
 
 %% @doc Returns the type of the given field.
--spec field_type(#sumo_field{}) -> sumo_field_type().
+-spec field_type(field()) -> sumo_field_type().
 field_type(#sumo_field{type=Type}) ->
   Type.
 
 %% @doc Returns all attributes of the given field.
--spec field_attrs(#sumo_field{}) -> sumo_field_attrs().
+-spec field_attrs(field()) -> sumo_field_attrs().
 field_attrs(#sumo_field{attrs=Attributes}) ->
   Attributes.
 
 %% @doc True if the field has a given attribute.
--spec field_is(atom(), #sumo_field{}) -> boolean().
+-spec field_is(atom(), field()) -> boolean().
 field_is(What, #sumo_field{attrs=Attributes}) ->
   proplists:is_defined(What, Attributes).
 
 %% @doc Returns a new doc without any fields.
--spec new_doc(sumo_schema_name()) -> #sumo_doc{}.
+-spec new_doc(sumo_schema_name()) -> doc().
 new_doc(Name) ->
   new_doc(Name, []).
 
 %% @doc Returns a new doc.
--spec new_doc(sumo_schema_name(), [sumo_field()]) -> #sumo_doc{}.
+-spec new_doc(sumo_schema_name(), [sumo_field()]) -> doc().
 new_doc(Name, Fields) ->
   #sumo_doc{name=Name, fields=Fields}.
 
 %% @doc Returns a new schema.
--spec new_schema(sumo_schema_name(), [#sumo_field{}]) -> #sumo_schema{}.
+-spec new_schema(sumo_schema_name(), [field()]) -> schema().
 new_schema(Name, Fields) ->
   #sumo_schema{name=Name, fields=Fields}.
 
 %% @doc Returns a new field of the given type and attributes.
 -spec new_field(
   sumo_field_name(), sumo_field_type(), [sumo_field_attrs()]
-) -> #sumo_field{}.
+) -> field().
 new_field(Name, Type, Attributes) ->
   #sumo_field{name=Name, type=Type, attrs=Attributes}.
 
 %% @doc Returns a new field of the given type without attributes.
--spec new_field(sumo_field_name(), sumo_field_type()) -> #sumo_field{}.
+-spec new_field(sumo_field_name(), sumo_field_type()) -> field().
 new_field(Name, Type) ->
   new_field(Name, Type, []).

@@ -70,10 +70,7 @@ get_docs() ->
 create_schema() ->
   lists:foreach(
     fun({DocName, Repo}) ->
-      case create_schema(DocName, Repo) of
-        ok -> ok;
-        Error -> throw(Error)
-      end
+      create_schema(DocName, Repo)
     end,
     get_docs()
   ),
@@ -117,7 +114,7 @@ find_all(DocName, OrderField, Limit, Offset) ->
 %% @doc Returns Limit number of docs that match Conditions, starting at
 %% offset Offset.
 -spec find_by(
-  sumo:schema_name(), conditions(), pos_integer(), pos_integer()
+  sumo:schema_name(), conditions(), non_neg_integer(), non_neg_integer()
 ) -> [doc()].
 find_by(DocName, Conditions, Limit, Offset) ->
   Repo = sumo_internal:get_repo(DocName),

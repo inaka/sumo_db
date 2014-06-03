@@ -62,7 +62,8 @@
 -export_type([result/2, result/1, affected_rows/0]).
 
 -callback init(term()) -> {ok, term()}.
--callback persist(sumo:doc(), State) -> result(sumo:doc(), State).
+-callback persist(sumo_internal:doc(), State) ->
+            result(sumo_internal:doc(), State).
 -callback delete(sumo:schema_name(), term(), State) ->
             result(affected_rows(), State).
 -callback delete_by(sumo:schema_name(), sumo:conditions(), State) ->
@@ -70,10 +71,10 @@
 -callback delete_all(sumo:schema_name(), State) ->
             result(affected_rows(), State).
 -callback find_by(sumo:schema_name(), sumo:conditions(), State) ->
-            result([sumo:doc()], State).
+            result([sumo_internal:doc()], State).
 -callback find_by(sumo:schema_name(), sumo:conditions(), non_neg_integer(),
                   non_neg_integer(), State) ->
-            result([sumo:doc()], State).
+            result([sumo_internal:doc()], State).
 -callback create_schema(sumo:schema(), State) -> result(State).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -97,7 +98,7 @@ create_schema(Name, Schema) ->
   wpool:call(Name, {create_schema, Schema}).
 
 %% @doc Persist the given doc with the given repository name.
--spec persist(atom(), sumo_internal:doc()) -> sumo:doc().
+-spec persist(atom(), sumo_internal:doc()) -> sumo_internal:doc().
 persist(Name, Doc) ->
   wpool:call(Name, {persist, Doc}).
 
@@ -129,14 +130,16 @@ find_all(Name, DocName, OrderField, Limit, Offset) ->
 %% repository name.
 -spec find_by(
   atom(), sumo:schema_name(), sumo:conditions(),
-  pos_integer(), pos_integer()
-) -> [sumo:doc()].
+  non_neg_integer(), non_neg_integer()
+) -> {ok, [sumo_internal:doc()]} | {error, term()}.
 find_by(Name, DocName, Conditions, Limit, Offset) ->
   wpool:call(Name, {find_by, DocName, Conditions, Limit, Offset}).
 
 %% @doc Finds documents that match the given conditions in the given
 %% repository name.
--spec find_by(atom(), sumo:schema_name(), sumo:conditions()) -> [sumo:doc()].
+-spec find_by(
+  atom(), sumo:schema_name(), sumo:conditions()
+) -> {ok, [sumo_internal:doc()]} | {error, term()}.
 find_by(Name, DocName, Conditions) ->
   wpool:call(Name, {find_by, DocName, Conditions}).
 

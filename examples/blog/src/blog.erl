@@ -46,11 +46,11 @@
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Paginates all authors, sorts by name.
--spec find_all_authors(pos_integer(), pos_integer()) -> [blog_author:author()].
+-spec find_all_authors(non_neg_integer(), non_neg_integer()) -> [blog_author:author()].
 find_all_authors(Limit, Offset) ->
   sumo:find_all(blog_author, name, Limit, Offset).
 
--spec find_authors_by_name(string(), pos_integer(), pos_integer()) -> [blog_author:author()].
+-spec find_authors_by_name(string(), non_neg_integer(), non_neg_integer()) -> [blog_author:author()].
 find_authors_by_name(Name, Limit, Offset) ->
   sumo:find_by(blog_author, [{name, list_to_atom(Name)}], Limit, Offset).
 
@@ -70,7 +70,7 @@ find_reader(Id) ->
   sumo:find(blog_reader, Id).
 
 %% @doc Returns all available posts.
--spec total_posts() -> pos_integer().
+-spec total_posts() -> non_neg_integer().
 total_posts() ->
   sumo:call(blog_post, total_posts).
 
@@ -90,7 +90,7 @@ del_reader() ->
   sumo:delete_all(blog_reader).
 
 %% @doc Deletes the given author.
--spec del_author_by_name(string()) -> pos_integer().
+-spec del_author_by_name(string()) -> non_neg_integer().
 del_author_by_name(Name) ->
   sumo:delete_by(blog_author, [{name, Name}]).
 

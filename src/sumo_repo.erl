@@ -21,8 +21,6 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
--include_lib("include/sumo_doc.hrl").
-
 -behaviour(gen_server).
 -define(SERVER, ?MODULE).
 
@@ -61,17 +59,19 @@
 -type result(S) :: {ok, S} | {error, term(), S}.
 -type affected_rows() :: unknown | non_neg_integer().
 
+-export_type([result/2, result/1, affected_rows/0]).
+
 -callback init(term()) -> {ok, term()}.
 -callback persist(sumo:doc(), State) -> result(sumo:doc(), State).
--callback delete(sumo_schema_name(), term(), State) ->
+-callback delete(sumo:schema_name(), term(), State) ->
             result(affected_rows(), State).
--callback delete_by(sumo_schema_name(), proplists:proplist(), State) ->
+-callback delete_by(sumo:schema_name(), sumo:conditions(), State) ->
             result(affected_rows(), State).
--callback delete_all(sumo_schema_name(), State) ->
+-callback delete_all(sumo:schema_name(), State) ->
             result(affected_rows(), State).
--callback find_by(sumo_schema_name(), proplists:proplist(), State) ->
+-callback find_by(sumo:schema_name(), sumo:conditions(), State) ->
             result([sumo:doc()], State).
--callback find_by(sumo_schema_name(), proplists:proplist(), non_neg_integer(),
+-callback find_by(sumo:schema_name(), sumo:conditions(), non_neg_integer(),
                   non_neg_integer(), State) ->
             result([sumo:doc()], State).
 -callback create_schema(sumo:schema(), State) -> result(State).
@@ -97,22 +97,22 @@ create_schema(Name, Schema) ->
   wpool:call(Name, {create_schema, Schema}).
 
 %% @doc Persist the given doc with the given repository name.
--spec persist(atom(), sumo:doc()) -> sumo:doc().
-persist(Name, #sumo_doc{}=Doc) ->
+-spec persist(atom(), sumo_internal:doc()) -> sumo:doc().
+persist(Name, Doc) ->
   wpool:call(Name, {persist, Doc}).
 
 %% @doc Deletes the doc identified by id in the given repository name.
--spec delete(atom(), sumo_schema_name(), term()) -> ok.
+-spec delete(atom(), sumo:schema_name(), term()) -> ok.
 delete(Name, DocName, Id) ->
   wpool:call(Name, {delete, DocName, Id}).
 
 %% @doc Deletes the docs identified by the given conditions.
--spec delete_by(atom(), sumo_schema_name(), proplists:proplist()) -> ok.
+-spec delete_by(atom(), sumo:schema_name(), sumo:conditions()) -> ok.
 delete_by(Name, DocName, Conditions) ->
   wpool:call(Name, {delete_by, DocName, Conditions}).
 
 %% @doc Deletes all docs in the given repository name.
--spec delete_all(atom(), sumo_schema_name()) -> ok.
+-spec delete_all(atom(), sumo:schema_name()) -> ok.
 delete_all(Name, DocName) ->
   wpool:call(Name, {delete_all, DocName}).
 
@@ -128,7 +128,7 @@ find_all(Name, DocName, OrderField, Limit, Offset) ->
 %% @doc Finds documents that match the given conditions in the given
 %% repository name.
 -spec find_by(
-  atom(), sumo_schema_name(), proplists:proplist(),
+  atom(), sumo:schema_name(), sumo:conditions(),
   pos_integer(), pos_integer()
 ) -> [sumo:doc()].
 find_by(Name, DocName, Conditions, Limit, Offset) ->
@@ -136,14 +136,12 @@ find_by(Name, DocName, Conditions, Limit, Offset) ->
 
 %% @doc Finds documents that match the given conditions in the given
 %% repository name.
--spec find_by(
-  atom(), sumo_schema_name(), proplists:proplist()
-) -> [sumo:doc()].
+-spec find_by(atom(), sumo:schema_name(), sumo:conditions()) -> [sumo:doc()].
 find_by(Name, DocName, Conditions) ->
   wpool:call(Name, {find_by, DocName, Conditions}).
 
 %% @doc Calls a custom function in the given repository name.
--spec call(atom(), sumo_schema_name(), atom(), [term()]) -> term().
+-spec call(atom(), sumo:schema_name(), atom(), [term()]) -> term().
 call(Name, DocName, Function, Args) ->
   {ok, Timeout} = application:get_env(sumo_db, query_timeout),
   wpool:call(
@@ -165,7 +163,7 @@ init([Module, Options]) ->
 %% @doc handles calls.
 -spec handle_call(term(), _, #state{}) -> {reply, tuple(), #state{}}.
 handle_call(
-  {persist, #sumo_doc{}=Doc}, _From,
+  {persist, Doc}, _From,
   #state{handler=Handler,handler_state=HState}=State
 ) ->
   {OkOrError, Reply, NewState} = Handler:persist(Doc, HState),

@@ -1,7 +1,7 @@
 # About
 This is an escript that uses sumo_db (and the code in ./src) to implement a blog.
 
-It uses different repositories (mysql, mongo, redis) just as an example and
+It uses different repositories (mysql, mongo) just as an example and
 to make a point about how easy it is to switch or mix different databases.
 
 # Tour

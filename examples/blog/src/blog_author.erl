@@ -21,8 +21,6 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
--include_lib("include/sumo_doc.hrl").
-
 -behavior(sumo_doc).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -94,12 +92,12 @@ set(Key, Value, Author) when is_atom(Key), is_list(Author) ->
 %% sumo behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Part of the sumo_doc behavior.
--spec sumo_wakeup(proplists:proplist()) -> author().
+-spec sumo_wakeup(sumo:doc()) -> author().
 sumo_wakeup(Data) ->
   Data.
 
 %% @doc Part of the sumo_doc behavior.
--spec sumo_sleep(author()) -> proplists:proplist().
+-spec sumo_sleep(author()) -> sumo:doc().
 sumo_sleep(Author) ->
   Author.
 

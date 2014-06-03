@@ -21,19 +21,12 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
-%%% Include standard types.
--include_lib("include/sumo_doc.hrl").
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% API for doc/schema manipulation.
--export([new_doc/1, new_doc/2, new_schema/2, new_field/3, new_field/2]).
-
-%%% API for schema fields manipulation.
--export([get_field/2, set_field/3, get_id_field/1, get_schema/1, field_is/2]).
--export([field_name/1, field_type/1, field_attrs/1]).
+-export([new_schema/2, new_field/3, new_field/2]).
 
 %%% API for schema creation.
 -export([create_schema/0, create_schema/1, create_schema/2]).
@@ -41,16 +34,26 @@
 %%% API for standard CRUD functions.
 -export([persist/2, delete/2, delete_by/2, delete_all/1]).
 -export([find/2, find_all/1, find_all/4, find_by/2, find_by/4, find_one/2]).
-
-%%% API for repo handling.
--export([get_repo/1]).
 -export([call/2, call/3]).
 
--opaque schema()  :: #sumo_schema{}.
--opaque doc()     :: #sumo_doc{}.
--opaque field()   :: #sumo_field{}.
+-type schema_name() :: atom().
 
--export_type([schema/0, doc/0, field/0]).
+-type field_attr()  :: id|unique|index|not_null|auto_increment|{length, integer()}.
+-type field_attrs() :: [field_attr()].
+
+-type field_type()  :: integer|string|binary|text|float|date|datetime.
+-type field_name()  :: atom().
+-type field_value() :: term().
+-type doc()         :: [{field_name(), field_value()}].
+-type conditions()  :: [{field_name(), field_value()}].
+
+-export_type([schema_name/0, field_attr/0, field_attrs/0, field_type/0,
+              field_name/0, field_value/0, doc/0, conditions/0]).
+
+-type schema()      :: sumo_internal:schema().
+-type field()       :: sumo_internal:field().
+
+-export_type([schema/0, field/0]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
@@ -62,21 +65,12 @@ get_docs() ->
   {ok, Docs} = application:get_env(sumo_db, docs),
   Docs.
 
-%% @doc Returns the process name that handles persistence for the given
-%% Doc or DocName.
--spec get_repo(sumo_schema_name() | doc()) -> atom().
-get_repo(DocName) when is_atom(DocName) ->
-  proplists:get_value(DocName, get_docs());
-
-get_repo(#sumo_doc{name=Name}) ->
-  get_repo(Name).
-
 %% @doc Creates the schema for all known (configured) docs.
 -spec create_schema() -> ok.
 create_schema() ->
   lists:foreach(
     fun({DocName, Repo}) ->
-      case sumo:create_schema(DocName, Repo) of
+      case create_schema(DocName, Repo) of
         ok -> ok;
         Error -> throw(Error)
       end
@@ -85,15 +79,8 @@ create_schema() ->
   ),
   ok.
 
-%% @doc Returns the schema for a given DocName.
--spec get_schema(sumo_schema_name()) -> schema().
-get_schema(DocName) ->
-  DocName:sumo_schema().
-
 %% @doc Returns 1 doc that matches the given Conditions.
--spec find_one(
-  sumo_schema_name(), proplists:proplist()
-) -> proplists:proplist() | notfound.
+-spec find_one(sumo:schema_name(), conditions()) -> doc() | notfound.
 find_one(DocName, Conditions) ->
   case find_by(DocName, Conditions, 1, 0) of
     [] -> notfound;
@@ -101,27 +88,28 @@ find_one(DocName, Conditions) ->
   end.
 
 %% @doc Returns the doc identified by Id.
--spec find(sumo_schema_name(), term()) -> proplists:proplist() | notfound.
+-spec find(sumo:schema_name(), term()) -> doc() | notfound.
 find(DocName, Id) ->
-  IdField = get_id_field(get_schema(DocName)),
-  find_one(DocName, [{IdField#sumo_field.name, Id}]).
+  IdFieldName = sumo_internal:id_field_name(DocName),
+  find_one(DocName, [{IdFieldName, Id}]).
 
 %% @doc Returns all docs from the given repo.
 find_all(DocName) ->
-  case sumo_repo:find_all(get_repo(DocName), DocName) of
+  case sumo_repo:find_all(sumo_internal:get_repo(DocName), DocName) of
     {ok, Docs} ->
       lists:reverse(lists:map(
-        fun(Doc) -> DocName:sumo_wakeup(Doc#sumo_doc.fields) end, Docs
+        fun(Doc) -> sumo_internal:wakeup(DocName, Doc) end, Docs
       ));
     Error -> throw(Error)
   end.
 
 %% @doc Returns Limit docs from the given repo, starting at offset.
 find_all(DocName, OrderField, Limit, Offset) ->
-  case sumo_repo:find_all(get_repo(DocName), DocName, OrderField, Limit, Offset) of
+  Repo = sumo_internal:get_repo(DocName),
+  case sumo_repo:find_all(Repo, DocName, OrderField, Limit, Offset) of
     {ok, Docs} ->
       lists:reverse(lists:map(
-        fun(Doc) -> DocName:sumo_wakeup(Doc#sumo_doc.fields) end, Docs
+        fun(Doc) -> sumo_internal:wakeup(DocName, Doc) end, Docs
       ));
     Error -> throw(Error)
   end.
@@ -129,48 +117,50 @@ find_all(DocName, OrderField, Limit, Offset) ->
 %% @doc Returns Limit number of docs that match Conditions, starting at
 %% offset Offset.
 -spec find_by(
-  sumo_schema_name(), proplists:proplist(), pos_integer(), pos_integer()
-) -> [proplists:proplist()].
+  sumo:schema_name(), conditions(), pos_integer(), pos_integer()
+) -> [doc()].
 find_by(DocName, Conditions, Limit, Offset) ->
-  case sumo_repo:find_by(get_repo(DocName), DocName, Conditions, Limit, Offset) of
+  Repo = sumo_internal:get_repo(DocName),
+  case sumo_repo:find_by(Repo, DocName, Conditions, Limit, Offset) of
     {ok, Docs} ->
       lists:reverse(lists:map(
-        fun(Doc) -> DocName:sumo_wakeup(Doc#sumo_doc.fields) end, Docs
+        fun(Doc) -> sumo_internal:wakeup(DocName, Doc) end, Docs
       ));
     Error -> throw(Error)
   end.
 
 %% @doc Returns *all* docs that match Conditions.
--spec find_by(
-  sumo_schema_name(), proplists:proplist()
-) -> [proplists:proplist()].
+-spec find_by(sumo:schema_name(), conditions()) -> [doc()].
 find_by(DocName, Conditions) ->
-  case sumo_repo:find_by(get_repo(DocName), DocName, Conditions) of
+  Repo = sumo_internal:get_repo(DocName),
+  case sumo_repo:find_by(Repo, DocName, Conditions) of
     {ok, Docs} -> docs_wakeup(DocName, Docs);
     Error -> throw(Error)
   end.
 
 %% @doc Creates or updates the given Doc.
--spec persist(sumo_schema_name(), proplist:proplists()) -> ok.
+-spec persist(sumo:schema_name(), term()) -> ok.
 persist(DocName, State) ->
-  IdField = field_name(get_id_field(DocName)),
+  IdField = sumo_internal:id_field_name(DocName),
   PropList = DocName:sumo_sleep(State),
   EventName = case proplists:get_value(IdField, PropList) of
     undefined -> created;
     _ -> updated
   end,
-  case sumo_repo:persist(get_repo(DocName), sumo:new_doc(DocName, PropList)) of
+  Repo = sumo_internal:get_repo(DocName),
+  case sumo_repo:persist(Repo, sumo_internal:new_doc(DocName, PropList)) of
     {ok, NewDoc} ->
-      Ret = DocName:sumo_wakeup(NewDoc#sumo_doc.fields),
+      Ret = sumo_internal:wakeup(DocName, NewDoc),
       sumo_event:dispatch(DocName, EventName, [Ret]),
       Ret;
     Error -> throw(Error)
   end.
 
 %% @doc Deletes all docs of type DocName.
--spec delete_all(sumo_schema_name()) -> ok.
+-spec delete_all(sumo:schema_name()) -> ok.
 delete_all(DocName) ->
-  case sumo_repo:delete_all(get_repo(DocName), DocName) of
+  Repo = sumo_internal:get_repo(DocName),
+  case sumo_repo:delete_all(Repo, DocName) of
     {ok, NumRows} ->
       if
         NumRows > 0 -> sumo_event:dispatch(DocName, deleted_all);
@@ -181,33 +171,34 @@ delete_all(DocName) ->
   end.
 
 %% @doc Deletes the doc identified by Id.
--spec delete(sumo_schema_name(), term()) -> ok.
+-spec delete(sumo:schema_name(), term()) -> ok.
 delete(DocName, Id) ->
-  IdField = sumo:field_name(sumo:get_id_field(DocName)),
+  IdField = sumo_internal:id_field_name(DocName),
   case delete_by(DocName, [{IdField, Id}]) of
     1 -> sumo_event:dispatch(DocName, deleted, [Id]), true;
     0 -> false
   end.
 
 %% @doc Deletes the doc identified by Conditions.
--spec delete_by(sumo_schema_name(), term()) -> ok.
+-spec delete_by(sumo:schema_name(), term()) -> ok.
 delete_by(DocName, Conditions) ->
-  case sumo_repo:delete_by(get_repo(DocName), DocName, Conditions) of
+  Repo = sumo_internal:get_repo(DocName),
+  case sumo_repo:delete_by(Repo, DocName, Conditions) of
     {ok, 0} -> 0;
     {ok, NumRows} -> sumo_event:dispatch(DocName, deleted_total, [NumRows]), NumRows;
     Error -> throw(Error)
   end.
 
 %% @doc Creates the schema for the docs of type DocName.
--spec create_schema(sumo_schema_name()) -> ok.
+-spec create_schema(sumo:schema_name()) -> ok.
 create_schema(DocName) ->
-  create_schema(DocName, get_repo(DocName)).
+  create_schema(DocName, sumo_internal:get_repo(DocName)).
 
 %% @doc Creates the schema for the docs of type DocName using the given
 %% repository.
--spec create_schema(sumo_schema_name(), atom()) -> ok.
+-spec create_schema(sumo:schema_name(), atom()) -> ok.
 create_schema(DocName, Repo) ->
-  case sumo_repo:create_schema(Repo, get_schema(DocName)) of
+  case sumo_repo:create_schema(Repo, sumo_internal:get_schema(DocName)) of
     ok ->
       sumo_event:dispatch(DocName, schema_created),
       ok;
@@ -215,96 +206,38 @@ create_schema(DocName, Repo) ->
   end.
 
 %% @doc Calls the given custom function of a repo.
--spec call(sumo_schema_name(), atom()) -> term().
+-spec call(sumo:schema_name(), atom()) -> term().
 call(DocName, Function) ->
   call(DocName, Function, []).
 
 %% @doc Calls the given custom function of a repo with the given args.
--spec call(sumo_schema_name(), atom(), [term()]) -> term().
+-spec call(sumo:schema_name(), atom(), [term()]) -> term().
 call(DocName, Function, Args) ->
-  case sumo_repo:call(get_repo(DocName), DocName, Function, Args) of
+  Repo = sumo_internal:get_repo(DocName),
+  case sumo_repo:call(Repo, DocName, Function, Args) of
     {ok, {docs, Docs}} -> docs_wakeup(DocName, Docs);
     {ok, {raw, Value}} -> Value
   end.
 
-%% @doc Transforms the given #sumo_docs{} into proplists.
--spec docs_wakeup(
-  sumo_schema_name(), [doc()]
-) -> [proplists:proplist()].
 docs_wakeup(DocName, Docs) ->
   lists:reverse(lists:map(
     fun(Doc) ->
-      DocName:sumo_wakeup(Doc#sumo_doc.fields)
+      sumo_internal:wakeup(DocName, Doc)
     end,
     Docs
   )).
 
-%% @doc Returns the value of a field from a sumo_doc.
--spec get_field(sumo_field_name(), doc()) -> term().
-get_field(Name, #sumo_doc{fields=Fields}) ->
-  proplists:get_value(Name, Fields).
-
-%% @doc Sets a value in an sumo_doc.
--spec set_field(sumo_field_name(), term(), doc()) -> doc().
-set_field(FieldName, Value, #sumo_doc{fields=Fields, name=Name}) ->
-  new_doc(Name, lists:keystore(FieldName, 1, Fields, {FieldName, Value})).
-
-%% @doc Returns field marked as ID for the given schema or doc name.
--spec get_id_field(schema()) -> field().
-get_id_field(#sumo_schema{fields=Fields}) ->
-  hd(lists:filter(
-    fun(#sumo_field{attrs=Attributes}) ->
-      length(lists:filter(fun(T) -> T =:= id end, Attributes)) > 0
-    end,
-    Fields
-  ));
-
-get_id_field(DocName) when is_atom(DocName) ->
-  get_id_field(get_schema(DocName)).
-
-%% @doc Returns the name of the given field.
--spec field_name(field()) -> sumo_field_name().
-field_name(#sumo_field{name=Name}) ->
-  Name.
-
-%% @doc Returns the type of the given field.
--spec field_type(field()) -> sumo_field_type().
-field_type(#sumo_field{type=Type}) ->
-  Type.
-
-%% @doc Returns all attributes of the given field.
--spec field_attrs(field()) -> sumo_field_attrs().
-field_attrs(#sumo_field{attrs=Attributes}) ->
-  Attributes.
-
-%% @doc True if the field has a given attribute.
--spec field_is(atom(), field()) -> boolean().
-field_is(What, #sumo_field{attrs=Attributes}) ->
-  proplists:is_defined(What, Attributes).
-
-%% @doc Returns a new doc without any fields.
--spec new_doc(sumo_schema_name()) -> doc().
-new_doc(Name) ->
-  new_doc(Name, []).
-
-%% @doc Returns a new doc.
--spec new_doc(sumo_schema_name(), [sumo_field()]) -> doc().
-new_doc(Name, Fields) ->
-  #sumo_doc{name=Name, fields=Fields}.
-
 %% @doc Returns a new schema.
--spec new_schema(sumo_schema_name(), [field()]) -> schema().
+-spec new_schema(sumo:schema_name(), [field()]) -> schema().
 new_schema(Name, Fields) ->
-  #sumo_schema{name=Name, fields=Fields}.
+  sumo_internal:new_schema(Name, Fields).
 
 %% @doc Returns a new field of the given type and attributes.
--spec new_field(
-  sumo_field_name(), sumo_field_type(), [sumo_field_attrs()]
-) -> field().
+-spec new_field(field_name(), field_type(), field_attrs()) -> field().
 new_field(Name, Type, Attributes) ->
-  #sumo_field{name=Name, type=Type, attrs=Attributes}.
+  sumo_internal:new_field(Name, Type, Attributes).
 
 %% @doc Returns a new field of the given type without attributes.
--spec new_field(sumo_field_name(), sumo_field_type()) -> field().
+-spec new_field(field_name(), field_type()) -> field().
 new_field(Name, Type) ->
   new_field(Name, Type, []).

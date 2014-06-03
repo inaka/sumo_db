@@ -57,7 +57,7 @@ s(TableName, SelectFields, Conditions, ExtraWhere, Page, PageSize, OrderBy) ->
   }.
 
 %% @doc INSERT.
--spec i(string(), proplists:proplist()) -> {iolist(), [term()]}.
+-spec i(string(), sumo:doc()) -> {iolist(), [term()]}.
 i(TableName, Proplist) ->
   {Fields, Values, Args} = lists:foldr(
     fun({K, V}, {Fs, Vs, Args}) ->
@@ -76,7 +76,7 @@ i(TableName, Proplist) ->
 
 %% @doc UPDATE.
 -spec u(
-  string(), proplists:proplist(), condition()
+  string(), sumo:doc(), condition()
 ) -> {iolist(), [term()], [term()]}.
 u(TableName, UpdateFields, Conditions) ->
   {_Select, Where, WValues} = form_select_query([], Conditions, ""),

@@ -21,8 +21,6 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
--include_lib("include/sumo_doc.hrl").
-
 -behavior(sumo_repo).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -38,34 +36,35 @@
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -record(state, {pool:: pid()}).
--type state() :: #state{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% External API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-persist(#sumo_doc{name=DocName}=Doc, #state{pool=Pool}=State) ->
-  IdField = sumo:field_name(sumo:get_id_field(DocName)),
-  NewId = case sumo:get_field(IdField, Doc) of
+persist(Doc, #state{pool=Pool}=State) ->
+  DocName = sumo_internal:doc_name(Doc),
+  IdField = sumo_internal:id_field_name(DocName),
+  NewId = case sumo_internal:get_field(IdField, Doc) of
     undefined -> emongo:oid();
     Id -> emongo:hex2dec(Id)
   end,
   Selector = [{"_id", {oid, NewId}}],
-  NewDoc = sumo:set_field(
-    '_id', {oid, NewId}, sumo:set_field(IdField, emongo:dec2hex(NewId), Doc)
+  NewDoc = sumo_internal:set_field(
+    '_id', {oid, NewId}, sumo_internal:set_field(IdField, emongo:dec2hex(NewId), Doc)
   ),
   ok = emongo:update(
-    Pool, atom_to_list(DocName), Selector, NewDoc#sumo_doc.fields, true
+    Pool, atom_to_list(DocName), Selector,
+    sumo_internal:doc_fields(NewDoc), true
   ),
   {ok, NewDoc, State}.
 
 delete(DocName, Id, #state{pool=Pool}=State) ->
-  IdField = sumo:field_name(sumo:get_id_field(DocName)),
+  IdField = sumo_internal:id_field_name(DocName),
   ok = emongo:delete(
     Pool, atom_to_list(DocName), [{atom_to_list(IdField), Id}]
   ),
   {ok, 1, State}.
 
-delete_by(DocName, Conditions, #state{pool=Pool}=State) ->
+delete_by(DocName, Conditions, State) ->
   Args = [?MODULE, DocName, Conditions, State],
   lager:critical("Unimplemented function: ~p:delete_by(~p, ~p, ~p)", Args),
   {error, not_implemented, State}.
@@ -88,13 +87,13 @@ find_by(DocName, Conditions, Limit, Offset, #state{pool=Pool}=State) ->
             <<"_id">> -> Acc;
             _ -> if
               is_binary(FieldValue) ->
-                sumo:set_field(
+                sumo_internal:set_field(
                   list_to_atom(binary_to_list(FieldName)),
                   binary_to_list(FieldValue),
                   Acc
                 );
               true ->
-                sumo:set_field(
+                sumo_internal:set_field(
                   list_to_atom(binary_to_list(FieldName)),
                   FieldValue,
                   Acc
@@ -102,7 +101,7 @@ find_by(DocName, Conditions, Limit, Offset, #state{pool=Pool}=State) ->
             end
           end
         end,
-        sumo:new_doc(DocName),
+        sumo_internal:new_doc(DocName, []),
         Row
       )
     end,
@@ -113,11 +112,13 @@ find_by(DocName, Conditions, Limit, Offset, #state{pool=Pool}=State) ->
 find_by(DocName, Conditions, State) ->
   find_by(DocName, Conditions, 0, 0, State).
 
-create_schema(
-  #sumo_schema{name=SchemaName, fields=Fields}, #state{pool=Pool}=State
-) ->
+create_schema(Schema, #state{pool=Pool}=State) ->
+  SchemaName = sumo_internal:schema_name(Schema),
+  Fields = sumo_internal:schema_fields(Schema),
   lists:foreach(
-    fun(#sumo_field{name=Name, attrs=Attrs}) ->
+    fun(Field) ->
+      Name = sumo_internal:field_name(Field),
+      Attrs = sumo_internal:field_attrs(Field),
       lists:foldl(
         fun(Attr, Acc) ->
           case create_index(Attr) of

@@ -24,5 +24,5 @@
 
 %% @doc Returns all behavior callbacks.
 -callback sumo_schema() -> sumo:schema().
--callback sumo_wakeup(proplists:proplist()) -> term().
--callback sumo_sleep(term()) -> proplists:proplist().
+-callback sumo_wakeup(sumo:doc()) -> term().
+-callback sumo_sleep(term()) -> sumo:doc().

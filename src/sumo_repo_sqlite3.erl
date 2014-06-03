@@ -21,7 +21,6 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
--include_lib("include/sumo_doc.hrl").
 -include_lib("sqlite3/include/sqlite3.hrl").
 
 -behavior(sumo_repo).
@@ -40,7 +39,6 @@
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -record(state, {db::pid()}).
--type state() :: #state{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% External API.

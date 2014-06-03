@@ -21,8 +21,6 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
--include_lib("include/sumo_doc.hrl").
-
 -behavior(sumo_doc).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -75,21 +73,16 @@ reader_id(Vote) when is_list(Vote) ->
 get(Key, Vote) when is_atom(Key), is_list(Vote) ->
   proplists:get_value(Key, Vote).
 
-%% @doc Generically set an attribute of the given vote.
-%-spec set(atom(), term(), vote()) -> proplists:proplist().
-%set(Key, Value, Vote) when is_atom(Key), is_list(Vote) ->
-%  lists:keyreplace(Key, 1, Vote, {Key, Value}).
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% sumo behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Part of the sumo_doc behavior.
--spec sumo_wakeup(proplists:proplist()) -> vote().
+-spec sumo_wakeup(sumo:doc()) -> vote().
 sumo_wakeup(Data) ->
   Data.
 
 %% @doc Part of the sumo_doc behavior.
--spec sumo_sleep(vote()) -> proplists:proplist().
+-spec sumo_sleep(vote()) -> sumo:doc().
 sumo_sleep(Vote) ->
   Vote.
 

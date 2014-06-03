@@ -21,8 +21,6 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
--include_lib("include/sumo_doc.hrl").
-
 -behavior(sumo_doc).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -100,12 +98,12 @@ set(Key, Value, Post) when is_atom(Key), is_list(Post) ->
 %% sumo behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Part of the sumo_doc behavior.
--spec sumo_wakeup(proplists:proplist()) -> post().
+-spec sumo_wakeup(sumo:doc()) -> post().
 sumo_wakeup(Data) ->
   Data.
 
 %% @doc Part of the sumo_doc behavior.
--spec sumo_sleep(post()) -> proplists:proplist().
+-spec sumo_sleep(post()) -> sumo:doc().
 sumo_sleep(Post) ->
   Post.
 
@@ -122,7 +120,7 @@ sumo_schema() ->
 %% We don't have the extends module attribute in R16, so this was moved out from
 %% the old blog_post_repo in the example, we should allocate some time to create
 %% a proper parse transform for this.
-% -spec total_posts(sumo_schema_name(), term() ) -> {ok, {raw, pos_integer}, term()} | {ok, error, term()}.
+% -spec total_posts(sumo:schema_name(), term() ) -> {ok, {raw, pos_integer}, term()} | {ok, error, term()}.
 % count(DocName, State) ->
 %   Sql = "SELECT COUNT(1) FROM `" ++ atom_to_list(DocName) ++ "`",
 %   Result = sumo_repo_mysql:execute(Sql, State),

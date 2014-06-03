@@ -21,9 +21,6 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
-%%% Include standard types.
--include_lib("include/sumo_doc.hrl").
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,12 +30,12 @@
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Dispatchs an event through gen_event:notify/2.
--spec dispatch(sumo_schema_name(), term()) -> ok.
+-spec dispatch(sumo:schema_name(), term()) -> ok.
 dispatch(DocName, Event) ->
   dispatch(DocName, Event, []).
 
 %% @doc Dispatchs an event through gen_event:notify/2.
--spec dispatch(sumo_schema_name(), term(), term()) -> ok.
+-spec dispatch(sumo:schema_name(), term(), term()) -> ok.
 dispatch(DocName, Event, Args) ->
   case get_event_manager(DocName) of
     undefined -> ok;
@@ -51,7 +48,7 @@ dispatch(DocName, Event, Args) ->
 %% @doc Returns the name of the event manager configured for the given
 %% doc, or undefined.
 -spec get_event_manager(
-  sumo_schema_name()
+  sumo:schema_name()
 ) -> undefined|atom()|{atom(), term()}.
 get_event_manager(DocName) ->
   {ok, Docs} = application:get_env(sumo_db, events),

@@ -72,7 +72,7 @@ find_reader(Id) ->
 %% @doc Returns all available posts.
 -spec total_posts() -> pos_integer().
 total_posts() ->
-  sumo:call(blog_post, total_posts).
+  sumo_internal:call(blog_post, total_posts).
 
 %% @doc Deletes all authors.
 -spec del_author() -> ok.

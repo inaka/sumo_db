@@ -55,7 +55,6 @@
 
 %%% API for repo handling.
 -export([get_repo/1]).
--export([call/2, call/3]).
 
 %%% API for opaqueness
 -export([wakeup/2, doc_name/1, doc_fields/1, schema_name/1, schema_fields/1,
@@ -114,27 +113,6 @@ get_repo(#sumo_doc{name=Name}) ->
 -spec get_schema(sumo:schema_name()) -> schema().
 get_schema(DocName) ->
   DocName:sumo_schema().
-
-%% @doc Calls the given custom function of a repo.
--spec call(sumo:schema_name(), atom()) -> term().
-call(DocName, Function) ->
-  call(DocName, Function, []).
-
-%% @doc Calls the given custom function of a repo with the given args.
--spec call(sumo:schema_name(), atom(), [term()]) -> term().
-call(DocName, Function, Args) ->
-  case sumo_repo:call(get_repo(DocName), DocName, Function, Args) of
-    {ok, {docs, Docs}} -> docs_wakeup(DocName, Docs);
-    {ok, {raw, Value}} -> Value
-  end.
-
-docs_wakeup(DocName, Docs) ->
-  lists:reverse(lists:map(
-    fun(Doc) ->
-      DocName:sumo_wakeup(Doc#sumo_doc.fields)
-    end,
-    Docs
-  )).
 
 %% @doc Returns the value of a field from a sumo_doc.
 -spec get_field(sumo:field_name(), doc()) -> sumo:field_value().

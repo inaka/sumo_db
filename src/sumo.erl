@@ -34,6 +34,7 @@
 %%% API for standard CRUD functions.
 -export([persist/2, delete/2, delete_by/2, delete_all/1]).
 -export([find/2, find_all/1, find_all/4, find_by/2, find_by/4, find_one/2]).
+-export([call/2, call/3]).
 
 -type schema_name() :: atom().
 
@@ -202,6 +203,20 @@ create_schema(DocName, Repo) ->
       sumo_event:dispatch(DocName, schema_created),
       ok;
     Error -> throw(Error)
+  end.
+
+%% @doc Calls the given custom function of a repo.
+-spec call(sumo:schema_name(), atom()) -> term().
+call(DocName, Function) ->
+  call(DocName, Function, []).
+
+%% @doc Calls the given custom function of a repo with the given args.
+-spec call(sumo:schema_name(), atom(), [term()]) -> term().
+call(DocName, Function, Args) ->
+  Repo = sumo_internal:get_repo(DocName),
+  case sumo_repo:call(Repo, DocName, Function, Args) of
+    {ok, {docs, Docs}} -> docs_wakeup(DocName, Docs);
+    {ok, {raw, Value}} -> Value
   end.
 
 docs_wakeup(DocName, Docs) ->

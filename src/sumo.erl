@@ -41,7 +41,7 @@
 -type field_attr()  :: id|unique|index|not_null|auto_increment|{length, integer()}.
 -type field_attrs() :: [field_attr()].
 
--type field_type()  :: integer|string|binary|text.
+-type field_type()  :: integer|string|binary|text|float|date|datetime.
 -type field_name()  :: atom().
 -type field_value() :: term().
 -type doc()         :: [{field_name(), field_value()}].

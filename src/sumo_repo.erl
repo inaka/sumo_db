@@ -59,6 +59,8 @@
 -type result(S) :: {ok, S} | {error, term(), S}.
 -type affected_rows() :: unknown | non_neg_integer().
 
+-export_type([result/2, result/1, affected_rows/0]).
+
 -callback init(term()) -> {ok, term()}.
 -callback persist(sumo:doc(), State) -> result(sumo:doc(), State).
 -callback delete(sumo:schema_name(), term(), State) ->

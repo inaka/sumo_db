@@ -57,8 +57,9 @@
 -export([get_repo/1]).
 
 %%% API for opaqueness
--export([wakeup/2, doc_name/1, doc_fields/1, schema_name/1, schema_fields/1,
-         new_doc/2]).
+-export([wakeup/1, wakeup/2, new_doc/2,
+         doc_name/1, doc_fields/1,
+         schema_name/1, schema_fields/1]).
 
 -opaque schema()  :: #sumo_schema{}.
 -opaque doc()     :: #sumo_doc{}.
@@ -88,6 +89,11 @@ doc_name(Doc) ->
 -spec doc_fields(doc()) -> sumo:doc().
 doc_fields(Doc) ->
   Doc#sumo_doc.fields.
+
+%% @doc Wakes up the document
+-spec wakeup(doc()) -> term().
+wakeup(Doc) ->
+  wakeup(doc_name(Doc), Doc).
 
 %% @doc Wakes up the document
 -spec wakeup(module(), doc()) -> term().

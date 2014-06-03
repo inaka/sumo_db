@@ -12,7 +12,7 @@ offering a consistent api to your code.
  db implementation (mongo, mysql, redis, or sqlite3).
  * Your entities encapsulate behavior in code (functions in module) and state
  into ``sumo:doc()``.
- * sumo is the main module. It translates to and from #sumo_doc records into your
+ * sumo is the main module. It translates to and from sumo internal records into your
  own state.
  * Each repo is a process *sumo_repo* that calls the actual db driver
  (e.g: sumo_repo_mysql).

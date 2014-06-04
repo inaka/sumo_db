@@ -35,7 +35,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -type post() :: proplists:proplist().
 -type id() :: pos_integer().
--export_type([post/0]).
+-export_type([post/0, id/0]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Public API.
@@ -46,7 +46,7 @@ new(Title, Content, AuthorId) when is_list(Title), is_list(Content) ->
   create(undefined, Title, Content, AuthorId).
 
 %% @doc Returns a new post (internal).
--spec create(id(), string(), string(), blog_author:id()) -> post().
+-spec create(undefined|id(), string(), string(), blog_author:id()) -> post().
 create(Id, Title, Content, AuthorId)
   when is_list(Title), is_list(Content), is_integer(AuthorId) ->
   [{id, Id}, {title, Title}, {content, Content}, {author_id, AuthorId}].

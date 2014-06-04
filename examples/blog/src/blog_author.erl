@@ -35,7 +35,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -type author() :: proplists:proplist().
 -type id() :: pos_integer().
--export_type([author/0]).
+-export_type([author/0, id/0]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Public API.
@@ -51,7 +51,7 @@ new(Name, Photo) when is_list(Name), is_binary(Photo) ->
   create(undefined, Name, Photo).
 
 %% @doc Returns a new author (internal).
--spec create(id(), string(), binary()) -> author().
+-spec create(undefined|id(), string(), binary()) -> author().
 create(Id, Name, Photo) when is_list(Name), is_binary(Photo) ->
   [{id, Id}, {name, Name}, {photo, Photo}].
 

@@ -75,17 +75,17 @@ total_posts() ->
   sumo:call(blog_post, total_posts).
 
 %% @doc Deletes all authors.
--spec del_author() -> ok.
+-spec del_author() -> non_neg_integer().
 del_author() ->
   sumo:delete_all(blog_author).
 
 %% @doc Deletes all posts.
--spec del_post() -> ok.
+-spec del_post() -> non_neg_integer().
 del_post() ->
   sumo:delete_all(blog_post).
 
 %% @doc Deletes all readers.
--spec del_reader() -> ok.
+-spec del_reader() -> non_neg_integer().
 del_reader() ->
   sumo:delete_all(blog_reader).
 
@@ -95,12 +95,12 @@ del_author_by_name(Name) ->
   sumo:delete_by(blog_author, [{name, Name}]).
 
 %% @doc Deletes the given author.
--spec del_author(blog_author:author()) -> ok.
+-spec del_author(blog_author:author()) -> boolean().
 del_author(Author) ->
   sumo:delete(blog_author, blog_author:id(Author)).
 
 %% @doc Deletes the given post.
--spec del_post(blog_post:post()) -> ok.
+-spec del_post(blog_post:post()) -> boolean().
 del_post(Post) ->
   sumo:delete(blog_post, blog_post:id(Post)).
 

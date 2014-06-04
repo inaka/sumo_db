@@ -93,36 +93,49 @@ start_link(Name, Module, Options) ->
   wpool:start_pool(Name, WPoolOptions).
 
 %% @doc Creates the schema of the given docs in the given repository name.
--spec create_schema(atom(), sumo:schema()) -> ok.
+-spec create_schema(atom(), sumo:schema()) -> ok | {error, term()}.
 create_schema(Name, Schema) ->
   wpool:call(Name, {create_schema, Schema}).
 
 %% @doc Persist the given doc with the given repository name.
--spec persist(atom(), sumo_internal:doc()) -> sumo_internal:doc().
+-spec persist(
+  atom(), sumo_internal:doc()
+) -> {ok, sumo_internal:doc()} | {error, term()}.
 persist(Name, Doc) ->
   wpool:call(Name, {persist, Doc}).
 
 %% @doc Deletes the doc identified by id in the given repository name.
--spec delete(atom(), sumo:schema_name(), term()) -> ok.
+-spec delete(atom(), sumo:schema_name(), term()) -> ok | {error, term()}.
 delete(Name, DocName, Id) ->
   wpool:call(Name, {delete, DocName, Id}).
 
 %% @doc Deletes the docs identified by the given conditions.
--spec delete_by(atom(), sumo:schema_name(), sumo:conditions()) -> ok.
+-spec delete_by(
+  atom(), sumo:schema_name(), sumo:conditions()
+) -> {ok, non_neg_integer()} | {error, term()}.
 delete_by(Name, DocName, Conditions) ->
   wpool:call(Name, {delete_by, DocName, Conditions}).
 
 %% @doc Deletes all docs in the given repository name.
--spec delete_all(atom(), sumo:schema_name()) -> ok.
+-spec delete_all(
+  atom(), sumo:schema_name()
+) -> {ok, non_neg_integer()} | {error, term()}.
 delete_all(Name, DocName) ->
   wpool:call(Name, {delete_all, DocName}).
 
 %% @doc Returns all docs from the given repositoru name.
+-spec find_all(
+  atom(), sumo:schema_name()
+) -> {ok, [sumo_internal:doc()]} | {error, term()}.
 find_all(Name, DocName) ->
   wpool:call(Name, {find_all, DocName}).
 
 %% @doc Returns Limit docs starting at Offset from the given repository name,
 %% ordered by OrderField. OrderField may be 'undefined'.
+-spec find_all(
+  atom(), sumo:schema_name(), sumo:field_name(),
+  non_neg_integer(), non_neg_integer()
+) -> {ok, [sumo_internal:doc()]} | {error, term()}.
 find_all(Name, DocName, OrderField, Limit, Offset) ->
   wpool:call(Name, {find_all, DocName, OrderField, Limit, Offset}).
 
@@ -144,7 +157,9 @@ find_by(Name, DocName, Conditions) ->
   wpool:call(Name, {find_by, DocName, Conditions}).
 
 %% @doc Calls a custom function in the given repository name.
--spec call(atom(), sumo:schema_name(), atom(), [term()]) -> term().
+-spec call(
+  atom(), sumo:schema_name(), atom(), [term()]
+) -> ok | {ok, term()} | {error, term()}.
 call(Name, DocName, Function, Args) ->
   {ok, Timeout} = application:get_env(sumo_db, query_timeout),
   wpool:call(

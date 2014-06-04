@@ -91,12 +91,12 @@ doc_fields(Doc) ->
   Doc#sumo_doc.fields.
 
 %% @doc Wakes up the document
--spec wakeup(doc()) -> term().
+-spec wakeup(doc()) -> sumo:user_doc().
 wakeup(Doc) ->
   wakeup(doc_name(Doc), Doc).
 
 %% @doc Wakes up the document
--spec wakeup(module(), doc()) -> term().
+-spec wakeup(module(), doc()) -> sumo:user_doc().
 wakeup(DocName, Doc) ->
   DocName:sumo_wakeup(Doc#sumo_doc.fields).
 

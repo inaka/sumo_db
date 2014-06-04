@@ -64,7 +64,7 @@
 -callback init(term()) -> {ok, term()}.
 -callback persist(sumo_internal:doc(), State) ->
             result(sumo_internal:doc(), State).
--callback delete(sumo:schema_name(), term(), State) ->
+-callback delete(sumo:schema_name(), sumo:field_value(), State) ->
             result(affected_rows(), State).
 -callback delete_by(sumo:schema_name(), sumo:conditions(), State) ->
             result(affected_rows(), State).
@@ -105,7 +105,9 @@ persist(Name, Doc) ->
   wpool:call(Name, {persist, Doc}).
 
 %% @doc Deletes the doc identified by id in the given repository name.
--spec delete(atom(), sumo:schema_name(), term()) -> ok | {error, term()}.
+-spec delete(
+  atom(), sumo:schema_name(), sumo:field_value()
+) -> ok | {error, term()}.
 delete(Name, DocName, Id) ->
   wpool:call(Name, {delete, DocName, Id}).
 

@@ -55,6 +55,11 @@
 
 -export_type([schema/0, field/0]).
 
+%% @doc the user representation of a doc (i.e. not the proplists)
+-type user_doc()    :: term().
+
+-export_type([user_doc/0]).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -77,7 +82,7 @@ create_schema() ->
   ok.
 
 %% @doc Returns 1 doc that matches the given Conditions.
--spec find_one(sumo:schema_name(), conditions()) -> doc() | notfound.
+-spec find_one(schema_name(), conditions()) -> user_doc() | notfound.
 find_one(DocName, Conditions) ->
   case find_by(DocName, Conditions, 1, 0) of
     [] -> notfound;
@@ -85,7 +90,7 @@ find_one(DocName, Conditions) ->
   end.
 
 %% @doc Returns the doc identified by Id.
--spec find(sumo:schema_name(), term()) -> doc() | notfound.
+-spec find(schema_name(), field_value()) -> user_doc() | notfound.
 find(DocName, Id) ->
   IdFieldName = sumo_internal:id_field_name(DocName),
   find_one(DocName, [{IdFieldName, Id}]).
@@ -114,8 +119,8 @@ find_all(DocName, OrderField, Limit, Offset) ->
 %% @doc Returns Limit number of docs that match Conditions, starting at
 %% offset Offset.
 -spec find_by(
-  sumo:schema_name(), conditions(), non_neg_integer(), non_neg_integer()
-) -> [doc()].
+  schema_name(), conditions(), non_neg_integer(), non_neg_integer()
+) -> [user_doc()].
 find_by(DocName, Conditions, Limit, Offset) ->
   Repo = sumo_internal:get_repo(DocName),
   case sumo_repo:find_by(Repo, DocName, Conditions, Limit, Offset) of
@@ -127,7 +132,7 @@ find_by(DocName, Conditions, Limit, Offset) ->
   end.
 
 %% @doc Returns *all* docs that match Conditions.
--spec find_by(sumo:schema_name(), conditions()) -> [doc()].
+-spec find_by(schema_name(), conditions()) -> [user_doc()].
 find_by(DocName, Conditions) ->
   Repo = sumo_internal:get_repo(DocName),
   case sumo_repo:find_by(Repo, DocName, Conditions) of
@@ -136,7 +141,7 @@ find_by(DocName, Conditions) ->
   end.
 
 %% @doc Creates or updates the given Doc.
--spec persist(sumo:schema_name(), term()) -> term().
+-spec persist(schema_name(), UserDoc) -> UserDoc.
 persist(DocName, State) ->
   IdField = sumo_internal:id_field_name(DocName),
   PropList = DocName:sumo_sleep(State),
@@ -154,7 +159,7 @@ persist(DocName, State) ->
   end.
 
 %% @doc Deletes all docs of type DocName.
--spec delete_all(sumo:schema_name()) -> non_neg_integer().
+-spec delete_all(schema_name()) -> non_neg_integer().
 delete_all(DocName) ->
   Repo = sumo_internal:get_repo(DocName),
   case sumo_repo:delete_all(Repo, DocName) of
@@ -168,7 +173,7 @@ delete_all(DocName) ->
   end.
 
 %% @doc Deletes the doc identified by Id.
--spec delete(sumo:schema_name(), term()) -> boolean().
+-spec delete(schema_name(), user_doc()) -> boolean().
 delete(DocName, Id) ->
   IdField = sumo_internal:id_field_name(DocName),
   case delete_by(DocName, [{IdField, Id}]) of
@@ -177,7 +182,7 @@ delete(DocName, Id) ->
   end.
 
 %% @doc Deletes the doc identified by Conditions.
--spec delete_by(sumo:schema_name(), term()) -> non_neg_integer().
+-spec delete_by(schema_name(), conditions()) -> non_neg_integer().
 delete_by(DocName, Conditions) ->
   Repo = sumo_internal:get_repo(DocName),
   case sumo_repo:delete_by(Repo, DocName, Conditions) of
@@ -187,13 +192,13 @@ delete_by(DocName, Conditions) ->
   end.
 
 %% @doc Creates the schema for the docs of type DocName.
--spec create_schema(sumo:schema_name()) -> ok.
+-spec create_schema(schema_name()) -> ok.
 create_schema(DocName) ->
   create_schema(DocName, sumo_internal:get_repo(DocName)).
 
 %% @doc Creates the schema for the docs of type DocName using the given
 %% repository.
--spec create_schema(sumo:schema_name(), atom()) -> ok.
+-spec create_schema(schema_name(), atom()) -> ok.
 create_schema(DocName, Repo) ->
   case sumo_repo:create_schema(Repo, sumo_internal:get_schema(DocName)) of
     ok ->
@@ -203,12 +208,12 @@ create_schema(DocName, Repo) ->
   end.
 
 %% @doc Calls the given custom function of a repo.
--spec call(sumo:schema_name(), atom()) -> term().
+-spec call(schema_name(), atom()) -> term().
 call(DocName, Function) ->
   call(DocName, Function, []).
 
 %% @doc Calls the given custom function of a repo with the given args.
--spec call(sumo:schema_name(), atom(), [term()]) -> term().
+-spec call(schema_name(), atom(), [term()]) -> term().
 call(DocName, Function, Args) ->
   Repo = sumo_internal:get_repo(DocName),
   case sumo_repo:call(Repo, DocName, Function, Args) of
@@ -225,7 +230,7 @@ docs_wakeup(DocName, Docs) ->
   )).
 
 %% @doc Returns a new schema.
--spec new_schema(sumo:schema_name(), [field()]) -> schema().
+-spec new_schema(schema_name(), [field()]) -> schema().
 new_schema(Name, Fields) ->
   sumo_internal:new_schema(Name, Fields).
 

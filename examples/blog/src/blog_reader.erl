@@ -36,7 +36,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -type reader() :: proplists:proplist().
 -type id() :: pos_integer().
--export_type([reader/0]).
+-export_type([reader/0, id/0]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Public API.
@@ -47,7 +47,7 @@ new(Name, Email) when is_list(Name), is_list(Email) ->
   create(undefined, Name, Email).
 
 %% @doc Returns a new reader (internal).
--spec create(id(), string(), string()) -> reader().
+-spec create(undefined|id(), string(), string()) -> reader().
 create(Id, Name, Email) when is_list(Name), is_list(Email) ->
   [{id, Id}, {name, Name}, {email, Email}].
 
@@ -75,7 +75,7 @@ update_email(Email, Reader) when is_list(Email) ->
 %% Private functions.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Generically returns an attibute of the given reader.
--spec get(atom(), reader()) -> reader().
+-spec get(atom(), reader()) -> id() | string().
 get(Key, Reader) when is_atom(Key), is_list(Reader) ->
   proplists:get_value(Key, Reader).
 

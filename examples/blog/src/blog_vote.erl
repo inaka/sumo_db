@@ -35,7 +35,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -type vote() :: proplists:proplist().
 -type id() :: pos_integer().
--export_type([vote/0]).
+-export_type([vote/0, id/0]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Public API.
@@ -46,7 +46,7 @@ new(ReaderId, PostId) ->
   create(undefined, ReaderId, PostId).
 
 %% @doc Returns a new vote (internal).
--spec create(id(), blog_reader:id(), blog_post:id()) -> vote().
+-spec create(undefined|id(), blog_reader:id(), blog_post:id()) -> vote().
 create(Id, ReaderId, PostId) ->
   [{id, Id}, {reader_id, ReaderId}, {post_id, PostId}].
 

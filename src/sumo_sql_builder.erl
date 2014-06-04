@@ -46,7 +46,7 @@ s_count(TableName, SelectFields, Conditions, ExtraWhere) ->
 
 %% @doc Generic select function.
 -spec s(
-  string(), [field()], condition(), string(), pos_integer(), pos_integer(), string()
+  string(), [field()], condition(), string(), non_neg_integer(), non_neg_integer(), string()
 ) -> {iolist(), [term()]}.
 s(TableName, SelectFields, Conditions, ExtraWhere, Page, PageSize, OrderBy) ->
   Paging = [" LIMIT ", integer_to_list((Page-1) * PageSize), ",", integer_to_list(PageSize)],

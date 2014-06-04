@@ -126,7 +126,7 @@ get_field(Name, #sumo_doc{fields=Fields}) ->
   proplists:get_value(Name, Fields).
 
 %% @doc Sets a value in an sumo_doc.
--spec set_field(sumo:field_name(), term(), doc()) -> doc().
+-spec set_field(sumo:field_name(), sumo:field_value(), doc()) -> doc().
 set_field(FieldName, Value, #sumo_doc{fields=Fields, name=Name}) ->
   new_doc(Name, lists:keystore(FieldName, 1, Fields, {FieldName, Value})).
 
@@ -165,7 +165,7 @@ field_is(What, #sumo_field{attrs=Attributes}) ->
   proplists:is_defined(What, Attributes).
 
 %% @doc Returns a new doc.
--spec new_doc(sumo:schema_name(), [sumo:field()]) -> doc().
+-spec new_doc(sumo:schema_name(), sumo:doc()) -> doc().
 new_doc(Name, Fields) ->
   #sumo_doc{name=Name, fields=Fields}.
 

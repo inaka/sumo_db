@@ -35,7 +35,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -type post() :: proplists:proplist().
 -type id() :: pos_integer().
--export_type([post/0]).
+-export_type([post/0, id/0]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Public API.
@@ -46,7 +46,7 @@ new(Title, Content, AuthorId) when is_list(Title), is_list(Content) ->
   create(undefined, Title, Content, AuthorId).
 
 %% @doc Returns a new post (internal).
--spec create(id(), string(), string(), blog_author:id()) -> post().
+-spec create(undefined|id(), string(), string(), blog_author:id()) -> post().
 create(Id, Title, Content, AuthorId)
   when is_list(Title), is_list(Content), is_integer(AuthorId) ->
   [{id, Id}, {title, Title}, {content, Content}, {author_id, AuthorId}].
@@ -120,7 +120,7 @@ sumo_schema() ->
 %% We don't have the extends module attribute in R16, so this was moved out from
 %% the old blog_post_repo in the example, we should allocate some time to create
 %% a proper parse transform for this.
-% -spec total_posts(sumo:schema_name(), term() ) -> {ok, {raw, pos_integer}, term()} | {ok, error, term()}.
+% -spec total_posts(sumo:schema_name(), term() ) -> {ok, {raw, non_neg_integer()}, term()} | {ok, error, term()}.
 % count(DocName, State) ->
 %   Sql = "SELECT COUNT(1) FROM `" ++ atom_to_list(DocName) ++ "`",
 %   Result = sumo_repo_mysql:execute(Sql, State),

@@ -44,7 +44,7 @@ ${DIALYZER_OUT}:
 	 inets xmerl ssl mnesia webtool kernel
 
 analyze: compile ${DIALYZER_OUT} xref
-	dialyzer --verbose --plt ${DIALYZER_OUT} -Werror_handling `find ebin -name "sumo_*.beam" | grep -v SUITE`
+	dialyzer --verbose --plt ${DIALYZER_OUT} -Werror_handling `find ebin -name "*.beam" | grep -v SUITE`
 
 xref:
 	${REBAR} skip_deps=true --verbose compile xref

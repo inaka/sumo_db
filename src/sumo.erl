@@ -70,10 +70,7 @@ get_docs() ->
 create_schema() ->
   lists:foreach(
     fun({DocName, Repo}) ->
-      case create_schema(DocName, Repo) of
-        ok -> ok;
-        Error -> throw(Error)
-      end
+      create_schema(DocName, Repo)
     end,
     get_docs()
   ),
@@ -117,7 +114,7 @@ find_all(DocName, OrderField, Limit, Offset) ->
 %% @doc Returns Limit number of docs that match Conditions, starting at
 %% offset Offset.
 -spec find_by(
-  sumo:schema_name(), conditions(), pos_integer(), pos_integer()
+  sumo:schema_name(), conditions(), non_neg_integer(), non_neg_integer()
 ) -> [doc()].
 find_by(DocName, Conditions, Limit, Offset) ->
   Repo = sumo_internal:get_repo(DocName),
@@ -139,7 +136,7 @@ find_by(DocName, Conditions) ->
   end.
 
 %% @doc Creates or updates the given Doc.
--spec persist(sumo:schema_name(), term()) -> ok.
+-spec persist(sumo:schema_name(), term()) -> term().
 persist(DocName, State) ->
   IdField = sumo_internal:id_field_name(DocName),
   PropList = DocName:sumo_sleep(State),
@@ -157,7 +154,7 @@ persist(DocName, State) ->
   end.
 
 %% @doc Deletes all docs of type DocName.
--spec delete_all(sumo:schema_name()) -> ok.
+-spec delete_all(sumo:schema_name()) -> non_neg_integer().
 delete_all(DocName) ->
   Repo = sumo_internal:get_repo(DocName),
   case sumo_repo:delete_all(Repo, DocName) of
@@ -171,7 +168,7 @@ delete_all(DocName) ->
   end.
 
 %% @doc Deletes the doc identified by Id.
--spec delete(sumo:schema_name(), term()) -> ok.
+-spec delete(sumo:schema_name(), term()) -> boolean().
 delete(DocName, Id) ->
   IdField = sumo_internal:id_field_name(DocName),
   case delete_by(DocName, [{IdField, Id}]) of
@@ -180,7 +177,7 @@ delete(DocName, Id) ->
   end.
 
 %% @doc Deletes the doc identified by Conditions.
--spec delete_by(sumo:schema_name(), term()) -> ok.
+-spec delete_by(sumo:schema_name(), term()) -> non_neg_integer().
 delete_by(DocName, Conditions) ->
   Repo = sumo_internal:get_repo(DocName),
   case sumo_repo:delete_by(Repo, DocName, Conditions) of

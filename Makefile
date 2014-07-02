@@ -21,7 +21,7 @@ shell: compile_no_deps
 	${ERL} ${ERL_ARGS}
 
 edoc:
-	${REBAR} doc
+	${REBAR} skip_deps=true doc
 
 getdeps:
 	${REBAR} get-deps

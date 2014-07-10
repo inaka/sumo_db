@@ -6,3 +6,4 @@ examples/blog/log
 *.o
 *.beam
 *.plt
+.rebar

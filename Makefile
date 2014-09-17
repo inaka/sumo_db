@@ -7,7 +7,7 @@ HOST?=$(shell hostname)
 NODE?=${NAME}@${HOST}
 DIALYZER_OUT?=${NAME}.plt
 
-ERL_ARGS?=-pa ebin -pa deps/*/ebin -name ${NODE} -s sync
+ERL_ARGS?=-pa ebin -pa deps/*/ebin -name ${NODE} -s sync -config test/test.config
 
 all: getdeps compile
 	${REBAR} compile
@@ -33,7 +33,7 @@ compile:
 	${REBAR} compile
 
 test: compile
-	${REBAR} eunit skip_deps=true
+	ERL_AFLAGS="-config test/test.config" ${REBAR} eunit skip_deps=true
 
 clean:
 	${REBAR} clean

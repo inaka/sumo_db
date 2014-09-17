@@ -4,7 +4,11 @@
 
 -export([migrate/0, rollback/0]).
 
--export([migration_update_list/1]).
+-export([
+         init_test/0,
+         migrate_update_list_test/0,
+         migrate_test/0
+        ]).
 
 %%% sumo_db callbacks
 -export([sumo_schema/0, sumo_wakeup/1, sumo_sleep/1]).
@@ -12,7 +16,11 @@
 -callback up() -> string().
 -callback down() -> string().
 
--type migration() :: atom().
+-type version() :: atom().
+-record(migration, {id :: integer(),
+                    version :: version()}).
+
+-type migration() :: #migration{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Exported
@@ -21,9 +29,9 @@
 -spec migrate() -> ok.
 migrate() ->
     ensure_sumo_migration_doc(),
-    LastMigration = last_migration_update(),
-    Migrations = migration_update_list(LastMigration),
-    lists:foreach(fun(M) -> M:up() end, Migrations).
+    LastVersion = last_migration_version(),
+    Versions = migration_update_list(LastVersion),
+    lists:foreach(fun(M) -> run_migration(M) end, Versions).
 
 -spec rollback() -> ok.
 rollback() ->
@@ -36,17 +44,21 @@ rollback() ->
 
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
-    Fields = [sumo:new_field(version, string)],
+    Fields = [sumo:new_field(id,      integer, [id, not_null, auto_increment]),
+              sumo:new_field(version, string,  [{length, 255}, unique])],
     sumo:new_schema(?MODULE, Fields).
 
 -spec sumo_sleep(migration()) -> sumo:doc().
 sumo_sleep(Migration) ->
-    [{version, Migration}].
+    [{id, Migration#migration.id},
+     {version, atom_to_binary(Migration#migration.version, utf8)}].
 
 -spec sumo_wakeup(sumo:doc()) -> migration().
 sumo_wakeup(Migration) ->
-    VersionBin = proplists:get_value(version, Migration),
-    binary_to_atom(VersionBin, utf8).
+    #migration{
+       id = proplists:get_value(version, Migration),
+       version = binary_to_atom(proplists:get_value(version, Migration), utf8)
+      }.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Internal
@@ -57,25 +69,39 @@ sumo_wakeup(Migration) ->
 ensure_sumo_migration_doc() ->
     sumo:create_schema(?MODULE).
 
--spec last_migration_update() -> migration().
-last_migration_update() ->
-    Migrations = sumo:find_all(?MODULE),
-    lists:max(Migrations).
+-spec last_migration_version() -> version().
+last_migration_version() ->
+    case sumo:find_all(?MODULE) of
+        [] -> '0';
+        Migrations ->
+            FunVersion = fun (M) -> M#migration.version end,
+            Versions = lists:map(FunVersion, Migrations),
+            lists:max(Versions)
+    end.
 
--spec migration_update_list(migration()) -> [migration()].
-migration_update_list(LastMigration) ->
+-spec migration_update_list(version()) -> [version()].
+migration_update_list(LastVersion) ->
     MigrationsDir = migrations_dir(),
     Files = filelib:wildcard("*.erl", MigrationsDir),
+
     F = compose([fun filename:rootname/1, fun list_to_atom/1]),
-    AvailableMigrations = lists:map(F, Files),
-    lists:filter(fun(X) -> X > LastMigration end, AvailableMigrations).
+    AvailableVersion = lists:map(F, lists:sort(Files)),
+
+    FunFilter = fun(X) -> X > LastVersion end,
+    lists:filter(FunFilter, AvailableVersion).
 
 -spec migrations_dir() -> string().
 migrations_dir() ->
-    case application:get_env(migrations_dir, sumo_db) of
+    case application:get_env(sumo_db, migrations_dir) of
         undefined -> "src/migrations";
-        Dir -> Dir
+        {ok, Dir} -> Dir
     end.
+
+-spec run_migration(version()) -> ok.
+run_migration(Version) ->
+    Version:up(),
+    Migration = #migration{version = Version},
+    sumo:persist(sumo_migration, Migration).
 
 -spec compose([fun()]) -> fun().
 compose(Funs) ->
@@ -83,3 +109,21 @@ compose(Funs) ->
     fun(X) ->
             lists:foldl(Compose, X, Funs)
     end.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Tests
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+init_test() ->
+    application:ensure_all_started(emysql),
+    application:ensure_all_started(sumo_db),
+    sumo:delete_all(sumo_migration).
+
+migrate_update_list_test() ->
+    [_, _, _] = migration_update_list('20140901'),
+    [_, _] = migration_update_list('20140902'),
+    [_] = migration_update_list('20140903'),
+    [] = migration_update_list('20140904').
+
+migrate_test() ->
+    migrate().

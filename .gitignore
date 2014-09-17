@@ -8,3 +8,4 @@ examples/blog/log
 *.plt
 .rebar
 *.dump
+log*/

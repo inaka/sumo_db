@@ -250,11 +250,9 @@ new_field(Name, Type) ->
 %% @doc Runs all migrations to get the DB up to date.
 -spec migrate() -> ok | {error, term()}.
 migrate() ->
-    sumo_migration:migrate(),
-    halt(0).
+    sumo_migration:migrate().
 
 %% @doc Rolls back the last migration and downgrades the DB version.
 -spec rollback() -> ok | {error, term()}.
 rollback() ->
-    sumo_migration:rollback(),
-    halt(0).
+    sumo_migration:rollback().

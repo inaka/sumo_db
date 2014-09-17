@@ -7,7 +7,7 @@ HOST?=$(shell hostname)
 NODE?=${NAME}@${HOST}
 DIALYZER_OUT?=${NAME}.plt
 
-ERL_ARGS?=-pa ebin -pa deps/*/ebin -name ${NODE} -s sync -config test/test.config
+ERL_ARGS?=-pa ebin -pa deps/*/ebin -name ${NODE}
 
 all: getdeps compile
 	${REBAR} compile

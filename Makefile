@@ -7,9 +7,9 @@ HOST?=$(shell hostname)
 NODE?=${NAME}@${HOST}
 DIALYZER_OUT?=${NAME}.plt
 
-ERL_ARGS?=-pa ebin -pa deps/*/ebin -name ${NODE}
+ERL_ARGS?=-pa ebin -pa deps/*/ebin -name ${NODE} -s sync
 
-all: getdeps compile edoc
+all: getdeps compile
 	${REBAR} compile
 
 blog:

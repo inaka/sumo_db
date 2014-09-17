@@ -7,3 +7,4 @@ examples/blog/log
 *.beam
 *.plt
 .rebar
+*.dump

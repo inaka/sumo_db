@@ -7,7 +7,8 @@
 -export([
          init_test/0,
          migrate_update_list_test/0,
-         migrate_test/0
+         migrate_test/0,
+         rollback_test/0
         ]).
 
 %%% sumo_db callbacks
@@ -36,7 +37,11 @@ migrate() ->
 -spec rollback() -> ok.
 rollback() ->
     ensure_sumo_migration_doc(),
-    ok.
+    case last_migration_version() of
+        undefined -> ok;
+        LastVersion ->
+            run_rollback(LastVersion)
+    end.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% sumo_doc callbacks
@@ -69,17 +74,17 @@ sumo_wakeup(Migration) ->
 ensure_sumo_migration_doc() ->
     sumo:create_schema(?MODULE).
 
--spec last_migration_version() -> version().
+-spec last_migration_version() -> version() | undefined.
 last_migration_version() ->
     case sumo:find_all(?MODULE) of
-        [] -> '0';
+        [] -> undefined;
         Migrations ->
             FunVersion = fun (M) -> M#migration.version end,
             Versions = lists:map(FunVersion, Migrations),
             lists:max(Versions)
     end.
 
--spec migration_update_list(version()) -> [version()].
+-spec migration_update_list(version() | undefined) -> [version()].
 migration_update_list(LastVersion) ->
     MigrationsDir = migrations_dir(),
     Files = filelib:wildcard("*.erl", MigrationsDir),
@@ -87,7 +92,7 @@ migration_update_list(LastVersion) ->
     F = compose([fun filename:rootname/1, fun list_to_atom/1]),
     AvailableVersion = lists:map(F, lists:sort(Files)),
 
-    FunFilter = fun(X) -> X > LastVersion end,
+    FunFilter = fun(X) -> (LastVersion == undefined) or (X > LastVersion) end,
     lists:filter(FunFilter, AvailableVersion).
 
 -spec migrations_dir() -> string().
@@ -102,6 +107,11 @@ run_migration(Version) ->
     Version:up(),
     Migration = #migration{version = Version},
     sumo:persist(sumo_migration, Migration).
+
+-spec run_rollback(version()) -> ok.
+run_rollback(Version) ->
+    Version:down(),
+    sumo:delete_by(sumo_migration, [{version, Version}]).
 
 -spec compose([fun()]) -> fun().
 compose(Funs) ->
@@ -126,4 +136,16 @@ migrate_update_list_test() ->
     [] = migration_update_list('20140904').
 
 migrate_test() ->
-    migrate().
+    migrate(),
+    [_, _, _] = sumo:find_all(sumo_migration).
+
+rollback_test() ->
+    [_, _, _] = sumo:find_all(sumo_migration),
+    rollback(),
+    [_, _] = sumo:find_all(sumo_migration),
+    rollback(),
+    [_] = sumo:find_all(sumo_migration),
+    rollback(),
+    [] = sumo:find_all(sumo_migration),
+    rollback(),
+    rollback().

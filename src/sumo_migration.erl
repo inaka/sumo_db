@@ -4,18 +4,11 @@
 
 -export([migrate/0, rollback/0]).
 
--export([
-         init_test/0,
-         migrate_update_list_test/0,
-         migrate_test/0,
-         rollback_test/0
-        ]).
-
 %%% sumo_db callbacks
 -export([sumo_schema/0, sumo_wakeup/1, sumo_sleep/1]).
 
--callback up() -> string().
--callback down() -> string().
+-callback up() -> ok.
+-callback down() -> ok.
 
 -type version() :: atom().
 -record(migration, {id :: integer(),
@@ -79,8 +72,7 @@ last_migration_version() ->
     case sumo:find_all(?MODULE) of
         [] -> undefined;
         Migrations ->
-            FunVersion = fun (M) -> M#migration.version end,
-            Versions = lists:map(FunVersion, Migrations),
+            Versions = [Version || #migration{version = Version} <- Migrations],
             lists:max(Versions)
     end.
 
@@ -90,10 +82,10 @@ migration_update_list(LastVersion) ->
     Files = filelib:wildcard("*.erl", MigrationsDir),
 
     F = compose([fun filename:rootname/1, fun list_to_atom/1]),
-    AvailableVersion = lists:map(F, lists:sort(Files)),
+    AvailableVersions = lists:map(F, lists:sort(Files)),
 
     FunFilter = fun(X) -> (LastVersion == undefined) or (X > LastVersion) end,
-    lists:filter(FunFilter, AvailableVersion).
+    lists:filter(FunFilter, AvailableVersions).
 
 -spec migrations_dir() -> string().
 migrations_dir() ->
@@ -119,33 +111,3 @@ compose(Funs) ->
     fun(X) ->
             lists:foldl(Compose, X, Funs)
     end.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Tests
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-init_test() ->
-    application:ensure_all_started(emysql),
-    application:ensure_all_started(sumo_db),
-    sumo:delete_all(sumo_migration).
-
-migrate_update_list_test() ->
-    [_, _, _] = migration_update_list('20140901'),
-    [_, _] = migration_update_list('20140902'),
-    [_] = migration_update_list('20140903'),
-    [] = migration_update_list('20140904').
-
-migrate_test() ->
-    migrate(),
-    [_, _, _] = sumo:find_all(sumo_migration).
-
-rollback_test() ->
-    [_, _, _] = sumo:find_all(sumo_migration),
-    rollback(),
-    [_, _] = sumo:find_all(sumo_migration),
-    rollback(),
-    [_] = sumo:find_all(sumo_migration),
-    rollback(),
-    [] = sumo:find_all(sumo_migration),
-    rollback(),
-    rollback().

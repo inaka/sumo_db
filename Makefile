@@ -9,6 +9,8 @@ DIALYZER_OUT?=${NAME}.plt
 
 ERL_ARGS?=-pa ebin -pa deps/*/ebin -name ${NODE}
 
+CT_SUITES=migration
+
 all: getdeps compile
 	${REBAR} compile
 
@@ -33,7 +35,8 @@ compile:
 	${REBAR} compile
 
 test: compile
-	ERL_AFLAGS="-config test/test.config" ${REBAR} eunit skip_deps=true
+	 ${REBAR} skip_deps=true ct
+	open log/ct/index.html
 
 clean:
 	${REBAR} clean

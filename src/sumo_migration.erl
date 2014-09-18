@@ -25,7 +25,7 @@ migrate() ->
     ensure_sumo_migration_doc(),
     LastVersion = last_migration_version(),
     Versions = migration_update_list(LastVersion),
-    lists:foreach(fun(M) -> run_migration(M) end, Versions).
+    lists:foreach(fun run_migration/1, Versions).
 
 -spec rollback() -> ok.
 rollback() ->

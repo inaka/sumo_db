@@ -34,7 +34,7 @@ compile_no_deps:
 compile:
 	${REBAR} compile
 
-test: compile
+tests: compile
 	 ${REBAR} skip_deps=true ct
 	open log/ct/index.html
 

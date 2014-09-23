@@ -84,13 +84,14 @@
 %% @doc Starts and links a new process for the given repo implementation.
 -spec start_link(atom(), module(), [term()]) -> {ok, pid()}.
 start_link(Name, Module, Options) ->
-  Poolsize     = proplists:get_value(workers, Options, 100),
-  WPoolOptions = [ {overrun_warning, infinity}
-                 , {overrun_handler, {error_logger, warning_report}}
-                 , {workers, Poolsize}
-                 , {worker, {?MODULE, [Module, Options]}}
-                 ],
-  wpool:start_pool(Name, WPoolOptions).
+  Poolsize        = proplists:get_value(workers, Options, 100),
+  WPoolConfigOpts = application:get_env(sumo_db, wpool_opts, []),
+  WPoolOptions    = [ {overrun_warning, infinity}
+                    , {overrun_handler, {error_logger, warning_report}}
+                    , {workers, Poolsize}
+                    , {worker, {?MODULE, [Module, Options]}}
+                    ],
+  wpool:start_pool(Name, WPoolConfigOpts ++ WPoolOptions).
 
 %% @doc Creates the schema of the given docs in the given repository name.
 -spec create_schema(atom(), sumo:schema()) -> ok | {error, term()}.

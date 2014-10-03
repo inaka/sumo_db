@@ -52,5 +52,31 @@ for a full example. To run it, while being in the top level directory:
 
     make all blog
 
+# Migrations
+
+There's currently a very basic implementation of DB migrations available. A
+`migrations_dir` configuration parameter was added which indicates where sumo
+should look for migrations `*.erl` files, it's default value is `src/migrations`.
+Migration modules should be named with the following format:
+`yyyymmddhhMMss_description_with_undescores`. The most recent migration will be
+considered the one with the most recent `year-month-day-hour-min-sec` value.
+
+In order for migrations to work in a given project, sumo_migration should be
+added to the docs list in sumo's configuration.
+
+The following targets can be added to the project's Makefile:
+
+```Makefile
+migrate:
+    erl -pa ebin -pa deps/*/ebin -s your_app -s sumo migrate -config path/to/config
+
+rollback:
+    erl -pa ebin -pa deps/*/ebin -s your_app -s sumo rollback -config path/to/config
+```
+
+If your migrations folder is not under `src` the you should make sure to compile
+all migration modules and include the path to the compiled files in the call
+to `erl`.
+
 # TODO
  * Get rid of atoms and use lists.

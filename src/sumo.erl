@@ -36,6 +36,9 @@
 -export([find/2, find_all/1, find_all/4, find_by/2, find_by/4, find_one/2]).
 -export([call/2, call/3]).
 
+%%% API for migrations.
+-export([migrate/0, rollback/0]).
+
 -type schema_name() :: atom().
 
 -type field_attr()  :: id|unique|index|not_null|auto_increment|{length, integer()}.
@@ -243,3 +246,13 @@ new_field(Name, Type, Attributes) ->
 -spec new_field(field_name(), field_type()) -> field().
 new_field(Name, Type) ->
   new_field(Name, Type, []).
+
+%% @doc Runs all migrations to get the DB up to date.
+-spec migrate() -> ok | {error, term()}.
+migrate() ->
+    sumo_migration:migrate().
+
+%% @doc Rolls back the last migration and downgrades the DB version.
+-spec rollback() -> ok | {error, term()}.
+rollback() ->
+    sumo_migration:rollback().

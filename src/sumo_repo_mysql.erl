@@ -394,7 +394,7 @@ prepare(DocName, PreName, Fun) when is_atom(PreName), is_function(Fun) ->
 %% @doc Call prepare/3 first, to get a well formed statement name.
 execute(Name, Args, #state{pool=Pool}) when is_atom(Name), is_list(Args) ->
   {Time, Value} = timer:tc( emysql, execute, [Pool, Name, Args] ),
-  log("Executed Query: ~s -> ~p (~pms)", [Name, Args, Time]),
+  log("Executed Query: ~s -> ~p (~pms)", [Name, Args, Time/1000]),
   Value.
 
 execute(Name, State) when is_atom(Name) ->

@@ -44,20 +44,21 @@
 init(Options) ->
     %% ElasticSearch client uses poolboy to handle its own pool of workers
     %% so no pool is required.
-    Index = proplists:get_value(index, Options),
+    Backend = proplists:get_value(storage_backend, Options),
+    Index = sumo_backend_elasticsearch:get_index(Backend),
     {ok, #state{index = Index}}.
 
 persist(Doc, #state{index = Index} = State) ->
     DocName = sumo_internal:doc_name(Doc),
     IdField = sumo_internal:id_field_name(DocName),
     Id =  sumo_internal:get_field(IdField, Doc),
+    Fields = sumo_internal:doc_fields(Doc),
+    {ok, _} = elasticsearch:index(Index, atom_to_list(DocName), Id, Fields),
 
-    ok = elasticsearch:update(Index, DocName, Id, Doc),
     {ok, Doc, State}.
 
-delete(DocName, Id, #state{index = Index} = State) ->
-    ok = elasticsearch:delete(Index, DocName, Id),
-    {ok, 1, State}.
+delete(DocName, Id, State) ->
+    delete_by(DocName, [{id, Id}], State).
 
 delete_by(DocName, Conditions, State) ->
     Args = [?MODULE, DocName, Conditions, State],
@@ -66,12 +67,18 @@ delete_by(DocName, Conditions, State) ->
 
 delete_all(DocName, #state{index = Index} = State) ->
     lager:debug("dropping type: ~p", [DocName]),
-    ok = elasticsearch:delete(Index, DocName),
+    {ok, _} = elasticsearch:delete(Index, DocName, <<"">>),
     {ok, unknown, State}.
 
-find_by(_DocName, _Conditions, _Limit, _Offset, #state{index = _Pool} = State) ->
-    Docs = [],
-    {ok, Docs, State}.
+find_by(DocName, _Conditions, _Limit, _Offset,
+        #state{index = Index} = State) ->
+    Query = [{query, [{ match , [{'_all', <<"joni">>}] }]}],
+    io:format("~p~n", [jsx:encode(Query)]),
+    {ok, Docs} = elasticsearch:search(Index, atom_to_list(DocName), Query),
+    Hits = proplists:get_value(<<"hits">>, Docs),
+    Hits1 = proplists:get_value(<<"hits">>, Hits),
+    io:format("==== ~p~n", [Hits1]),
+    {ok, Hits1, State}.
 
 find_by(DocName, Conditions, State) ->
     find_by(DocName, Conditions, 0, 0, State).
@@ -88,3 +95,5 @@ create_schema(Schema, #state{index = Index} = State) ->
     lager:debug("creating type: ~p", [SchemaName]),
     elasticsearch:create_index(Index, [], Mappings),
     {ok, State}.
+
+%% [{id,<<"1">>}, {id,undefined}, {title,"Title"}, {content,"Some content"}, {author_id,1}]

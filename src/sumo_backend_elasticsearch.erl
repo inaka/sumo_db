@@ -30,28 +30,28 @@
 
 %%% Public API.
 -export(
-  [ get_pool/1
-  ]).
+   [ get_index/1
+   ]).
 
 %%% Exports for sumo_backend
 -export(
-  [ start_link/2
-  ]).
+   [ start_link/2
+   ]).
 
 %%% Exports for gen_server
 -export(
-  [ init/1
-  , handle_call/3
-  , handle_cast/2
-  , handle_info/2
-  , terminate/2
-  , code_change/3
-  ]).
+   [ init/1
+   , handle_call/3
+   , handle_cast/2
+   , handle_info/2
+   , terminate/2
+   , code_change/3
+   ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--record(state, {pool:: string()}).
+-record(state, {index:: string()}).
 -type state() :: #state{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -59,31 +59,24 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -spec start_link(atom(), proplists:proplist()) -> {ok, pid()}|term().
 start_link(Name, Options) ->
-  gen_server:start_link({local, Name}, ?MODULE, Options, []).
+    gen_server:start_link({local, Name}, ?MODULE, Options, []).
 
--spec get_pool(atom() | pid()) -> atom().
-get_pool(Name) ->
-  gen_server:call(Name, get_pool).
+-spec get_index(atom() | pid()) -> atom().
+get_index(Name) ->
+    gen_server:call(Name, get_index).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% gen_server stuff.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -spec init([term()]) -> {ok, #state{}}.
 init(Options) ->
-  PoolSize = proplists:get_value(poolsize, Options),
-  Pool = erlang:ref_to_list(make_ref()),
-  ok = elasticsearch:add_pool(
-    Pool,
-    proplists:get_value(host, Options, "localhost"),
-    proplists:get_value(port, Options, 9200),
-    proplists:get_value(database, Options),
-    PoolSize
-  ),
-  {ok, #state{pool = Pool}}.
+    %% All calls are done through http so there no connection pool.
+    Index = proplists:get_value(database, Options),
+    {ok, #state{index = Index}}.
 
 -spec handle_call(term(), term(), state()) -> {reply, term(), #state{}}.
-handle_call(get_pool, _From, State = #state{pool=Pool}) ->
-  {reply, Pool, State}.
+handle_call(get_index, _From, State = #state{index = Index}) ->
+    {reply, Index, State}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Unused Callbacks

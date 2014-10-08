@@ -70,15 +70,34 @@ delete_all(DocName, #state{index = Index} = State) ->
     {ok, _} = elasticsearch:delete(Index, DocName, <<"">>),
     {ok, unknown, State}.
 
-find_by(DocName, _Conditions, _Limit, _Offset,
+find_by(DocName, Conditions, Limit, Offset,
         #state{index = Index} = State) ->
-    Query = [{query, [{ match , [{'_all', <<"joni">>}] }]}],
-    io:format("~p~n", [jsx:encode(Query)]),
-    {ok, Docs} = elasticsearch:search(Index, atom_to_list(DocName), Query),
-    Hits = proplists:get_value(<<"hits">>, Docs),
+    CondFun =
+        fun
+            ({Key, Value}) when is_list(Value) ->
+                [{term , [{Key, list_to_binary(Value)}]}];
+            (Cond) ->
+                [{term , [Cond]}]
+        end,
+    QueryConditions = lists:map(CondFun, Conditions),
+    Query = [{query, [{bool, [{should, [QueryConditions]}]}]}],
+    Query1 = case Limit of
+                 0 -> Query;
+                 _ -> [{from, Offset}, {size, Limit} | Query]
+             end,
+
+    {ok, Result} = elasticsearch:search(Index, atom_to_list(DocName), Query1),
+    Hits = proplists:get_value(<<"hits">>, Result),
     Hits1 = proplists:get_value(<<"hits">>, Hits),
-    io:format("==== ~p~n", [Hits1]),
-    {ok, Hits1, State}.
+    Fun =
+        fun
+            (Item) ->
+                Fields = proplists:get_value(<<"_source">>, Item),
+                sumo_internal:new_doc(DocName, Fields)
+        end,
+    Docs = lists:map(Fun ,Hits1),
+
+    {ok, Docs, State}.
 
 find_by(DocName, Conditions, State) ->
     find_by(DocName, Conditions, 0, 0, State).
@@ -86,14 +105,14 @@ find_by(DocName, Conditions, State) ->
 create_schema(Schema, #state{index = Index} = State) ->
     SchemaName = sumo_internal:schema_name(Schema),
     Fields = sumo_internal:schema_fields(Schema),
-    Fun = fun(Field, Acc) ->
-                  _Name = sumo_internal:field_name(Field),
-                  _Attrs = sumo_internal:field_attrs(Field),
-                  Acc
-          end,
+    Fun =
+        fun
+            (Field, Acc) ->
+                _Name = sumo_internal:field_name(Field),
+                _Attrs = sumo_internal:field_attrs(Field),
+                Acc
+        end,
     Mappings = lists:foldl(Fun, #{}, Fields),
     lager:debug("creating type: ~p", [SchemaName]),
-    elasticsearch:create_index(Index, [], Mappings),
+    {ok, _} = elasticsearch:create_index(Index, [], Mappings),
     {ok, State}.
-
-%% [{id,<<"1">>}, {id,undefined}, {title,"Title"}, {content,"Some content"}, {author_id,1}]

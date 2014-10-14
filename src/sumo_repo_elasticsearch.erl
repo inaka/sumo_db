@@ -28,14 +28,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Public API.
 -export([
-         init/1, create_schema/2, persist/2, find_by/3, find_by/5,
+         init/1, create_schema/2, persist/2, find_by/3, find_by/5, find_all/2,
          delete/3, delete_by/3, delete_all/2
         ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--record(state, {index:: string()}).
+-type state() ::
+        #{index => binary(),
+          pool_name => atom()}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% External API.
@@ -45,17 +47,35 @@ init(Options) ->
     %% ElasticSearch client uses poolboy to handle its own pool of workers
     %% so no pool is required.
     Backend = proplists:get_value(storage_backend, Options),
-    Index = sumo_backend_elasticsearch:get_index(Backend),
-    {ok, #state{index = Index}}.
+    Index = case sumo_backend_elasticsearch:get_index(Backend) of
+                Idx when is_list(Idx) -> list_to_binary(Idx);
+                Idx when is_binary(Idx) -> Idx;
+                _ -> throw(invalid_index)
+            end,
+    PoolName = sumo_backend_elasticsearch:get_pool_name(Backend),
 
-persist(Doc, #state{index = Index} = State) ->
+    {ok, #{index => Index, pool_name => PoolName}}.
+
+-spec persist(sumo:doc(), state()) -> sumo:user_doc().
+persist(Doc, #{index := Index, pool_name := PoolName} = State) ->
     DocName = sumo_internal:doc_name(Doc),
+    Type = atom_to_binary(DocName, utf8),
+
     IdField = sumo_internal:id_field_name(DocName),
     Id =  sumo_internal:get_field(IdField, Doc),
-    Fields = sumo_internal:doc_fields(Doc),
-    {ok, _} = elasticsearch:index(Index, atom_to_list(DocName), Id, Fields),
 
-    {ok, Doc, State}.
+    Fields = sumo_internal:doc_fields(Doc),
+    FieldsMap = maps:from_list(Fields),
+
+    #{status := Status, body := Body} =
+        tirerl:insert_doc(PoolName, Index, Type, Id, FieldsMap),
+
+    io:format("~p~n", [Body]),
+    true = Status == 200 orelse Status == 201,
+    GenId = maps:get(<<"_id">>, Body),
+    Doc1 = sumo_internal:set_field(IdField, GenId, Doc),
+
+    {ok, Doc1, State}.
 
 delete(DocName, Id, State) ->
     delete_by(DocName, [{id, Id}], State).
@@ -65,44 +85,46 @@ delete_by(DocName, Conditions, State) ->
     lager:critical("Unimplemented function: ~p:delete_by(~p, ~p, ~p)", Args),
     {error, not_implemented, State}.
 
-delete_all(DocName, #state{index = Index} = State) ->
+delete_all(DocName, #{index := Index, pool_name := PoolName} = State) ->
     lager:debug("dropping type: ~p", [DocName]),
-    {ok, _} = elasticsearch:delete(Index, DocName, <<"">>),
+    Type = atom_to_binary(DocName, utf8),
+    MatchAll = #{query => #{match_all => #{}}},
+    tirerl:delete_by_query(PoolName, Index, Type, MatchAll, []),
     {ok, unknown, State}.
 
 find_by(DocName, Conditions, Limit, Offset,
-        #state{index = Index} = State) ->
+        #{index := Index, pool_name := PoolName} = State) ->
     CondFun =
         fun
             ({Key, Value}) when is_list(Value) ->
-                [{term , [{Key, list_to_binary(Value)}]}];
+                #{match => maps:from_list([{Key, list_to_binary(Value)}])};
             (Cond) ->
-                [{term , [Cond]}]
+                #{match => maps:from_list([Cond])}
         end,
     QueryConditions = lists:map(CondFun, Conditions),
-    Query = [{query, [{bool, [{should, [QueryConditions]}]}]}],
+    Query = #{query => #{bool => #{must => QueryConditions}}},
     Query1 = case Limit of
                  0 -> Query;
-                 _ -> [{from, Offset}, {size, Limit} | Query]
+                 _ -> Query#{from => Offset,
+                             size => Limit}
              end,
 
-    {ok, Result} = elasticsearch:search(Index, atom_to_list(DocName), Query1),
-    Hits = proplists:get_value(<<"hits">>, Result),
-    Hits1 = proplists:get_value(<<"hits">>, Hits),
-    Fun =
-        fun
-            (Item) ->
-                Fields = proplists:get_value(<<"_source">>, Item),
-                sumo_internal:new_doc(DocName, Fields)
-        end,
-    Docs = lists:map(Fun ,Hits1),
+    Type = atom_to_binary(DocName, utf8),
+    #{body := #{<<"hits">> := #{<<"hits">> := Results}}} =
+        tirerl:search(PoolName, Index, Type, Query1),
+
+    Fun = fun(Item) -> map_to_doc(DocName, Item) end,
+    Docs = lists:map(Fun, Results),
 
     {ok, Docs, State}.
 
 find_by(DocName, Conditions, State) ->
     find_by(DocName, Conditions, 0, 0, State).
 
-create_schema(Schema, #state{index = Index} = State) ->
+find_all(DocName, State) ->
+    find_by(DocName, [], State).
+
+create_schema(Schema, #{index := Index, pool_name := PoolName} = State) ->
     SchemaName = sumo_internal:schema_name(Schema),
     Fields = sumo_internal:schema_fields(Schema),
     Fun =
@@ -114,5 +136,23 @@ create_schema(Schema, #state{index = Index} = State) ->
         end,
     Mappings = lists:foldl(Fun, #{}, Fields),
     lager:debug("creating type: ~p", [SchemaName]),
-    {ok, _} = elasticsearch:create_index(Index, [], Mappings),
+    Response = tirerl:create_index(PoolName, Index, Mappings),
+    io:format("~p~n", [Response]),
     {ok, State}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Internal Functions.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+map_to_doc(DocName, Item) ->
+    Values = maps:get(<<"_source">>, Item),
+    IdField = sumo_internal:id_field_name(DocName),
+
+    Fun = fun (Key, Doc) ->
+              FieldName = binary_to_atom(Key, utf8),
+              Value = maps:get(Key, Values),
+              sumo_internal:set_field(FieldName, Value, Doc)
+          end,
+    Keys = maps:keys(Values),
+    Doc = lists:foldl(Fun, sumo_internal:new_doc(DocName, []), Keys),
+    sumo_internal:set_field(IdField, maps:get(<<"_id">>, Item), Doc).

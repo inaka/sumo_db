@@ -30,7 +30,8 @@
 
 %%% Public API.
 -export(
-   [ get_index/1
+   [ get_index/1,
+     get_pool_name/1
    ]).
 
 %%% Exports for sumo_backend
@@ -51,8 +52,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--record(state, {index:: string()}).
--type state() :: #state{}.
+-type state() :: #{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% External API.
@@ -65,31 +65,49 @@ start_link(Name, Options) ->
 get_index(Name) ->
     gen_server:call(Name, get_index).
 
+-spec get_pool_name(atom() | pid()) -> atom().
+get_pool_name(Name) ->
+    gen_server:call(Name, get_pool_name).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% gen_server stuff.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--spec init([term()]) -> {ok, #state{}}.
+-spec init([term()]) -> {ok, state()}.
 init(Options) ->
     %% All calls are done through http so there no connection pool.
-    Index = proplists:get_value(database, Options),
-    {ok, #state{index = Index}}.
+    PoolName = list_to_atom(erlang:ref_to_list(make_ref())),
 
--spec handle_call(term(), term(), state()) -> {reply, term(), #state{}}.
-handle_call(get_index, _From, State = #state{index = Index}) ->
-    {reply, Index, State}.
+    Index    = proplists:get_value(index, Options),
+    PoolSize = proplists:get_value(poolsize, Options),
+    Host     = proplists:get_value(host, Options),
+    Port     = proplists:get_value(port, Options),
+
+    PoolOpts = [{workers, PoolSize},
+                {host, Host},
+                {port, Port}],
+
+    {ok, _} = tirerl:start_pool(PoolName, PoolOpts),
+
+    {ok, #{index => Index, pool_name => PoolName}}.
+
+-spec handle_call(term(), term(), state()) -> {reply, term(), state()}.
+handle_call(get_index, _From, State = #{index := Index}) ->
+    {reply, Index, State};
+handle_call(get_pool_name, _From, State = #{pool_name := PoolName}) ->
+    {reply, PoolName, State}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Unused Callbacks
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec handle_cast(term(), #state{}) -> {noreply, #state{}}.
+-spec handle_cast(term(), state()) -> {noreply, state()}.
 handle_cast(_Msg, State) -> {noreply, State}.
 
--spec handle_info(term(), #state{}) -> {noreply, #state{}}.
+-spec handle_info(term(), state()) -> {noreply, state()}.
 handle_info(_Msg, State) -> {noreply, State}.
 
--spec terminate(term(), #state{}) -> ok.
+-spec terminate(term(), state()) -> ok.
 terminate(_Reason, _State) -> ok.
 
--spec code_change(term(), #state{}, term()) -> {ok, #state{}}.
+-spec code_change(term(), state(), term()) -> {ok, state()}.
 code_change(_OldVsn, State, _Extra) -> {ok, State}.

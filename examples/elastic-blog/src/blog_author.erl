@@ -105,7 +105,7 @@ sumo_sleep(Author) ->
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
   sumo:new_schema(?MODULE, [
-    sumo:new_field(id, string),
+    sumo:new_field(id, string, [id]),
     sumo:new_field(name, string),
     sumo:new_field(photo, string)
   ]).

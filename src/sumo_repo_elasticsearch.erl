@@ -28,8 +28,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Public API.
 -export([
-         init/1, create_schema/2, persist/2, find_by/3, find_by/5, find_all/2,
-         delete/3, delete_by/3, delete_all/2
+         init/1,
+         create_schema/2,
+         persist/2,
+         find_by/3,
+         find_by/5,
+         find_all/2,
+         find_all/5,
+         delete/3,
+         delete_by/3,
+         delete_all/2
         ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -82,8 +90,9 @@ persist(Doc, #{index := Index, pool_name := PoolName} = State) ->
 
                 sumo_internal:set_field(IdField, GenId, Doc);
             Id ->
+                Update = #{doc => FieldsMap},
                 {ok, _ } =
-                    tirerl:update_doc(PoolName, Index, Type, Id, FieldsMap),
+                    tirerl:update_doc(PoolName, Index, Type, Id, Update),
                 Doc
         end,
 
@@ -98,14 +107,16 @@ delete_by(DocName, Conditions, #{index := Index, pool_name := PoolName} = State)
 
     {ok, _} = tirerl:delete_by_query(PoolName, Index, Type, Query, []),
 
-    {ok, not_implemented, State}.
+    {ok, 1, State}.
 
 delete_all(DocName, #{index := Index, pool_name := PoolName} = State) ->
-    lager:debug("dropping type: ~p", [DocName]),
+    lager:debug("deleting all: ~p", [DocName]),
     Type = atom_to_binary(DocName, utf8),
     MatchAll = #{query => #{match_all => #{}}},
+
     {ok, _} = tirerl:delete_by_query(PoolName, Index, Type, MatchAll, []),
-    {ok, unknown, State}.
+
+    {ok, 1, State}.
 
 find_by(DocName, Conditions, Limit, Offset,
         #{index := Index, pool_name := PoolName} = State) ->
@@ -125,6 +136,9 @@ find_by(DocName, Conditions, State) ->
 
 find_all(DocName, State) ->
     find_by(DocName, [], State).
+
+find_all(DocName, _OrderField, Limit, Offset, State) ->
+    find_by(DocName, [], Limit, Offset, State).
 
 create_schema(Schema, #{index := Index, pool_name := PoolName} = State) ->
     SchemaName = sumo_internal:schema_name(Schema),

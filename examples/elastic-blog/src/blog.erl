@@ -29,7 +29,8 @@
 
 %%% Posts API.
 -export([
-  total_posts/0, new_post/3, save_post/1, del_post/0, del_post/1, find_post/1
+  total_posts/0, new_post/3, save_post/1, del_post/0, del_post/1, del_vote/0,
+  find_post/1
 ]).
 
 %%% Author API.
@@ -60,7 +61,7 @@ find_all_authors(Limit, Offset) ->
 
 -spec find_authors_by_name(string(), non_neg_integer(), non_neg_integer()) -> [blog_author:author()].
 find_authors_by_name(Name, Limit, Offset) ->
-  sumo:find_by(blog_author, [{name, list_to_atom(Name)}], Limit, Offset).
+  sumo:find_by(blog_author, [{name, Name}], Limit, Offset).
 
 %% @doc Finds a post given the id.
 -spec find_post(blog_post:id()) -> blog_post:post()|notfound.
@@ -96,6 +97,11 @@ del_post() ->
 -spec del_reader() -> non_neg_integer().
 del_reader() ->
   sumo:delete_all(blog_reader).
+
+%% @doc Deletes all readers.
+-spec del_vote() -> non_neg_integer().
+del_vote() ->
+  sumo:delete_all(blog_vote).
 
 %% @doc Deletes the given author.
 -spec del_author_by_name(string()) -> non_neg_integer().

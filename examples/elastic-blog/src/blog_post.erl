@@ -27,7 +27,7 @@
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -export([sumo_schema/0, sumo_sleep/1, sumo_wakeup/1]).
--export([new/4]).
+-export([new/3]).
 -export([id/1, author/1, title/1, content/1, update_content/2, update_title/2]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -41,12 +41,17 @@
 %% Public API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Returns a new post.
--spec new(binary(), binary(), binary(), blog_author:id()) -> post().
-new(Id, Title, Content, AuthorId)
-  when is_binary(Id),
-       is_binary(Title),
+-spec new(binary(), binary(), blog_author:id()) -> post().
+new(Title, Content, AuthorId)
+  when is_binary(Title),
        is_binary(Content),
-       is_integer(AuthorId) ->
+       is_binary(AuthorId) ->
+  create(undefined, Title, Content, AuthorId).
+
+%% @doc Returns a new post (internal).
+-spec create(undefined|id(), string(), string(), blog_author:id()) -> post().
+create(Id, Title, Content, AuthorId)
+  when is_binary(Title), is_binary(Content), is_binary(AuthorId) ->
   [{id, Id}, {title, Title}, {content, Content}, {author_id, AuthorId}].
 
 %% @doc Returns the id of the given post.
@@ -109,10 +114,10 @@ sumo_sleep(Post) ->
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
   sumo:new_schema(?MODULE, [
-    sumo:new_field(id, string),
+    sumo:new_field(id, string, [id]),
     sumo:new_field(title, string),
     sumo:new_field(content, string),
-    sumo:new_field(author_id, integer)
+    sumo:new_field(author_id, string)
   ]).
 
 %% We don't have the extends module attribute in R16, so this was moved out from

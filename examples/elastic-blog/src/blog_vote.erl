@@ -90,7 +90,7 @@ sumo_sleep(Vote) ->
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
   sumo:new_schema(?MODULE, [
-    sumo:new_field(id, string),
+    sumo:new_field(id, string, [id]),
     sumo:new_field(post_id, string),
     sumo:new_field(reader_id, string)
   ]).

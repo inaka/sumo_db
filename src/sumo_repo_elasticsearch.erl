@@ -128,18 +128,14 @@ find_all(DocName, State) ->
 
 create_schema(Schema, #{index := Index, pool_name := PoolName} = State) ->
     SchemaName = sumo_internal:schema_name(Schema),
+    Type = atom_to_binary(SchemaName, utf8),
     Fields = sumo_internal:schema_fields(Schema),
-    Fun =
-        fun
-            (Field, Acc) ->
-                _Name = sumo_internal:field_name(Field),
-                _Attrs = sumo_internal:field_attrs(Field),
-                Acc
-        end,
-    Mappings = lists:foldl(Fun, #{}, Fields),
+    Mapping = build_mapping(SchemaName, Fields),
+
     lager:debug("creating type: ~p", [SchemaName]),
-    {ok, Result} = tirerl:create_index(PoolName, Index, Mappings),
-    io:format("~p~n", [Result]),
+    {ok, Result} = tirerl:put_mapping(PoolName, Index, Type, Mapping),
+
+    io:format("~p~n", [[Mapping, Result]]),
     {ok, State}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -177,3 +173,14 @@ build_query(Conditions, Limit, Offset) ->
         _ -> Query#{from => Offset,
                     size => Limit}
     end.
+
+build_mapping(MappingType, Fields) ->
+    Fun =
+        fun
+            (Field, Acc) ->
+                Name = sumo_internal:field_name(Field),
+                FieldType = sumo_internal:field_type(Field),
+                maps:put(Name, #{type => FieldType}, Acc)
+        end,
+    Properties = lists:foldl(Fun, #{}, Fields),
+    maps:from_list([{MappingType, #{properties => Properties}}]).

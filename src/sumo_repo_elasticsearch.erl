@@ -67,51 +67,53 @@ persist(Doc, #{index := Index, pool_name := PoolName} = State) ->
     Fields = sumo_internal:doc_fields(Doc),
     FieldsMap = maps:from_list(Fields),
 
-    #{status := Status, body := Body} =
-        tirerl:insert_doc(PoolName, Index, Type, Id, FieldsMap),
+    Doc1 =
+        case Id of
+            undefined ->
+                {ok, Json} =
+                    tirerl:insert_doc(PoolName, Index, Type, Id, FieldsMap),
 
-    io:format("~p~n", [Body]),
-    true = Status == 200 orelse Status == 201,
-    GenId = maps:get(<<"_id">>, Body),
-    Doc1 = sumo_internal:set_field(IdField, GenId, Doc),
+                %% Get the Id that was assigned by elasticsearch.
+                GenId = maps:get(<<"_id">>, Json),
+                Update = #{doc => maps:from_list([{IdField, GenId}])},
+
+                {ok, _ } =
+                    tirerl:update_doc(PoolName, Index, Type, GenId, Update),
+
+                sumo_internal:set_field(IdField, GenId, Doc);
+            Id ->
+                {ok, _ } =
+                    tirerl:update_doc(PoolName, Index, Type, Id, FieldsMap),
+                Doc
+        end,
 
     {ok, Doc1, State}.
 
 delete(DocName, Id, State) ->
     delete_by(DocName, [{id, Id}], State).
 
-delete_by(DocName, Conditions, State) ->
-    Args = [?MODULE, DocName, Conditions, State],
-    lager:critical("Unimplemented function: ~p:delete_by(~p, ~p, ~p)", Args),
-    {error, not_implemented, State}.
+delete_by(DocName, Conditions, #{index := Index, pool_name := PoolName} = State) ->
+    Query = build_query(Conditions),
+    Type = atom_to_binary(DocName, utf8),
+
+    {ok, _} = tirerl:delete_by_query(PoolName, Index, Type, Query, []),
+
+    {ok, not_implemented, State}.
 
 delete_all(DocName, #{index := Index, pool_name := PoolName} = State) ->
     lager:debug("dropping type: ~p", [DocName]),
     Type = atom_to_binary(DocName, utf8),
     MatchAll = #{query => #{match_all => #{}}},
-    tirerl:delete_by_query(PoolName, Index, Type, MatchAll, []),
+    {ok, _} = tirerl:delete_by_query(PoolName, Index, Type, MatchAll, []),
     {ok, unknown, State}.
 
 find_by(DocName, Conditions, Limit, Offset,
         #{index := Index, pool_name := PoolName} = State) ->
-    CondFun =
-        fun
-            ({Key, Value}) when is_list(Value) ->
-                #{match => maps:from_list([{Key, list_to_binary(Value)}])};
-            (Cond) ->
-                #{match => maps:from_list([Cond])}
-        end,
-    QueryConditions = lists:map(CondFun, Conditions),
-    Query = #{query => #{bool => #{must => QueryConditions}}},
-    Query1 = case Limit of
-                 0 -> Query;
-                 _ -> Query#{from => Offset,
-                             size => Limit}
-             end,
-
     Type = atom_to_binary(DocName, utf8),
-    #{body := #{<<"hits">> := #{<<"hits">> := Results}}} =
-        tirerl:search(PoolName, Index, Type, Query1),
+    Query = build_query(Conditions, Limit, Offset),
+
+    {ok, #{<<"hits">> := #{<<"hits">> := Results}}} =
+        tirerl:search(PoolName, Index, Type, Query),
 
     Fun = fun(Item) -> map_to_doc(DocName, Item) end,
     Docs = lists:map(Fun, Results),
@@ -136,8 +138,8 @@ create_schema(Schema, #{index := Index, pool_name := PoolName} = State) ->
         end,
     Mappings = lists:foldl(Fun, #{}, Fields),
     lager:debug("creating type: ~p", [SchemaName]),
-    Response = tirerl:create_index(PoolName, Index, Mappings),
-    io:format("~p~n", [Response]),
+    {ok, Result} = tirerl:create_index(PoolName, Index, Mappings),
+    io:format("~p~n", [Result]),
     {ok, State}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -156,3 +158,22 @@ map_to_doc(DocName, Item) ->
     Keys = maps:keys(Values),
     Doc = lists:foldl(Fun, sumo_internal:new_doc(DocName, []), Keys),
     sumo_internal:set_field(IdField, maps:get(<<"_id">>, Item), Doc).
+
+build_query(Conditions) ->
+    build_query(Conditions, 0, 0).
+
+build_query(Conditions, Limit, Offset) ->
+        CondFun =
+        fun
+            ({Key, Value}) when is_list(Value) ->
+                #{match => maps:from_list([{Key, list_to_binary(Value)}])};
+            (Cond) ->
+                #{match => maps:from_list([Cond])}
+        end,
+    QueryConditions = lists:map(CondFun, Conditions),
+    Query = #{query => #{bool => #{must => QueryConditions}}},
+    case Limit of
+        0 -> Query;
+        _ -> Query#{from => Offset,
+                    size => Limit}
+    end.

@@ -138,9 +138,8 @@ create_schema(Schema, #{index := Index, pool_name := PoolName} = State) ->
     end,
 
     lager:debug("creating type: ~p", [SchemaName]),
-    {ok, Result} = tirerl:put_mapping(PoolName, Index, Type, Mapping),
+    {ok, _} = tirerl:put_mapping(PoolName, Index, Type, Mapping),
 
-    io:format("~p~n", [[Mapping, Result]]),
     {ok, State}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

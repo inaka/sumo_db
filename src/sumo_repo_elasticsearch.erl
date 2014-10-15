@@ -132,6 +132,11 @@ create_schema(Schema, #{index := Index, pool_name := PoolName} = State) ->
     Fields = sumo_internal:schema_fields(Schema),
     Mapping = build_mapping(SchemaName, Fields),
 
+    case tirerl:is_index(PoolName, Index) of
+        false -> tirerl:create_index(PoolName, Index);
+        _ -> ok
+    end,
+
     lager:debug("creating type: ~p", [SchemaName]),
     {ok, Result} = tirerl:put_mapping(PoolName, Index, Type, Mapping),
 

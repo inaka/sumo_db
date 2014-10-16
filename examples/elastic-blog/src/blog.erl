@@ -55,11 +55,13 @@ start() ->
 
 
 %% @doc Paginates all authors, sorts by name.
--spec find_all_authors(non_neg_integer(), non_neg_integer()) -> [blog_author:author()].
+-spec find_all_authors(non_neg_integer(), non_neg_integer()) ->
+  [blog_author:author()].
 find_all_authors(Limit, Offset) ->
   sumo:find_all(blog_author, name, Limit, Offset).
 
--spec find_authors_by_name(string(), non_neg_integer(), non_neg_integer()) -> [blog_author:author()].
+-spec find_authors_by_name(string(), non_neg_integer(), non_neg_integer()) ->
+  [blog_author:author()].
 find_authors_by_name(Name, Limit, Offset) ->
   sumo:find_by(blog_author, [{name, Name}], Limit, Offset).
 

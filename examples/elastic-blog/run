@@ -19,7 +19,6 @@ main(_) ->
     _NumRows1 = blog:del_author(),
     _NumRows2 = blog:del_post(),
     _NumRows3 = blog:del_reader(),
-    _NumRows3 = blog:del_vote(),
 
     %% Let's create a new blog author and a new blog entry. The result is the
     %% same author and post with their new id's filled in.
@@ -28,6 +27,7 @@ main(_) ->
                          <<"It just make things easy">>,
                          Author),
 
+    io:format("Indexing...~n"),
     timer:sleep(1000),
 
     %% Let's now delete them.
@@ -41,6 +41,7 @@ main(_) ->
                           <<"It just make things easy">>,
                           Author2),
 
+    io:format("Indexing...~n"),
     timer:sleep(1000),
 
     %% Update author and post.
@@ -61,6 +62,7 @@ main(_) ->
     Reader = blog:new_reader("Marcelo Gornstein", "marcelo@inakanetworks.com"),
     Reader2 = blog:new_reader("Pepe Gorostiga", "pepe@asd.com"),
 
+    io:format("Indexing...~n"),
     timer:sleep(1000),
 
     io:format("A Reader: ~p~n", [blog:find_reader(blog_reader:id(Reader))]),

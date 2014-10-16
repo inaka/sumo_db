@@ -1,4 +1,4 @@
-%%% @doc MongoDB repository implementation.
+%%% @doc ElasticSearch repository implementation.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;
 %%%
@@ -17,8 +17,7 @@
 %%% @copyright Inaka <hello@inaka.net>
 %%%
 -module(sumo_repo_elasticsearch).
--author("Juan Facorro <juan@inaka.com>").
--github("https://github.com/inaka").
+-author("Juan Facorro <juan@inaka.net>").
 -license("Apache License 2.0").
 
 -behavior(sumo_repo).

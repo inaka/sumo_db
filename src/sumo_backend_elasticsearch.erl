@@ -1,4 +1,4 @@
-%%% @doc MongoDB storage backend implementation.
+%%% @doc ElasticSearch storage backend implementation.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;
 %%%
@@ -17,8 +17,7 @@
 %%% @copyright Inaka <hello@inaka.net>
 %%%
 -module(sumo_backend_elasticsearch).
--author("Marcelo Gornstein <marcelog@gmail.com>").
--github("https://github.com/inaka").
+-author("Juan Facorro <juan@inaka.net>").
 -license("Apache License 2.0").
 
 -behaviour(gen_server).

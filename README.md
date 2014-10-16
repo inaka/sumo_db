@@ -7,6 +7,14 @@ This is a work in progress. There's also [an article](http://marcelog.github.com
 simple persistance layer capable of interacting with different db's, while
 offering a consistent api to your code.
 
+# Contact Us
+For **questions** or **general comments** regarding the use of this library, please use our public
+[hipchat room](https://www.hipchat.com/gpBpW3SsT).
+
+If you find any **bugs** or have a **problem** while using this library, please [open an issue](https://github.com/inaka/sumo_db/issues/new) in this repo (or a pull request :)).
+
+And you can check all of our open-source projects at [inaka.github.io](http://inaka.github.io)
+
 # Overview
  * sumo_db gives you a standard way to define your db schema, no matter the
  db implementation (mongo, mysql, redis, or sqlite3).

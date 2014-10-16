@@ -28,6 +28,8 @@ main(_) ->
                          <<"It just make things easy">>,
                          Author),
 
+    timer:sleep(1000),
+
     %% Let's now delete them.
     true = blog:del_post(Post),
     true = blog:del_author(Author),

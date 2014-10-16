@@ -98,25 +98,36 @@ persist(Doc, #{index := Index, pool_name := PoolName} = State) ->
 
     {ok, Doc1, State}.
 
-delete(DocName, Id, State) ->
-    delete_by(DocName, [{id, Id}], State).
+delete(DocName, Id,  #{index := Index, pool_name := PoolName} = State) ->
+    Type = atom_to_binary(DocName, utf8),
+    Result = case tirerl:delete_doc(PoolName, Index, Type, Id) of
+                 {ok, _} -> 1;
+                 _ -> 0
+             end,
+    {ok, Result, State}.
 
-delete_by(DocName, Conditions, #{index := Index, pool_name := PoolName} = State) ->
+delete_by(DocName,
+          Conditions,
+          #{index := Index, pool_name := PoolName} = State) ->
     Query = build_query(Conditions),
     Type = atom_to_binary(DocName, utf8),
 
+    {ok, #{<<"count">> := Count}} =
+        tirerl:count(PoolName, Index, Type, Query, []),
     {ok, _} = tirerl:delete_by_query(PoolName, Index, Type, Query, []),
 
-    {ok, 1, State}.
+    {ok, Count, State}.
 
 delete_all(DocName, #{index := Index, pool_name := PoolName} = State) ->
     lager:debug("deleting all: ~p", [DocName]),
     Type = atom_to_binary(DocName, utf8),
     MatchAll = #{query => #{match_all => #{}}},
 
+    {ok, #{<<"count">> := Count}} =
+        tirerl:count(PoolName, Index, Type, MatchAll, []),
     {ok, _} = tirerl:delete_by_query(PoolName, Index, Type, MatchAll, []),
 
-    {ok, 1, State}.
+    {ok, Count, State}.
 
 find_by(DocName, Conditions, Limit, Offset,
         #{index := Index, pool_name := PoolName} = State) ->

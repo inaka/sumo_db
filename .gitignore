@@ -7,3 +7,5 @@ examples/blog/log
 *.beam
 *.plt
 .rebar
+log*/
+erl_crash.dump

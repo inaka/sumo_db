@@ -86,7 +86,7 @@
 start_link(Name, Module, Options) ->
   Poolsize        = proplists:get_value(workers, Options, 100),
   WPoolConfigOpts = application:get_env(sumo_db, wpool_opts, []),
-  WPoolOptions    = [ {overrun_warning, infinity}
+  WPoolOptions    = [ {overrun_warning, 30000}
                     , {overrun_handler, {error_logger, warning_report}}
                     , {workers, Poolsize}
                     , {worker, {?MODULE, [Module, Options]}}

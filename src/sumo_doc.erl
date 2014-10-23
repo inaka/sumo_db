@@ -22,7 +22,7 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
-%% @doc Returns all behavior callbacks.
+%% Returns all behavior callbacks.
 -callback sumo_schema() -> sumo:schema().
 -callback sumo_wakeup(sumo:doc()) -> sumo:user_doc().
 -callback sumo_sleep(sumo:user_doc()) -> sumo:doc().

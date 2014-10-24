@@ -17,7 +17,7 @@ And you can check all of our open-source projects at [inaka.github.io](http://in
 
 ## Overview
  * sumo_db gives you a standard way to define your db schema, regardless of the db implementation (mongo, mysql, redis, elasticsearch, etc.).
- * Your entities encapsulate behavior in code (functions in module) and state into ``sumo:doc()``.
+ * Your entities encapsulate behavior in code (i.e. functions in a module) and state in a ``sumo:doc()`` implementation.
  * sumo is the main module. It translates to and from sumo internal records into your own state.
  * Each repo is managed by a worker pool of processes, each one using a module that implements *sumo_repo* and calls the actual db driver (e.g: sumo_repo_mysql).
  * Some native domain events are supported, that are dispatched through a `gen_event:notify/2` automatically when an entity is created, updated, deleted.

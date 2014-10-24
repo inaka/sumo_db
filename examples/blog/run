@@ -31,7 +31,7 @@ main(_) ->
 
   % Let's create them again
   Author2 = blog:new_author("Pepe Gorostiga", <<"some binary jpg">>),
-  Author3 = blog:new_author("Some other guy", <<"some other photo">>),
+  _Author3 = blog:new_author("Some other guy", <<"some other photo">>),
   Post2 = blog:new_post("How awesome sumo_db is", "It just make things easy", Author2),
 
   % Update author and post.
@@ -73,8 +73,8 @@ setup_codepath() ->
 
 start_apps() ->
   Apps = [
-    sasl, compiler, syntax_tools, lager, crypto,
-    emysql, emongo, sqlite3, worker_pool,
+    sasl, compiler, syntax_tools, goldrush, lager,
+    crypto, emysql, emongo, sqlite3, worker_pool,
     sumo_db
   ],
   [ ok = application:start(X) || X <- Apps].

@@ -55,7 +55,7 @@
 
 -export_type([schema/0, field/0]).
 
-%% @doc the user representation of a doc (i.e. not the proplists)
+%% The user representation of a doc (i.e. not the proplists)
 -type user_doc()    :: term().
 
 -export_type([user_doc/0]).

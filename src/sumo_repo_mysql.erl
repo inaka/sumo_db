@@ -37,11 +37,30 @@
 -export([prepare/3, execute/2, execute/3]).
 -export([find_all/2, find_all/5, find_by/3, find_by/5]).
 
+-export([values_conditions/1, build_where_clause/1, hash/1]).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -record(state, {pool :: atom() | pid()}).
+
+
+-type operator() :: '<' | '>' | '=' | '<=' | '>=' | '!=' | 'like'.
+-type field_name() :: atom().
+-type value() :: binary() | string() | number() | 'null' | 'not_null'.
+
+-type expression() ::
+    [expression()]
+    | {'and', [expression()]}
+    | {'or', [expression()]}
+    | {'not', expression()}
+    | terminal().
+
+-type terminal() ::
+    {field_name(), operator(), field_name()}
+    | {field_name(), operator(), value()}
+    | {field_name(), value()}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% External API.
@@ -146,19 +165,17 @@ delete(DocName, Id, State) ->
   end.
 
 delete_by(DocName, Conditions, State) ->
-  PreStatementName = list_to_atom("delete_by_" ++ string:join(
-    [atom_to_list(K) || {K, _V} <- Conditions],
-    "_"
-  )),
+  {Values, CleanConditions} = values_conditions(Conditions),
+  Clauses = build_where_clause(CleanConditions),
+  HashClause = hash(Clauses),
+  PreStatementName = list_to_atom("delete_by_" ++ HashClause),
+
   StatementFun =
     fun() ->
-      [ "DELETE FROM ", escape(atom_to_list(DocName)), " WHERE ",
-        string:join(
-          [  [escape(atom_to_list(K)), "=?"]
-          || {K, _V} <- Conditions
-          ],
-          " AND "
-          )
+      [ "DELETE FROM ",
+        escape(atom_to_list(DocName)),
+        " WHERE ",
+        lists:flatten(Clauses)
       ]
     end,
   StatementName = prepare(DocName, PreStatementName, StatementFun),
@@ -221,12 +238,9 @@ find_all(DocName, OrderField, Limit, Offset, State) ->
 %% XXX We should have a DSL here, to allow querying in a known language
 %% to be translated by each driver into its own.
 find_by(DocName, Conditions, Limit, Offset, State) ->
-  FoldFun =
-    fun({K, V}, {SName, Fs, Vs}) ->
-      {SName ++ "_" ++ atom_to_list(K), [K|Fs], [V|Vs]}
-    end,
-  {PreStatementName0, DocFields, Values} =
-    lists:foldl(FoldFun, {"", [], []}, Conditions),
+  {Values, CleanConditions} = values_conditions(Conditions),
+  Clauses = build_where_clause(CleanConditions),
+  PreStatementName0 = hash(Clauses),
 
   PreStatementName1 =
     case Limit of
@@ -234,15 +248,16 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
       Limit -> PreStatementName0 ++ "_limit"
     end,
 
-  PreName = list_to_atom("find_by" ++ PreStatementName1),
+  PreName = list_to_atom("find_by_" ++ PreStatementName1),
 
   Fun = fun() ->
-    Sqls = [[escape(atom_to_list(K)), "=?"] || K <- DocFields],
     % Select * is not good..
-    Sql1 =[
-      "SELECT * FROM ", escape(atom_to_list(DocName)),
-      " WHERE ", string:join(Sqls, " AND ")
-    ],
+    Sql1 = [ "SELECT * FROM ",
+             escape(atom_to_list(DocName)),
+             " WHERE ",
+             lists:flatten(Clauses)
+           ],
+
     Sql2 = case Limit of
       0 -> Sql1;
       _ -> [Sql1|[" LIMIT ?,?"]]
@@ -415,6 +430,8 @@ execute(PreQuery, #state{pool=Pool}) when is_list(PreQuery)->
 evaluate_execute_result(#error_packet{status = Status, msg = Msg}, State) ->
   {error, <<Status/binary, ":", (list_to_binary(Msg))/binary>>, State}.
 
+escape(Name) when is_atom(Name) ->
+  ["`", atom_to_list(Name), "`"];
 escape(String) ->
   ["`", String, "`"].
 
@@ -428,3 +445,61 @@ log(Msg, Args) ->
     {ok, true} -> lager:debug(Msg, Args);
     _          -> ok
   end.
+
+-spec values_conditions(expression()) -> {[any()], expression()}.
+values_conditions([Expr | RestExprs]) ->
+  {Values, CleanExpr} = values_conditions(Expr),
+  {ValuesRest, CleanRestExprs} = values_conditions(RestExprs),
+  {Values ++ ValuesRest, [CleanExpr | CleanRestExprs]};
+values_conditions({LogicalOp, Exprs})
+  when (LogicalOp == 'and')
+       or (LogicalOp == 'or')
+       or (LogicalOp == 'not') ->
+  {Values, CleanExprs} = values_conditions(Exprs),
+  {Values, {LogicalOp, CleanExprs}};
+values_conditions({Name, Op, Value}) when not is_atom(Value) ->
+  {[Value], {Name, Op, '?'}};
+values_conditions({Name, Value})
+  when Value =/= 'null', Value =/= 'not_null' ->
+  {[Value], {Name, '?'}};
+values_conditions(Terminal) ->
+  {[], Terminal}.
+
+-spec build_where_clause(expression()) -> iodata().
+build_where_clause(Exprs) when is_list(Exprs) ->
+  Clauses = lists:map(fun build_where_clause/1, Exprs),
+  ["(", interpose(" AND ", Clauses), ")"];
+build_where_clause({'and', Exprs}) ->
+  build_where_clause(Exprs);
+build_where_clause({'or', Exprs}) ->
+  Clauses = lists:map(fun build_where_clause/1, Exprs),
+  ["(", interpose(" OR ", Clauses), ")"];
+build_where_clause({'not', Expr}) ->
+  [" NOT ", "(", build_where_clause(Expr), ")"];
+build_where_clause({Name, Op, '?'}) ->
+  [escape(Name), " ", atom_to_list(Op), " ? "];
+build_where_clause({Name1, Op, Name2}) ->
+  [escape(Name1), " ", atom_to_list(Op), " ", escape(Name2)];
+build_where_clause({Name, '?'}) ->
+  [escape(Name), " = ? "];
+build_where_clause({Name, 'null'}) ->
+  [escape(Name), " IS NULL "];
+build_where_clause({Name, 'not_null'}) ->
+  [escape(Name), " IS NOT NULL "].
+
+interpose(Sep, List) ->
+  interpose(Sep, List, []).
+
+interpose(_Sep, [], Result) ->
+  lists:reverse(Result);
+interpose(Sep, [Item | []], Result) ->
+  interpose(Sep, [], [Item | Result]);
+interpose(Sep, [Item | Rest], Result) ->
+  interpose(Sep, Rest, [Sep, Item | Result]).
+
+-spec hash(iodata()) -> string().
+hash(Clause) ->
+  Bin = crypto:hash(md5, Clause),
+  List = binary_to_list(Bin),
+  Fun = fun(Num) -> string:right(integer_to_list(Num, 16), 2, $0) end,
+  lists:flatmap(Fun, List).

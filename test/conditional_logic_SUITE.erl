@@ -7,6 +7,11 @@
         ]).
 
 -export([
+         mysql_conditional_logic/1,
+         mongo_conditional_logic/1
+        ]).
+
+-export([
          backward_compatibility/1,
          or_conditional/1,
          and_conditional/1,
@@ -25,6 +30,17 @@
          end_per_suite
         ]).
 
+-define(LOGIC_FUNS,
+        [
+         backward_compatibility,
+         or_conditional,
+         and_conditional,
+         not_null_conditional,
+         null_conditional,
+         operators,
+         deeply_nested
+        ]).
+
 -type config() :: [{atom(), term()}].
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -33,42 +49,60 @@
 
 -spec all() -> [atom()].
 all() ->
-    Exports = ?MODULE:module_info(exports),
-    [F || {F, _} <- Exports, not lists:member(F, ?EXCLUDED_FUNS)].
+  Exports = ?MODULE:module_info(exports),
+  [F || {F, _} <- Exports, not lists:member(F, ?EXCLUDED_FUNS ++ ?LOGIC_FUNS)].
 
 -spec init_per_suite(config()) -> config().
 init_per_suite(Config) ->
+  application:ensure_all_started(emongo),
   application:ensure_all_started(emysql),
   application:ensure_all_started(sumo_db),
-  sumo:create_schema(sumo_test_persons),
-  sumo:delete_all(sumo_test_persons),
 
-  sumo:persist(sumo_test_persons, sumo_test_persons:new("Jane", "Doe")),
-  sumo:persist(sumo_test_persons, sumo_test_persons:new("John", "Doe", 30)),
-  sumo:persist(sumo_test_persons, sumo_test_persons:new("Jane Jr.", "Doe", 5)),
-  sumo:persist(sumo_test_persons, sumo_test_persons:new("Joe", "Armstrong")),
-  sumo:persist(sumo_test_persons,
-               sumo_test_persons:new("Alan", "Turing", 102, "Computer St.")),
+  Fun =
+    fun (Module) ->
+        sumo:create_schema(Module),
+        sumo:delete_all(Module),
+
+        sumo:persist(Module, Module:new("Jane", "Doe")),
+        sumo:persist(Module, Module:new("John", "Doe", 30)),
+        sumo:persist(Module, Module:new("Jane Jr.", "Doe", 5)),
+        sumo:persist(Module, Module:new("Joe", "Armstrong")),
+        sumo:persist(Module, Module:new("Alan", "Turing", 102, "Computer St."))
+    end,
+
+  lists:foreach(Fun, [sumo_test_persons, sumo_test_persons_mongo]),
 
   Config.
 
 -spec end_per_suite(config()) -> config().
 end_per_suite(Config) ->
-    Config.
+  Config.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Exported Tests Functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+mysql_conditional_logic(_Config) ->
+  Fun = fun(F) -> conditional_logic_SUITE:F(sumo_test_persons) end,
+  lists:foreach(Fun, ?LOGIC_FUNS).
+
+mongo_conditional_logic(_Config) ->
+  Fun = fun(F) -> conditional_logic_SUITE:F(sumo_test_persons_mongo) end,
+  lists:foreach(Fun, ?LOGIC_FUNS).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Tests cases
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-backward_compatibility(_Config) ->
-  [_, _, _, _, _] = sumo:find_all(sumo_test_persons),
+backward_compatibility(Module) ->
+  [_, _, _, _, _] = sumo:find_all(Module),
 
-  [_, _, _] = sumo:find_by(sumo_test_persons, [{last_name, "Doe"}]),
+  [_, _, _] = sumo:find_by(Module, [{last_name, "Doe"}]),
 
-  [_] = sumo:find_by(sumo_test_persons, [{name, "Jane"}, {last_name, "Doe"}]).
+  [_] = sumo:find_by(Module, [{name, "Jane"}, {last_name, "Doe"}]).
 
-or_conditional(_Config) ->
-  [_, _, _] = sumo:find_by(sumo_test_persons,
+or_conditional(Module) ->
+  [_, _, _] = sumo:find_by(Module,
                            {'or', [{name, "John"},
                                    {name, "Joe"},
                                    {name, "Alan"}
@@ -76,100 +110,102 @@ or_conditional(_Config) ->
                            }
                           ),
 
-  [_, _] = sumo:find_by(sumo_test_persons,
-                           [{last_name, "Doe"},
-                            {'or', [{name, "Jane"},
-                                    {name, "Jane Jr."}
-                                   ]
-                            }
-                           ]
+  [_, _] = sumo:find_by(Module,
+                        [{last_name, "Doe"},
+                         {'or', [{name, "Jane"},
+                                 {name, "Jane Jr."}
+                                ]
+                         }
+                        ]
                        ).
 
-and_conditional(_Config) ->
-  [] = sumo:find_by(sumo_test_persons,
-                           {'and', [{name, "John"},
-                                    {name, "Joe"},
-                                    {name, "Alan"}
-                                   ]
-                           }
+and_conditional(Module) ->
+  [] = sumo:find_by(Module,
+                    {'and', [{name, "John"},
+                             {name, "Joe"},
+                             {name, "Alan"}
+                            ]
+                    }
                    ),
 
-  [_, _] = sumo:find_by(sumo_test_persons,
-                           {'and', [{last_name, "Doe"},
-                                    {'or', [{name, "Jane"},
-                                            {name, "Jane Jr."}
-                                           ]
-                                    }
-                                   ]
-                           }
+  [_, _] = sumo:find_by(Module,
+                        {'and', [{last_name, "Doe"},
+                                 {'or', [{name, "Jane"},
+                                         {name, "Jane Jr."}
+                                        ]
+                                 }
+                                ]
+                        }
                        ).
 
-not_null_conditional(_Config) ->
-  [_, _, _] = sumo:find_by(sumo_test_persons, {age, 'not_null'}),
+not_null_conditional(Module) ->
+  [_, _, _] = sumo:find_by(Module, {age, 'not_null'}),
 
-  [_] = sumo:find_by(sumo_test_persons, {address, 'not_null'}).
+  [_] = sumo:find_by(Module, {address, 'not_null'}).
 
 
-null_conditional(_Config) ->
-  [_, _] = sumo:find_by(sumo_test_persons, {age, 'null'}),
+null_conditional(Module) ->
+  [_, _] = sumo:find_by(Module, {age, 'null'}),
 
-  [_, _, _, _] = sumo:find_by(sumo_test_persons, {address, 'null'}).
+  [_, _, _, _] = sumo:find_by(Module, {address, 'null'}).
 
-operators(_Config) ->
-  [_, _] = sumo:find_by(sumo_test_persons,
+operators(Module) ->
+  [_, _] = sumo:find_by(Module,
                         {'and', [{age, 'not_null'},
                                  {age, '<', 100}
                                 ]
                         }),
 
-  [_] = sumo:find_by(sumo_test_persons,
-                        {'and', [{age, 'not_null'},
-                                 {age, '>', 100}
-                                ]
-                        }),
+  [_] = sumo:find_by(Module,
+                     {'and', [{age, 'not_null'},
+                              {age, '>', 100}
+                             ]
+                     }),
 
-  [] = sumo:find_by(sumo_test_persons,
-                        {'and', [{age, 'not_null'},
-                                 {age, '>', 102}
-                                ]
-                        }),
+  [] = sumo:find_by(Module,
+                    {'and', [{age, 'not_null'},
+                             {age, '>', 102}
+                            ]
+                    }),
 
-  [_] = sumo:find_by(sumo_test_persons,
-                        {'and', [{age, 'not_null'},
-                                 {age, '>=', 102}
-                                ]
-                        }),
+  [_] = sumo:find_by(Module,
+                     {'and', [{age, 'not_null'},
+                              {age, '>=', 102}
+                             ]
+                     }),
 
 
-  [_] = sumo:find_by(sumo_test_persons,
-                        {'and', [{age, 'not_null'},
-                                 {age, '<', 30}
-                                ]
-                        }),
+  [_] = sumo:find_by(Module,
+                     {'and', [{age, 'not_null'},
+                              {age, '<', 30}
+                             ]
+                     }),
 
-  [_, _] = sumo:find_by(sumo_test_persons,
+  [_, _] = sumo:find_by(Module,
                         {'and', [{age, 'not_null'},
                                  {age, '<=', 30}
                                 ]
                         }),
 
-  [_, _] = sumo:find_by(sumo_test_persons,
+  [_, _] = sumo:find_by(Module,
                         {'and', [{age, 'not_null'},
                                  {age, '!=', 30}
                                 ]
                         }),
 
-  [_, _, _, _] =
-    sumo:find_by(sumo_test_persons, {'and', [{name, 'like', "%J%"}]}),
+  [_, _, _, _] = sumo:find_by(Module, {name, 'like', "J%"}),
 
-  [_, _] = sumo:find_by(sumo_test_persons, {'and', [{name, 'like', "%Ja%"}]}).
+  [_, _] = sumo:find_by(Module, {'and', [{name, 'like', "Ja%"}]}),
 
+  [_] = sumo:find_by(Module, {name, 'like', "A%"}),
 
-deeply_nested(_Config) ->
+  [_, _] = sumo:find_by(Module, {name, 'like', "%n"}).
+
+deeply_nested(Module) ->
   Conditions = {'or', [{'and', [{age, '>', 100},
                                 {address, 'like', "%Ave%"}]},
                        {age, 'null'},
                        {last_name, "Turing"}
                       ]
                },
-  [_, _, _] = sumo:find_by(sumo_test_persons, Conditions).
+  [_, _, _] = sumo:find_by(Module, Conditions).

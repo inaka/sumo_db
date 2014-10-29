@@ -67,6 +67,27 @@
 
 -export_type([schema/0, doc/0, field/0]).
 
+
+%% Conditional Logic
+
+-type operator() :: '<' | '>' | '=' | '<=' | '>=' | '!=' | 'like'.
+-type field_name() :: atom().
+-type value() :: binary() | string() | number() | 'null' | 'not_null'.
+
+-type expression() ::
+    [expression()]
+    | {'and', [expression()]}
+    | {'or', [expression()]}
+    | {'not', expression()}
+    | terminal().
+
+-type terminal() ::
+    {field_name(), operator(), field_name()}
+    | {field_name(), operator(), value()}
+    | {field_name(), value()}.
+
+-export_type([expression/0]).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

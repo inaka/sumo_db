@@ -28,9 +28,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Public API.
 -export([
-  init/1, create_schema/2, persist/2, find_by/3, find_by/5,
+  init/1, create_schema/2, persist/2, find_by/3, find_by/5, find_all/2,
   delete/3, delete_by/3, delete_all/2
 ]).
+
+-export([build_clause/1]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
@@ -79,38 +81,51 @@ find_by(DocName, Conditions, Limit, Offset, #state{pool=Pool}=State) ->
     0 -> [];
     Offset -> [{limit, Limit}, {offset, Offset}]
   end,
+
+  Results = emongo:find(Pool,
+                        atom_to_list(DocName),
+                        build_clause(Conditions),
+                        Options),
+
+  FoldFun =
+    fun
+      ({<<"_id">>, _FieldValue}, Acc) ->
+        Acc;
+      ({FieldName, FieldValue}, Acc) ->
+        if
+          is_binary(FieldValue) ->
+            sumo_internal:set_field(
+              list_to_atom(binary_to_list(FieldName)),
+              binary_to_list(FieldValue),
+              Acc
+             );
+          true ->
+            sumo_internal:set_field(
+              list_to_atom(binary_to_list(FieldName)),
+              FieldValue,
+              Acc
+             )
+        end
+    end,
+
   Docs = lists:reverse(lists:map(
     fun(Row) ->
       lists:foldl(
-        fun({FieldName, FieldValue}, Acc) ->
-          case FieldName of
-            <<"_id">> -> Acc;
-            _ -> if
-              is_binary(FieldValue) ->
-                sumo_internal:set_field(
-                  list_to_atom(binary_to_list(FieldName)),
-                  binary_to_list(FieldValue),
-                  Acc
-                );
-              true ->
-                sumo_internal:set_field(
-                  list_to_atom(binary_to_list(FieldName)),
-                  FieldValue,
-                  Acc
-                )
-            end
-          end
-        end,
+        FoldFun,
         sumo_internal:new_doc(DocName, []),
         Row
       )
     end,
-    emongo:find(Pool, atom_to_list(DocName), Conditions, Options)
+    Results
   )),
+
   {ok, Docs, State}.
 
 find_by(DocName, Conditions, State) ->
   find_by(DocName, Conditions, 0, 0, State).
+
+find_all(DocName, State) ->
+  find_by(DocName, [], 0, 0, State).
 
 create_schema(Schema, #state{pool=Pool}=State) ->
   SchemaName = sumo_internal:schema_name(Schema),
@@ -156,3 +171,54 @@ init(Options) ->
   Backend = proplists:get_value(storage_backend, Options),
   Pool    = sumo_backend_mysql:get_pool(Backend),
   {ok, #state{pool=Pool}}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Private API.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+-spec build_clause(sumo_internal:expression()) -> iodata().
+build_clause(Exprs) when is_list(Exprs) ->
+  lists:flatmap(fun build_clause/1, Exprs);
+build_clause({'and', Exprs}) ->
+  WrappedExpr = [[Expr] || Expr <- build_clause(Exprs)],
+  [{<<"$and">>, {array, WrappedExpr}}];
+build_clause({'or', Exprs}) ->
+  WrappedExpr = [[Expr] || Expr <- build_clause(Exprs)],
+  [{<<"$or">>, {array, WrappedExpr}}];
+build_clause({'not', Expr}) ->
+  [{<<"$not">>, build_clause(Expr)}];
+
+build_clause({_Name1, _Op, Name2} = Expr) when is_atom(Name2) ->
+  throw({unsupported_expression, Expr});
+build_clause({Name, '!=', Value}) ->
+  [{Name, [{<<"$ne">>, Value}]}];
+build_clause({Name, '<=', Value}) ->
+  [{Name, [{<<"$lte">>, Value}]}];
+build_clause({Name, '>=', Value}) ->
+  [{Name, [{<<"$gte">>, Value}]}];
+build_clause({Name, '<', Value}) ->
+  [{Name, [{<<"$lt">>, Value}]}];
+build_clause({Name, '>', Value}) ->
+  [{Name, [{<<"$gt">>, Value}]}];
+build_clause({Name, 'like', Value}) ->
+  Regex = like_to_regex(Value),
+  [{Name, {regexp, Regex, "i"}}];
+
+build_clause({Name, 'null'}) ->
+  [{Name, undefined}];
+build_clause({Name, 'not_null'}) ->
+  [{Name, [{<<"$ne">>, undefined}]}];
+build_clause({Name, Value}) ->
+  [{Name, Value}].
+
+like_to_regex(Like) ->
+  Bin = list_to_binary(Like),
+  Regex0 = binary:replace(Bin, <<"%">>, <<".*">>, [global]),
+  Regex1 = case hd(Like) of
+             $% -> Regex0;
+             _ -> <<"^", Regex0/binary>>
+           end,
+  case lists:last(Like) of
+    $% -> Regex1;
+    _ -> <<Regex1/binary, "$">>
+  end.

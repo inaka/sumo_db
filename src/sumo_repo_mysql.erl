@@ -37,30 +37,11 @@
 -export([prepare/3, execute/2, execute/3]).
 -export([find_all/2, find_all/5, find_by/3, find_by/5]).
 
--export([values_conditions/1, build_where_clause/1, hash/1]).
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -record(state, {pool :: atom() | pid()}).
-
-
--type operator() :: '<' | '>' | '=' | '<=' | '>=' | '!=' | 'like'.
--type field_name() :: atom().
--type value() :: binary() | string() | number() | 'null' | 'not_null'.
-
--type expression() ::
-    [expression()]
-    | {'and', [expression()]}
-    | {'or', [expression()]}
-    | {'not', expression()}
-    | terminal().
-
--type terminal() ::
-    {field_name(), operator(), field_name()}
-    | {field_name(), operator(), value()}
-    | {field_name(), value()}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% External API.
@@ -446,7 +427,8 @@ log(Msg, Args) ->
     _          -> ok
   end.
 
--spec values_conditions(expression()) -> {[any()], expression()}.
+-spec values_conditions(sumo_internal:expression()) ->
+  {[any()], sumo_internal:expression()}.
 values_conditions([Expr | RestExprs]) ->
   {Values, CleanExpr} = values_conditions(Expr),
   {ValuesRest, CleanRestExprs} = values_conditions(RestExprs),
@@ -465,7 +447,7 @@ values_conditions({Name, Value})
 values_conditions(Terminal) ->
   {[], Terminal}.
 
--spec build_where_clause(expression()) -> iodata().
+-spec build_where_clause(sumo_internal:expression()) -> iodata().
 build_where_clause(Exprs) when is_list(Exprs) ->
   Clauses = lists:map(fun build_where_clause/1, Exprs),
   ["(", interpose(" AND ", Clauses), ")"];

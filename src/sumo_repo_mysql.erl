@@ -241,7 +241,7 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
 
     Sql2 = case Limit of
       0 -> Sql1;
-      _ -> [Sql1|[" LIMIT ?,?"]]
+      _ -> [Sql1|[" LIMIT ?, ?"]]
     end,
     Sql2
   end,

@@ -92,14 +92,14 @@ find_by(DocName, Conditions, Limit, Offset, #state{pool=Pool}=State) ->
       ({<<"_id">>, _FieldValue}, Acc) ->
         Acc;
       ({FieldName, FieldValue}, Acc) ->
-        if
-          is_binary(FieldValue) ->
+        case is_binary(FieldValue) of
+          true ->
             sumo_internal:set_field(
               list_to_atom(binary_to_list(FieldName)),
               binary_to_list(FieldValue),
               Acc
              );
-          true ->
+          false ->
             sumo_internal:set_field(
               list_to_atom(binary_to_list(FieldName)),
               FieldValue,

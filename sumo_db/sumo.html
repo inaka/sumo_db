@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>sumo (sumo_db) -  (Erlang Documentation)</title>
+    <link href="../erldocs.css" type="text/css" rel="stylesheet"/>
+    <link href="/search.xml" rel="search" type="application/opensearchdescription+xml" title="erldocs"/>
+
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+      ga('create', 'UA-44246018-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+
+  <body>
+    <div id="sidebar" class="inactive">
+      <input type="text" id="search" autocomplete="off" placeholder="press TAB to search"/>
+      <ul id="results"> </ul>
+    </div>
+
+    <div id="content">
+      <div style="margin:0px; padding:10px 20px;">
+        
+
+<h1>sumo</h1>
+<h2 class="modsummary">Main module for sumo.</h2>
+<div class="description">
+<p>Main module for sumo. Use this one from your own applications.</p>
+  
+   <p>Copyright 2012 Inaka &lt;hello@inaka.net&gt;</p>
+  
+   <p>Licensed under the Apache License, Version 2.0 (the "License");   
+you may not use this file except in compliance with the License.   
+You may obtain a copy of the License at</p>
+  
+       <p>http://www.apache.org/licenses/LICENSE-2.0</p>
+  
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.</div>
+<div id="types" class="category"><h4><a href="#types">Types</a></h4><hr />
+    <div class="type"><h3 id="type-conditions">conditions() = [{<a href="#type-field_name" class="seealso">field_name()</a>, <a href="#type-field_value" class="seealso">field_value()</a>}]</h3></div>
+    <div class="type"><h3 id="type-doc">doc() = [{<a href="#type-field_name" class="seealso">field_name()</a>, <a href="#type-field_value" class="seealso">field_value()</a>}]</h3></div>
+    <div class="type"><h3 id="type-field">field() = <a href="sumo_internal.html#type-field" class="seealso">sumo_internal:field()</a></h3></div>
+    <div class="type"><h3 id="type-field_attr">field_attr() = id<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| unique<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| index<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| not_null<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| auto_increment<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| {length, integer()}</h3></div>
+    <div class="type"><h3 id="type-field_attrs">field_attrs() = [<a href="#type-field_attr" class="seealso">field_attr()</a>]</h3></div>
+    <div class="type"><h3 id="type-field_name">field_name() = atom()</h3></div>
+    <div class="type"><h3 id="type-field_type">field_type() = integer<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| string<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| binary<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| text<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| float<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| date<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| datetime</h3></div>
+    <div class="type"><h3 id="type-field_value">field_value() = term()</h3></div>
+    <div class="type"><h3 id="type-schema">schema() = <a href="sumo_internal.html#type-schema" class="seealso">sumo_internal:schema()</a></h3></div>
+    <div class="type"><h3 id="type-schema_name">schema_name() = atom()</h3></div>
+    <div class="type"><h3 id="type-user_doc">user_doc() = term()</h3></div></div>
+<div id="functions" class="category"><h4><a href="#functions">Functions</a></h4><hr />
+<div class="function">
+<h3 id="create_schema/0">create_schema() -&gt; ok</h3>
+
+
+<div class="description">
+
+<p>Creates the schema for all known (configured) docs.</p>
+</div></div>
+<div class="function">
+<h3 id="find_one/1">find_one(DocName::schema_name(), Conditions::conditions()) -&gt; user_doc() | notfound</h3>
+
+
+<div class="description">
+
+<p>Returns 1 doc that matches the given Conditions.</p>
+</div></div>
+<div class="function">
+<h3 id="find/1">find(DocName::schema_name(), Id::field_value()) -&gt; user_doc() | notfound</h3>
+
+
+<div class="description">
+
+<p>Returns the doc identified by Id.</p>
+</div></div>
+<div class="function">
+<h3 id="find_all/1">find_all(DocName) -&gt; term()
+</h3>
+
+
+<div class="description">
+
+<p>Returns all docs from the given repo.</p>
+</div></div>
+<div class="function">
+<h3 id="find_all/4">find_all(DocName, OrderField, Limit, Offset) -&gt; term()
+</h3>
+
+
+<div class="description">
+
+<p>Returns Limit docs from the given repo, starting at offset.</p>
+</div></div>
+<div class="function">
+<h3 id="find_by/1">find_by(DocName::schema_name(), Conditions::conditions(), Limit::non_neg_integer(), Offset::non_neg_integer()) -&gt; [user_doc()]</h3>
+
+
+<div class="description">
+
+<p>Returns Limit number of docs that match Conditions, starting at
+  offset Offset.</p>
+</div></div>
+<div class="function">
+<h3 id="find_by/1-1">find_by(DocName::schema_name(), Conditions::conditions()) -&gt; [user_doc()]</h3>
+
+
+<div class="description">
+
+<p>Returns *all* docs that match Conditions.</p>
+</div></div>
+<div class="function">
+<h3 id="persist/1">persist(DocName::schema_name(), UserDoc) -&gt; UserDoc</h3>
+
+
+<div class="description">
+
+<p>Creates or updates the given Doc.</p>
+</div></div>
+<div class="function">
+<h3 id="delete_all/1">delete_all(DocName::schema_name()) -&gt; non_neg_integer()</h3>
+
+
+<div class="description">
+
+<p>Deletes all docs of type DocName.</p>
+</div></div>
+<div class="function">
+<h3 id="delete/1">delete(DocName::schema_name(), Id::user_doc()) -&gt; boolean()</h3>
+
+
+<div class="description">
+
+<p>Deletes the doc identified by Id.</p>
+</div></div>
+<div class="function">
+<h3 id="delete_by/1">delete_by(DocName::schema_name(), Conditions::conditions()) -&gt; non_neg_integer()</h3>
+
+
+<div class="description">
+
+<p>Deletes the doc identified by Conditions.</p>
+</div></div>
+<div class="function">
+<h3 id="create_schema/1">create_schema(DocName::schema_name()) -&gt; ok</h3>
+
+
+<div class="description">
+
+<p>Creates the schema for the docs of type DocName.</p>
+</div></div>
+<div class="function">
+<h3 id="create_schema/1-1">create_schema(DocName::schema_name(), Repo::atom()) -&gt; ok</h3>
+
+
+<div class="description">
+
+<p>Creates the schema for the docs of type DocName using the given
+  repository.</p>
+</div></div>
+<div class="function">
+<h3 id="call/1">call(DocName::schema_name(), Function::atom()) -&gt; term()</h3>
+
+
+<div class="description">
+
+<p>Calls the given custom function of a repo.</p>
+</div></div>
+<div class="function">
+<h3 id="call/1-1">call(DocName::schema_name(), Function::atom(), Args::[term()]) -&gt; term()</h3>
+
+
+<div class="description">
+
+<p>Calls the given custom function of a repo with the given args.</p>
+</div></div>
+<div class="function">
+<h3 id="new_schema/1">new_schema(Name::schema_name(), Fields::[field()]) -&gt; schema()</h3>
+
+
+<div class="description">
+
+<p>Returns a new schema.</p>
+</div></div>
+<div class="function">
+<h3 id="new_field/1">new_field(Name::field_name(), Type::field_type(), Attributes::field_attrs()) -&gt; field()</h3>
+
+
+<div class="description">
+
+<p>Returns a new field of the given type and attributes.</p>
+</div></div>
+<div class="function">
+<h3 id="new_field/1-1">new_field(Name::field_name(), Type::field_type()) -&gt; field()</h3>
+
+
+<div class="description">
+
+<p>Returns a new field of the given type without attributes.</p>
+</div></div></div>
+
+<authors>
+<aname> </aname>
+<email> </email></authors>
+      </div>
+  </div>
+
+    <script type="text/javascript">
+      var CURRENT_ROOT = "../";
+    </script>
+
+    <script type="text/javascript" src="../jquery.js"></script>
+    <script type="text/javascript" src="../erldocs_index.js"></script>
+    <script type="text/javascript" src="../erldocs.js"></script>
+  </body>
+</html>

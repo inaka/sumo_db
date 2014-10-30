@@ -188,20 +188,22 @@ build_query(Conditions) ->
     build_query(Conditions, 0, 0).
 
 build_query(Conditions, Limit, Offset) ->
-        CondFun =
-        fun
-            ({Key, Value}) when is_list(Value) ->
-                #{match => maps:from_list([{Key, list_to_binary(Value)}])};
-            (Cond) ->
-                #{match => maps:from_list([Cond])}
-        end,
-    QueryConditions = lists:map(CondFun, Conditions),
-    Query = #{query => #{bool => #{must => QueryConditions}}},
+    Query = build_query_conditions(Conditions),
     case Limit of
         0 -> Query;
         _ -> Query#{from => Offset,
                     size => Limit}
     end.
+
+build_query_conditions(Conditions) when is_list(Conditions) ->
+    QueryConditions = lists:map(fun build_query_conditions/1, Conditions),
+    #{query => #{bool => #{must => QueryConditions}}};
+build_query_conditions({Key, Value}) when is_list(Value) ->
+    #{match => maps:from_list([{Key, list_to_binary(Value)}])};
+build_query_conditions({Key, Value}) ->
+    #{match => maps:from_list([{Key, Value}])};
+build_query_conditions(Expr) ->
+    throw({unimplemented_expression, Expr}).
 
 build_mapping(MappingType, Fields) ->
     Fun =

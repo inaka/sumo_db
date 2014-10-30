@@ -11,6 +11,7 @@
     crypto,
     worker_pool
   ]},
+  {modules, []},
   {mod, { sumo_app, []}},
   {env, []}
  ]}.

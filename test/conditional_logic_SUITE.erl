@@ -70,7 +70,7 @@ init_per_suite(Config) ->
         sumo:persist(Module, Module:new("Alan", "Turing", 102, "Computer St."))
     end,
 
-  lists:foreach(Fun, [sumo_test_persons, sumo_test_persons_mongo]),
+  lists:foreach(Fun, [sumo_test_people, sumo_test_people_mongo]),
 
   Config.
 
@@ -83,11 +83,11 @@ end_per_suite(Config) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 mysql_conditional_logic(_Config) ->
-  Fun = fun(F) -> conditional_logic_SUITE:F(sumo_test_persons) end,
+  Fun = fun(F) -> conditional_logic_SUITE:F(sumo_test_people) end,
   lists:foreach(Fun, ?LOGIC_FUNS).
 
 mongo_conditional_logic(_Config) ->
-  Fun = fun(F) -> conditional_logic_SUITE:F(sumo_test_persons_mongo) end,
+  Fun = fun(F) -> conditional_logic_SUITE:F(sumo_test_people_mongo) end,
   lists:foreach(Fun, ?LOGIC_FUNS).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

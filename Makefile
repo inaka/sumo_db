@@ -9,7 +9,7 @@ DIALYZER_OUT?=${NAME}.plt
 
 ERL_ARGS?=-pa ebin -pa deps/*/ebin -name ${NODE}
 
-CT_SUITES=conditional_logic
+CT_SUITES?=conditional_logic
 
 all: getdeps compile
 	${REBAR} compile

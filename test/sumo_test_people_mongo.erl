@@ -1,4 +1,4 @@
--module(sumo_test_persons_mongo).
+-module(sumo_test_people_mongo).
 
 -behavior(sumo_doc).
 

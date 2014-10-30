@@ -1,3 +1,4 @@
+%%% @hidden
 %%% @doc Repository supervisor.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;

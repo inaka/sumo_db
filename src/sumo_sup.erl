@@ -1,3 +1,4 @@
+%%% @hidden
 %%% @doc Main supervisor.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;
@@ -49,4 +50,3 @@ init([]) ->
     , ?SUP(sumo_repo_sup)
     ]
   }}.
-

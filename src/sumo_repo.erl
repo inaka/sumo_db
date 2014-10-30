@@ -176,12 +176,14 @@ call(Name, DocName, Function, Args) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% @doc Called by start_link.
+%% @hidden
 -spec init([term()]) -> {ok, #state{}}.
 init([Module, Options]) ->
   {ok, HState} = Module:init(Options),
   {ok, #state{handler=Module, handler_state=HState}}.
 
 %% @doc handles calls.
+%% @hidden
 -spec handle_call(term(), _, #state{}) -> {reply, tuple(), #state{}}.
 handle_call(
   {persist, Doc}, _From,
@@ -261,14 +263,18 @@ handle_call(
   end,
   {reply, Result, State#state{handler_state=NewState}}.
 
+%% @hidden
 handle_cast(_Msg, State) ->
   {noreply, State}.
 
+%% @hidden
 handle_info(_Info, State) ->
   {noreply, State}.
 
+%% @hidden
 terminate(_Reason, _State) ->
   ok.
 
+%% @hidden
 code_change(_OldVsn, State, _Extra) ->
   {ok, State}.

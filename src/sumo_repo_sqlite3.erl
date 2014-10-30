@@ -1,3 +1,4 @@
+%%% @hidden
 %%% @doc SQLite3 repository implementation.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;

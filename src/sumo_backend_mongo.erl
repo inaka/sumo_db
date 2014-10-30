@@ -1,3 +1,4 @@
+%%% @hidden
 %%% @doc MongoDB storage backend implementation.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;

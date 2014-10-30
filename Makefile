@@ -9,7 +9,9 @@ DIALYZER_OUT?=${NAME}.plt
 
 ERL_ARGS?=-pa ebin -pa deps/*/ebin -name ${NODE}
 
-all: getdeps compile edoc
+CT_SUITES?=conditional_logic
+
+all: getdeps compile
 	${REBAR} compile
 
 blog:
@@ -32,8 +34,9 @@ compile_no_deps:
 compile:
 	${REBAR} compile
 
-test: compile
-	${REBAR} eunit skip_deps=true
+tests: compile
+	${REBAR} skip_deps=true ct
+	open log/ct/index.html
 
 clean:
 	${REBAR} clean

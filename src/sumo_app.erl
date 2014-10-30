@@ -1,3 +1,4 @@
+%%% @hidden
 %%% @doc sumo_db application.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;

@@ -1,3 +1,4 @@
+%%% @hidden
 %%% @doc Storage backend for mysql.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;

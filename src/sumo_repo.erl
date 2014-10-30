@@ -51,6 +51,8 @@
   handler_state = undefined:: any()
 }).
 
+-type state() :: #state{}.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Callback
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -177,14 +179,14 @@ call(Name, DocName, Function, Args) ->
 
 %% @doc Called by start_link.
 %% @hidden
--spec init([term()]) -> {ok, #state{}}.
+-spec init([term()]) -> {ok, state()}.
 init([Module, Options]) ->
   {ok, HState} = Module:init(Options),
   {ok, #state{handler=Module, handler_state=HState}}.
 
 %% @doc handles calls.
 %% @hidden
--spec handle_call(term(), _, #state{}) -> {reply, tuple(), #state{}}.
+-spec handle_call(term(), _, state()) -> {reply, tuple(), #state{}}.
 handle_call(
   {persist, Doc}, _From,
   #state{handler=Handler,handler_state=HState}=State

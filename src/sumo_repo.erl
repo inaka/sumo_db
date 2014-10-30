@@ -186,10 +186,10 @@ init([Module, Options]) ->
 
 %% @doc handles calls.
 %% @hidden
--spec handle_call(term(), _, state()) -> {reply, tuple(), #state{}}.
+-spec handle_call(term(), _, state()) -> {reply, tuple(), state()}.
 handle_call(
   {persist, Doc}, _From,
-  #state{handler=Handler,handler_state=HState}=State
+  #state{handler=Handler, handler_state=HState}=State
 ) ->
   {OkOrError, Reply, NewState} = Handler:persist(Doc, HState),
   {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};

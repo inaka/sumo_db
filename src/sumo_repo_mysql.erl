@@ -440,12 +440,20 @@ values_conditions({LogicalOp, Exprs})
   {Values, CleanExprs} = values_conditions(Exprs),
   {Values, {LogicalOp, CleanExprs}};
 values_conditions({Name, Op, Value}) when not is_atom(Value) ->
+  sumo_internal:check_operator(Op),
   {[Value], {Name, Op, '?'}};
+values_conditions({Name1, Op, Name2}) when is_atom(Name2) ->
+  sumo_internal:check_operator(Op),
+  {[], {Name1, Op, Name2}};
 values_conditions({Name, Value})
   when Value =/= 'null', Value =/= 'not_null' ->
   {[Value], {Name, '?'}};
-values_conditions(Terminal) ->
-  {[], Terminal}.
+values_conditions({Name, Value}) ->
+  {[], {Name, Value}};
+values_conditions([]) ->
+  {[], []};
+values_conditions(Expr) ->
+  throw({unsupported_expression, Expr}).
 
 -spec build_where_clause(sumo_internal:expression()) -> iodata().
 build_where_clause(Exprs) when is_list(Exprs) ->
@@ -459,9 +467,9 @@ build_where_clause({'or', Exprs}) ->
 build_where_clause({'not', Expr}) ->
   [" NOT ", "(", build_where_clause(Expr), ")"];
 build_where_clause({Name, Op, '?'}) ->
-  [escape(Name), " ", atom_to_list(Op), " ? "];
+  [escape(Name), " ", operator_to_string(Op), " ? "];
 build_where_clause({Name1, Op, Name2}) ->
-  [escape(Name1), " ", atom_to_list(Op), " ", escape(Name2)];
+  [escape(Name1), " ", operator_to_string(Op), " ", escape(Name2)];
 build_where_clause({Name, '?'}) ->
   [escape(Name), " = ? "];
 build_where_clause({Name, 'null'}) ->
@@ -469,9 +477,11 @@ build_where_clause({Name, 'null'}) ->
 build_where_clause({Name, 'not_null'}) ->
   [escape(Name), " IS NOT NULL "].
 
+-spec interpose(term(), list()) -> list().
 interpose(Sep, List) ->
   interpose(Sep, List, []).
 
+-spec interpose(term(), list(), list()) -> list().
 interpose(_Sep, [], Result) ->
   lists:reverse(Result);
 interpose(Sep, [Item | []], Result) ->
@@ -485,3 +495,9 @@ hash(Clause) ->
   List = binary_to_list(Bin),
   Fun = fun(Num) -> string:right(integer_to_list(Num, 16), 2, $0) end,
   lists:flatmap(Fun, List).
+
+-spec operator_to_string(atom()) -> string().
+operator_to_string('=<') -> "<=";
+operator_to_string('/=') -> "!=";
+operator_to_string('==') -> "=";
+operator_to_string(Op) -> atom_to_list(Op).

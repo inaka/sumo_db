@@ -188,9 +188,11 @@ build_clause({'not', Expr}) ->
 
 build_clause({_Name1, _Op, Name2} = Expr) when is_atom(Name2) ->
   throw({unsupported_expression, Expr});
-build_clause({Name, '!=', Value}) ->
+build_clause({Name, '/=', Value}) ->
   [{Name, [{<<"$ne">>, Value}]}];
-build_clause({Name, '<=', Value}) ->
+build_clause({Name, '==', Value}) ->
+  [{Name, Value}];
+build_clause({Name, '=<', Value}) ->
   [{Name, [{<<"$lte">>, Value}]}];
 build_clause({Name, '>=', Value}) ->
   [{Name, [{<<"$gte">>, Value}]}];
@@ -201,6 +203,8 @@ build_clause({Name, '>', Value}) ->
 build_clause({Name, 'like', Value}) ->
   Regex = like_to_regex(Value),
   [{Name, {regexp, Regex, "i"}}];
+build_clause({_, Op, _})  ->
+  sumo_internal:check_operator(Op);
 
 build_clause({Name, 'null'}) ->
   [{Name, undefined}];

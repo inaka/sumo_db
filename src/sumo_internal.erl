@@ -61,6 +61,9 @@
          doc_name/1, doc_fields/1,
          schema_name/1, schema_fields/1]).
 
+%%% API for conditional logic.
+-export([check_operator/1]).
+
 -opaque schema()  :: #sumo_schema{}.
 -opaque doc()     :: #sumo_doc{}.
 -opaque field()   :: #sumo_field{}.
@@ -201,3 +204,14 @@ new_schema(Name, Fields) ->
 ) -> field().
 new_field(Name, Type, Attributes) ->
   #sumo_field{name=Name, type=Type, attrs=Attributes}.
+
+%% @doc Checks the operator is known, throws otherwise.
+-spec check_operator(operator()) -> ok.
+check_operator('<') -> ok;
+check_operator('=<') -> ok;
+check_operator('>') -> ok;
+check_operator('>=') -> ok;
+check_operator('==') -> ok;
+check_operator('/=') -> ok;
+check_operator('like') -> ok;
+check_operator(Op) -> throw({unknown_operator, Op}).

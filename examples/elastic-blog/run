@@ -91,7 +91,7 @@ start_apps() ->
     application:ensure_all_started(goldrush),
     Apps = [
             sasl, compiler, syntax_tools, lager, crypto,
-            emysql, emongo, sqlite3, worker_pool,
+            emysql, emongo, worker_pool,
             sumo_db
            ],
     [ application:start(X) || X <- Apps ].

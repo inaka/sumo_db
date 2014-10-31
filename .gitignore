@@ -9,3 +9,4 @@ examples/blog/log
 .rebar
 log*/
 erl_crash.dump
+.erlang.mk.*

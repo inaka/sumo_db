@@ -1,53 +1,29 @@
-CWD=$(shell pwd)
-NAME?=$(shell basename ${CWD})
-ROOT?=${CWD}
-REBAR?=./rebar
-ERL?=/usr/bin/env erl
-HOST?=$(shell hostname)
-NODE?=${NAME}@${HOST}
-DIALYZER_OUT?=${NAME}.plt
+PROJECT = sumo_db
 
-ERL_ARGS?=-pa ebin -pa deps/*/ebin -name ${NODE}
+DEPS = lager emysql emongo sqlite3 tirerl worker_pool
 
-CT_SUITES?=conditional_logic
+dep_lager = git https://github.com/basho/lager.git 2.0.3
+dep_emysql = git https://github.com/Eonblast/Emysql.git v0.4.1
+dep_emongo = git https://github.com/inaka/emongo.git v0.2.1
+dep_sqlite3 = git https://github.com/alexeyr/erlang-sqlite3.git v1.0.1
+dep_tirerl = git https://github.com/inaka/tirerl 0.1.0
+dep_worker_pool = git https://github.com/inaka/worker_pool.git 1.0
 
-all: getdeps compile
-	${REBAR} compile
+include erlang.mk
 
-blog:
-	${REBAR} -C examples/blog/rebar.config get
-	${REBAR} -C examples/blog/rebar.config compile
-	(cd examples/blog && ./run)
+ERLC_OPTS += +'{parse_transform, lager_transform}'
+ERLC_OPTS += +warn_unused_vars +warn_export_all +warn_shadow_vars +warn_unused_import +warn_unused_function
+ERLC_OPTS += +warn_bif_clash +warn_unused_record +warn_deprecated_function +warn_obsolete_guard +strict_validation
+ERLC_OPTS += +warn_export_vars +warn_exported_vars +warn_missing_spec +warn_untyped_record +debug_info
 
-shell: compile_no_deps
-	${ERL} ${ERL_ARGS}
+# Commont Test Config
 
-edoc:
-	${REBAR} skip_deps=true doc
+TEST_ERLC_OPTS += +'{parse_transform, lager_transform}'
+CT_SUITES = conditional_logic
+CT_OPTS = -s emysql -s sumo_db -erl_args -config test/test.config
 
-getdeps:
-	${REBAR} get-deps
+test-shell: app
+	erl -pa ebin -pa deps/*/ebin -pa test -s sync -s emysql -s sumo_db -config test/test.config
 
-compile_no_deps:
-	${REBAR} compile skip_deps=true
-
-compile:
-	${REBAR} compile
-
-tests: compile
-	${REBAR} skip_deps=true ct
-	open log/ct/index.html
-
-clean:
-	${REBAR} clean
-
-${DIALYZER_OUT}:
-	dialyzer --verbose --build_plt -pa deps/*/ebin --output_plt ${DIALYZER_OUT} \
-	 --apps stdlib erts compiler crypto edoc gs syntax_tools tools runtime_tools \
-	 inets xmerl ssl mnesia webtool kernel
-
-analyze: compile ${DIALYZER_OUT} xref
-	dialyzer --verbose --plt ${DIALYZER_OUT} -Werror_handling `find ebin -name "*.beam" | grep -v SUITE`
-
-xref:
-	${REBAR} skip_deps=true --verbose compile xref
+erldocs:
+	erldocs . -o docs

@@ -7,8 +7,8 @@
         ]).
 
 -export([
-         find_by_sort/1,
-         find_all_sort/1
+         find_sort_mysql/1,
+         find_sort_mongo/1
         ]).
 
 -define(EXCLUDED_FUNS,
@@ -18,7 +18,8 @@
          test,
          init_per_suite,
          end_per_suite,
-         log
+         find_by_sort,
+         find_all_sort
         ]).
 
 -type config() :: [{atom(), term()}].
@@ -38,15 +39,20 @@ init_per_suite(Config) ->
   application:ensure_all_started(emongo),
   application:ensure_all_started(sumo_db),
 
-  sumo:create_schema(sumo_test_people),
-  sumo:delete_all(sumo_test_people),
+    Fun =
+    fun (Module) ->
+        sumo:create_schema(Module),
+        sumo:delete_all(Module),
 
-  sumo:persist(sumo_test_people, sumo_test_people:new("A", "E", 6)),
-  sumo:persist(sumo_test_people, sumo_test_people:new("B", "D", 3)),
-  sumo:persist(sumo_test_people, sumo_test_people:new("C", "C", 5)),
-  sumo:persist(sumo_test_people, sumo_test_people:new("D", "B", 4)),
-  sumo:persist(sumo_test_people, sumo_test_people:new("E", "A", 2)),
-  sumo:persist(sumo_test_people, sumo_test_people:new("F", "E", 1)),
+        sumo:persist(Module, Module:new("A", "E", 6)),
+        sumo:persist(Module, Module:new("B", "D", 3)),
+        sumo:persist(Module, Module:new("C", "C", 5)),
+        sumo:persist(Module, Module:new("D", "B", 4)),
+        sumo:persist(Module, Module:new("E", "A", 2)),
+        sumo:persist(Module, Module:new("F", "E", 1))
+    end,
+
+  lists:foreach(Fun, [sumo_test_people, sumo_test_people_mongo]),
 
   Config.
 
@@ -58,36 +64,57 @@ end_per_suite(Config) ->
 %%% Exported Tests Functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-find_by_sort(_Config) ->
-  [First, Second | _] =
-    sumo:find_by(sumo_test_people, [{age, '>', 2}], age, 0, 0),
-  <<"B">> = sumo_test_people:name(First),
-  <<"D">> = sumo_test_people:name(Second),
+find_sort_mysql(_Config) ->
+  find_by_sort(sumo_test_people),
+  find_all_sort(sumo_test_people).
+
+find_sort_mongo(_Config) ->
+  find_by_sort(sumo_test_people_mongo),
+  find_all_sort(sumo_test_people_mongo).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Internal functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+find_by_sort(Module) ->
+  [First, Second | _] = People =
+    sumo:find_by(Module, [{age, '>', 2}], age, 0, 0),
+
+  io:format("~p~n", [People]),
+
+  "B" = to_str(Module:name(First)),
+  "D" = to_str(Module:name(Second)),
 
   [First1, Second1 | _] =
-    sumo:find_by(sumo_test_people,
+    sumo:find_by(Module,
                  [{age, '>', 2}, {age, '=<', 5}],
                  {age, desc},
                  0,
                  0),
-  <<"C">> = sumo_test_people:name(First1),
-  <<"D">> = sumo_test_people:name(Second1),
+  "C" = to_str(Module:name(First1)),
+  "D" = to_str(Module:name(Second1)),
 
   [_, _, _] =
-    sumo:find_by(sumo_test_people, [{age, '>', 2}, {age, '=<', 5}], 0, 0).
+    sumo:find_by(Module, [{age, '>', 2}, {age, '=<', 5}], 0, 0).
 
-find_all_sort(_Config) ->
-  [First, Second | _] = sumo:find_all(sumo_test_people, age, 0, 0),
-  <<"F">> = sumo_test_people:name(First),
-  <<"E">> = sumo_test_people:name(Second),
+find_all_sort(Module) ->
+  [First, Second | _] = sumo:find_all(Module, age, 0, 0),
+  "F" = to_str(Module:name(First)),
+  "E" = to_str(Module:name(Second)),
 
-  [First1, Second1 | _] = sumo:find_all(sumo_test_people,
+  [First1, Second1 | _] = sumo:find_all(Module,
                                         [{last_name, desc}, {age, asc}],
                                         0,
                                         0),
-  <<"F">> = sumo_test_people:name(First1),
-  <<"A">> = sumo_test_people:name(Second1),
+  "F" = to_str(Module:name(First1)),
+  "A" = to_str(Module:name(Second1)),
 
-  [First2, Second2 | _] = sumo:find_all(sumo_test_people, last_name, 0, 0),
-  <<"E">> = sumo_test_people:name(First2),
-  <<"D">> = sumo_test_people:name(Second2).
+  [First2, Second2 | _] = sumo:find_all(Module, last_name, 0, 0),
+  "E" = to_str(Module:name(First2)),
+  "D" = to_str(Module:name(Second2)).
+
+-spec to_str(any()) -> string().
+to_str(X) when is_list(X) ->
+  X;
+to_str(X) when is_binary(X) ->
+  binary_to_list(X).

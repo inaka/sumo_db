@@ -29,8 +29,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Public API.
 -export([
-  init/1, create_schema/2, persist/2, find_by/3, find_by/5, find_all/2,
-  delete/3, delete_by/3, delete_all/2
+  init/1, create_schema/2, persist/2, find_by/3, find_by/5, find_by/6,
+  find_all/2, delete/3, delete_by/3, delete_all/2
 ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -75,16 +75,26 @@ delete_all(DocName, #state{pool=Pool}=State) ->
   ok = emongo:delete(Pool, atom_to_list(DocName)),
   {ok, unknown, State}.
 
-find_by(DocName, Conditions, Limit, Offset, #state{pool=Pool}=State) ->
+find_by(DocName, Conditions, Limit, Offset, State) ->
+  find_by(DocName, Conditions, [], Limit, Offset, State).
+
+find_by(
+  DocName, Conditions, SortFields, Limit, Offset, #state{pool = Pool} = State
+) ->
   Options = case Offset of
     0 -> [];
     Offset -> [{limit, Limit}, {offset, Offset}]
   end,
 
+  Options1 = case SortFields of
+               [] -> Options;
+               _ -> [{orderby, build_order_by(SortFields)} | Options]
+             end,
+
   Results = emongo:find(Pool,
                         atom_to_list(DocName),
-                        build_clause(Conditions),
-                        Options),
+                        build_query(Conditions),
+                        Options1),
 
   FoldFun =
     fun
@@ -107,16 +117,17 @@ find_by(DocName, Conditions, Limit, Offset, #state{pool=Pool}=State) ->
         end
     end,
 
-  Docs = lists:reverse(lists:map(
-    fun(Row) ->
-      lists:foldl(
-        FoldFun,
-        sumo_internal:new_doc(DocName, []),
-        Row
-      )
-    end,
-    Results
-  )),
+  Docs =
+    lists:map(
+      fun(Row) ->
+          lists:foldl(
+            FoldFun,
+            sumo_internal:new_doc(DocName, []),
+            Row
+           )
+      end,
+      Results
+     ),
 
   {ok, Docs, State}.
 
@@ -175,44 +186,51 @@ init(Options) ->
 %% Private API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec build_clause(sumo_internal:expression()) -> iodata().
-build_clause(Exprs) when is_list(Exprs) ->
-  lists:flatmap(fun build_clause/1, Exprs);
-build_clause({'and', Exprs}) ->
-  WrappedExpr = [[Expr] || Expr <- build_clause(Exprs)],
+-spec build_query(sumo_internal:expression()) -> iodata().
+build_query(Exprs) when is_list(Exprs) ->
+  lists:flatmap(fun build_query/1, Exprs);
+build_query({'and', Exprs}) ->
+  WrappedExpr = [[Expr] || Expr <- build_query(Exprs)],
   [{<<"$and">>, {array, WrappedExpr}}];
-build_clause({'or', Exprs}) ->
-  WrappedExpr = [[Expr] || Expr <- build_clause(Exprs)],
+build_query({'or', Exprs}) ->
+  WrappedExpr = [[Expr] || Expr <- build_query(Exprs)],
   [{<<"$or">>, {array, WrappedExpr}}];
-build_clause({'not', Expr}) ->
-  [{<<"$not">>, build_clause(Expr)}];
+build_query({'not', Expr}) ->
+  [{<<"$not">>, build_query(Expr)}];
 
-build_clause({_Name1, _Op, Name2} = Expr) when is_atom(Name2) ->
+build_query({_Name1, _Op, Name2} = Expr) when is_atom(Name2) ->
   throw({unsupported_expression, Expr});
-build_clause({Name, '/=', Value}) ->
+build_query({Name, '/=', Value}) ->
   [{Name, [{<<"$ne">>, Value}]}];
-build_clause({Name, '==', Value}) ->
+build_query({Name, '==', Value}) ->
   [{Name, Value}];
-build_clause({Name, '=<', Value}) ->
+build_query({Name, '=<', Value}) ->
   [{Name, [{<<"$lte">>, Value}]}];
-build_clause({Name, '>=', Value}) ->
+build_query({Name, '>=', Value}) ->
   [{Name, [{<<"$gte">>, Value}]}];
-build_clause({Name, '<', Value}) ->
+build_query({Name, '<', Value}) ->
   [{Name, [{<<"$lt">>, Value}]}];
-build_clause({Name, '>', Value}) ->
+build_query({Name, '>', Value}) ->
   [{Name, [{<<"$gt">>, Value}]}];
-build_clause({Name, 'like', Value}) ->
+build_query({Name, 'like', Value}) ->
   Regex = like_to_regex(Value),
   [{Name, {regexp, Regex, "i"}}];
-build_clause({_, Op, _})  ->
+build_query({_, Op, _})  ->
   sumo_internal:check_operator(Op);
 
-build_clause({Name, 'null'}) ->
+build_query({Name, 'null'}) ->
   [{Name, undefined}];
-build_clause({Name, 'not_null'}) ->
+build_query({Name, 'not_null'}) ->
   [{Name, [{<<"$ne">>, undefined}]}];
-build_clause({Name, Value}) ->
+build_query({Name, Value}) ->
   [{Name, Value}].
+
+build_order_by({Name, asc}) ->
+  {Name, 1};
+build_order_by({Name, desc}) ->
+  {Name, -1};
+build_order_by(SortFields) ->
+  lists:map(fun build_order_by/1, SortFields).
 
 like_to_regex(Like) ->
   Bin = list_to_binary(Like),

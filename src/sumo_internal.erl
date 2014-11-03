@@ -64,6 +64,8 @@
 %%% API for conditional logic.
 -export([check_operator/1]).
 
+-export([report_overrun/1]).
+
 -opaque schema()  :: #sumo_schema{}.
 -opaque doc()     :: #sumo_doc{}.
 -opaque field()   :: #sumo_field{}.
@@ -215,3 +217,7 @@ check_operator('==') -> ok;
 check_operator('/=') -> ok;
 check_operator('like') -> ok;
 check_operator(Op) -> throw({unknown_operator, Op}).
+
+-spec report_overrun(term()) -> ok.
+report_overrun(Report) ->
+  lager:error("~p", [Report]).

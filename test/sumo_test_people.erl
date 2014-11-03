@@ -5,13 +5,13 @@
 %%% sumo_db callbacks
 -export([sumo_schema/0, sumo_wakeup/1, sumo_sleep/1]).
 
--export([new/2, new/3, new/4]).
+-export([new/2, new/3, new/4, name/1]).
 
 -record(person, {id :: integer(),
-                    name :: string(),
-                    last_name :: string(),
-                    age :: integer(),
-                    address :: string()}).
+                 name :: string(),
+                 last_name :: string(),
+                 age :: integer(),
+                 address :: string()}).
 
 -type person() :: #person{}.
 
@@ -66,3 +66,6 @@ new(Name, LastName, Age, Address) ->
           last_name = LastName,
           age = Age,
           address = Address}.
+
+name(Person) ->
+  Person#person.name.

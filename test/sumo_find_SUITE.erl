@@ -77,10 +77,7 @@ find_sort_mongo(_Config) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 find_by_sort(Module) ->
-  [First, Second | _] = People =
-    sumo:find_by(Module, [{age, '>', 2}], age, 0, 0),
-
-  io:format("~p~n", [People]),
+  [First, Second | _] = sumo:find_by(Module, [{age, '>', 2}], age, 0, 0),
 
   "B" = to_str(Module:name(First)),
   "D" = to_str(Module:name(Second)),

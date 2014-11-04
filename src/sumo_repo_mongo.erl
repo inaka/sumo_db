@@ -30,7 +30,7 @@
 %%% Public API.
 -export([
   init/1, create_schema/2, persist/2, find_by/3, find_by/5, find_by/6,
-  find_all/2, delete/3, delete_by/3, delete_all/2
+  find_all/2,  find_all/5, delete/3, delete_by/3, delete_all/2
 ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -88,7 +88,7 @@ find_by(
 
   Options1 = case SortFields of
                [] -> Options;
-               _ -> [{orderby, build_order_by(SortFields)} | Options]
+               _  -> [{orderby, SortFields} | Options]
              end,
 
   Results = emongo:find(Pool,
@@ -135,7 +135,12 @@ find_by(DocName, Conditions, State) ->
   find_by(DocName, Conditions, 0, 0, State).
 
 find_all(DocName, State) ->
-  find_by(DocName, [], 0, 0, State).
+  find_all(DocName, [], 0, 0, State).
+
+find_all(DocName, SortFields, Limit, Offset, State) ->
+  %% If conditions is empty then no documents are returned.
+  Conditions = [{'_id', not_null}],
+  find_by(DocName, Conditions, SortFields, Limit, Offset, State).
 
 create_schema(Schema, #state{pool=Pool}=State) ->
   SchemaName = sumo_internal:schema_name(Schema),
@@ -224,13 +229,6 @@ build_query({Name, 'not_null'}) ->
   [{Name, [{<<"$ne">>, undefined}]}];
 build_query({Name, Value}) ->
   [{Name, Value}].
-
-build_order_by({Name, asc}) ->
-  {Name, 1};
-build_order_by({Name, desc}) ->
-  {Name, -1};
-build_order_by(SortFields) ->
-  lists:map(fun build_order_by/1, SortFields).
 
 like_to_regex(Like) ->
   Bin = list_to_binary(Like),

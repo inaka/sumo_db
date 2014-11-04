@@ -233,11 +233,11 @@ handle_call(
   {reply, {OkOrError, Reply}, State#state{handler_state = NewState}};
 
 handle_call(
-  {find_all, DocName, OrderField, Limit, Offset}, _From,
+  {find_all, DocName, SortFields, Limit, Offset}, _From,
   #state{handler=Handler, handler_state=HState}=State
 ) ->
   {OkOrError, Reply, NewState} = Handler:find_all(
-    DocName, OrderField, Limit, Offset, HState
+    DocName, SortFields, Limit, Offset, HState
   ),
   {reply, {OkOrError, Reply}, State#state{handler_state = NewState}};
 

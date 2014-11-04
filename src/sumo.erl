@@ -33,12 +33,14 @@
 
 %%% API for standard CRUD functions.
 -export([persist/2, delete/2, delete_by/2, delete_all/1]).
--export([find/2, find_all/1, find_all/4, find_by/2, find_by/4, find_one/2]).
+-export([find/2, find_all/1, find_all/4]).
+-export([find_by/2, find_by/4, find_by/5, find_one/2]).
 -export([call/2, call/3]).
 
 -type schema_name() :: atom().
 
--type field_attr()  :: id|unique|index|not_null|auto_increment|{length, integer()}.
+-type field_attr()  ::
+        id | unique | index | not_null | auto_increment | {length, integer()}.
 -type field_attrs() :: [field_attr()].
 
 -type field_type()  :: integer|string|binary|text|float|date|datetime.
@@ -46,6 +48,8 @@
 -type field_value() :: term().
 -type doc()         :: [{field_name(), field_value()}].
 -type conditions()  :: [{field_name(), field_value()}].
+-type sort_order()  :: asc | desc.
+-type sort()        :: field_name() | [{field_name(), sort_order()}].
 
 -export_type([schema_name/0, field_attr/0, field_attrs/0, field_type/0,
               field_name/0, field_value/0, doc/0, conditions/0]).
@@ -96,23 +100,30 @@ find(DocName, Id) ->
   find_one(DocName, [{IdFieldName, Id}]).
 
 %% @doc Returns all docs from the given repo.
+-spec find_all(schema_name()) -> [user_doc()].
 find_all(DocName) ->
   case sumo_repo:find_all(sumo_internal:get_repo(DocName), DocName) of
-    {ok, Docs} ->
-      lists:reverse(lists:map(
-        fun(Doc) -> sumo_internal:wakeup(DocName, Doc) end, Docs
-      ));
+    {ok, Docs} -> docs_wakeup(DocName, Docs);
     Error -> throw(Error)
   end.
 
 %% @doc Returns Limit docs from the given repo, starting at offset.
-find_all(DocName, OrderField, Limit, Offset) ->
+-spec find_all(schema_name(), sort(), non_neg_integer(), non_neg_integer()) ->
+  [user_doc()].
+find_all(DocName, SortFields0, Limit, Offset) ->
+  SortFields = normalize_sort_fields(SortFields0),
   Repo = sumo_internal:get_repo(DocName),
-  case sumo_repo:find_all(Repo, DocName, OrderField, Limit, Offset) of
-    {ok, Docs} ->
-      lists:reverse(lists:map(
-        fun(Doc) -> sumo_internal:wakeup(DocName, Doc) end, Docs
-      ));
+  case sumo_repo:find_all(Repo, DocName, SortFields, Limit, Offset) of
+    {ok, Docs} -> docs_wakeup(DocName, Docs);
+    Error -> throw(Error)
+  end.
+
+%% @doc Returns *all* docs that match Conditions.
+-spec find_by(schema_name(), conditions()) -> [user_doc()].
+find_by(DocName, Conditions) ->
+  Repo = sumo_internal:get_repo(DocName),
+  case sumo_repo:find_by(Repo, DocName, Conditions) of
+    {ok, Docs} -> docs_wakeup(DocName, Docs);
     Error -> throw(Error)
   end.
 
@@ -124,18 +135,21 @@ find_all(DocName, OrderField, Limit, Offset) ->
 find_by(DocName, Conditions, Limit, Offset) ->
   Repo = sumo_internal:get_repo(DocName),
   case sumo_repo:find_by(Repo, DocName, Conditions, Limit, Offset) of
-    {ok, Docs} ->
-      lists:reverse(lists:map(
-        fun(Doc) -> sumo_internal:wakeup(DocName, Doc) end, Docs
-      ));
+    {ok, Docs} -> docs_wakeup(DocName, Docs);
     Error -> throw(Error)
   end.
 
-%% @doc Returns *all* docs that match Conditions.
--spec find_by(schema_name(), conditions()) -> [user_doc()].
-find_by(DocName, Conditions) ->
+%% @doc Returns Limit number of docs that match Conditions, starting at
+%% offset Offset.
+-spec find_by(
+  schema_name(), conditions(), sort(), non_neg_integer(), non_neg_integer()
+) -> [user_doc()].
+find_by(DocName, Conditions, SortFields0, Limit, Offset) ->
+  SortFields = normalize_sort_fields(SortFields0),
   Repo = sumo_internal:get_repo(DocName),
-  case sumo_repo:find_by(Repo, DocName, Conditions) of
+  case sumo_repo:find_by(
+         Repo, DocName, Conditions, SortFields, Limit, Offset
+        ) of
     {ok, Docs} -> docs_wakeup(DocName, Docs);
     Error -> throw(Error)
   end.
@@ -164,9 +178,9 @@ delete_all(DocName) ->
   Repo = sumo_internal:get_repo(DocName),
   case sumo_repo:delete_all(Repo, DocName) of
     {ok, NumRows} ->
-      if
-        NumRows > 0 -> sumo_event:dispatch(DocName, deleted_all);
-        true -> ok
+      case NumRows > 0 of
+        true  -> sumo_event:dispatch(DocName, deleted_all);
+        _ -> ok
       end,
       NumRows;
     Error -> throw(Error)
@@ -186,9 +200,13 @@ delete(DocName, Id) ->
 delete_by(DocName, Conditions) ->
   Repo = sumo_internal:get_repo(DocName),
   case sumo_repo:delete_by(Repo, DocName, Conditions) of
-    {ok, 0} -> 0;
-    {ok, NumRows} -> sumo_event:dispatch(DocName, deleted_total, [NumRows]), NumRows;
-    Error -> throw(Error)
+    {ok, 0} ->
+      0;
+    {ok, NumRows} ->
+      sumo_event:dispatch(DocName, deleted_total, [NumRows]),
+      NumRows;
+    Error ->
+      throw(Error)
   end.
 
 %% @doc Creates the schema for the docs of type DocName.
@@ -221,14 +239,6 @@ call(DocName, Function, Args) ->
     {ok, {raw, Value}} -> Value
   end.
 
-docs_wakeup(DocName, Docs) ->
-  lists:reverse(lists:map(
-    fun(Doc) ->
-      sumo_internal:wakeup(DocName, Doc)
-    end,
-    Docs
-  )).
-
 %% @doc Returns a new schema.
 -spec new_schema(schema_name(), [field()]) -> schema().
 new_schema(Name, Fields) ->
@@ -243,3 +253,23 @@ new_field(Name, Type, Attributes) ->
 -spec new_field(field_name(), field_type()) -> field().
 new_field(Name, Type) ->
   new_field(Name, Type, []).
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Interal functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+docs_wakeup(DocName, Docs) ->
+  lists:map(
+    fun(Doc) ->
+        sumo_internal:wakeup(DocName, Doc)
+    end,
+    Docs
+  ).
+
+normalize_sort_fields(FieldName) when is_atom(FieldName) ->
+  [{FieldName, asc}];
+normalize_sort_fields({Name, Order}) ->
+  [{Name, Order}];
+normalize_sort_fields(SortFields) when is_list(SortFields) ->
+  lists:flatmap(fun normalize_sort_fields/1, SortFields).

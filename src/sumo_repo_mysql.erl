@@ -36,7 +36,7 @@
 -export([persist/2]).
 -export([delete/3, delete_by/3, delete_all/2]).
 -export([prepare/3, execute/2, execute/3]).
--export([find_all/2, find_all/5, find_by/3, find_by/5]).
+-export([find_all/2, find_all/5, find_by/3, find_by/5, find_by/6]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
@@ -177,49 +177,20 @@ delete_all(DocName, State) ->
   end.
 
 find_all(DocName, State) ->
-  find_all(DocName, undefined, 0, 0, State).
+  find_all(DocName, [], 0, 0, State).
 
-find_all(DocName, OrderField, Limit, Offset, State) ->
-  % Select * is not good...
-  Sql0 = ["SELECT * FROM ", escape(atom_to_list(DocName)), " "],
-  {Sql1, ExecArgs1} =
-    case OrderField of
-      undefined -> {Sql0, []};
-      _         -> {[Sql0, " ORDER BY ? "], [atom_to_list(OrderField)]}
-    end,
-  {Sql2, ExecArgs2} =
-    case Limit of
-      0     -> {Sql1, ExecArgs1};
-      Limit -> {[Sql1, " LIMIT ?,?"], lists:append(ExecArgs1, [Offset, Limit])}
-    end,
+find_all(DocName, SortFields, Limit, Offset, State) ->
+  find_by(DocName, [], SortFields, Limit, Offset, State).
 
-  StatementName = prepare(DocName, find_all, fun() -> Sql2 end),
+find_by(DocName, Conditions, State) ->
+  find_by(DocName, Conditions, [], 0, 0, State).
 
-  case execute(StatementName, ExecArgs2, State) of
-    #result_packet{rows = Rows, field_list = Fields} ->
-      Docs   = lists:foldl(
-        fun(Row, DocList) ->
-          NewDoc = lists:foldl(
-            fun(Field, [Doc,N]) ->
-              FieldRecord = lists:nth(N, Fields),
-              FieldName = list_to_atom(binary_to_list(FieldRecord#field.name)),
-              [sumo_internal:set_field(FieldName, Field, Doc), N+1]
-            end,
-            [sumo_internal:new_doc(DocName, []), 1],
-            Row
-          ),
-          [hd(NewDoc)|DocList]
-        end,
-        [],
-        Rows
-      ),
-      {ok, lists:reverse(Docs), State};
-    Error -> evaluate_execute_result(Error, State)
-  end.
+find_by(DocName, Conditions, Limit, Offset, State) ->
+  find_by(DocName, Conditions, [], Limit, Offset, State).
 
 %% XXX We should have a DSL here, to allow querying in a known language
 %% to be translated by each driver into its own.
-find_by(DocName, Conditions, Limit, Offset, State) ->
+find_by(DocName, Conditions, SortFields, Limit, Offset, State) ->
   {Values, CleanConditions} = values_conditions(Conditions),
   Clauses = build_where_clause(CleanConditions),
   PreStatementName0 = hash(Clauses),
@@ -230,16 +201,33 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
       Limit -> PreStatementName0 ++ "_limit"
     end,
 
-  PreName = list_to_atom("find_by_" ++ PreStatementName1),
+  {PreStatementName2, OrderByClause} =
+    case SortFields of
+      [] ->
+        {PreStatementName1, []};
+      _ ->
+        OrderByClause0 = order_by_clause(SortFields),
+        {
+          PreStatementName1 ++ "_" ++ hash(OrderByClause0),
+          OrderByClause0
+        }
+    end,
+
+  WhereClause =
+    case Conditions of
+      [] -> "";
+      _  -> [" WHERE ", lists:flatten(Clauses)]
+    end,
+
+  PreName = list_to_atom("find_by_" ++ PreStatementName2),
 
   Fun = fun() ->
     % Select * is not good..
     Sql1 = [ "SELECT * FROM ",
              escape(atom_to_list(DocName)),
-             " WHERE ",
-             lists:flatten(Clauses)
+             WhereClause,
+             OrderByClause
            ],
-
     Sql2 = case Limit of
       0 -> Sql1;
       _ -> [Sql1|[" LIMIT ?, ?"]]
@@ -276,9 +264,6 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
       {ok, lists:reverse(Docs), State};
     Error -> evaluate_execute_result(Error, State)
   end.
-
-find_by(DocName, Conditions, State) ->
-  find_by(DocName, Conditions, 0, 0, State).
 
 %% XXX: Refactor:
 %% Requires {length, X} to be the first field attribute in order to form the
@@ -502,3 +487,12 @@ operator_to_string('=<') -> "<=";
 operator_to_string('/=') -> "!=";
 operator_to_string('==') -> "=";
 operator_to_string(Op) -> atom_to_list(Op).
+
+
+-spec order_by_clause([{atom(), sumo:sort_order()}]) -> iolist().
+order_by_clause(SortFields) ->
+  ClauseFun = fun({Name, SortOrder}) ->
+                  [escape(atom_to_list(Name)), " ", atom_to_list(SortOrder)]
+              end,
+  Clauses = lists:map(ClauseFun, SortFields),
+  [" ORDER BY ", interpose(", ", Clauses)].

@@ -2,7 +2,7 @@ PROJECT = sumo_db
 
 DEPS = lager emysql emongo tirerl worker_pool
 
-dep_lager = git https://github.com/basho/lager.git 2.0.3
+dep_lager = git https://github.com/basho/lager.git 2.1.0
 dep_emysql = git https://github.com/Eonblast/Emysql.git v0.4.1
 dep_emongo = git https://github.com/inaka/emongo.git v0.2.1
 dep_tirerl = git https://github.com/inaka/tirerl 0.1.0
@@ -18,7 +18,7 @@ ERLC_OPTS += +warn_export_vars +warn_exported_vars +warn_missing_spec +warn_unty
 # Commont Test Config
 
 TEST_ERLC_OPTS += +'{parse_transform, lager_transform}'
-CT_SUITES = sumo_config conditional_logic
+CT_SUITES = sumo_find sumo_config conditional_logic
 CT_OPTS = -s emysql -s sumo_db -erl_args -config test/test.config
 
 test-shell: app

@@ -33,7 +33,7 @@
 -export([create_schema/2]).
 -export([persist/2]).
 -export([delete/3, delete_by/3, delete_all/2]).
--export([find_all/2, find_all/5, find_by/3, find_by/5]).
+-export([find_all/2, find_all/5, find_by/3, find_by/5, find_by/6]).
 -export([call/4]).
 
 %%% Exports for gen_server
@@ -141,8 +141,16 @@ find_all(Name, DocName) ->
   atom(), sumo:schema_name(), sumo:field_name(),
   non_neg_integer(), non_neg_integer()
 ) -> {ok, [sumo_internal:doc()]} | {error, term()}.
-find_all(Name, DocName, OrderField, Limit, Offset) ->
-  wpool:call(Name, {find_all, DocName, OrderField, Limit, Offset}).
+find_all(Name, DocName, SortFields, Limit, Offset) ->
+  wpool:call(Name, {find_all, DocName, SortFields, Limit, Offset}).
+
+%% @doc Finds documents that match the given conditions in the given
+%% repository name.
+-spec find_by(
+  atom(), sumo:schema_name(), sumo:conditions()
+) -> {ok, [sumo_internal:doc()]} | {error, term()}.
+find_by(Name, DocName, Conditions) ->
+  wpool:call(Name, {find_by, DocName, Conditions}).
 
 %% @doc Finds documents that match the given conditions in the given
 %% repository name.
@@ -156,10 +164,12 @@ find_by(Name, DocName, Conditions, Limit, Offset) ->
 %% @doc Finds documents that match the given conditions in the given
 %% repository name.
 -spec find_by(
-  atom(), sumo:schema_name(), sumo:conditions()
+  atom(), sumo:schema_name(), sumo:conditions(),
+  sumo:sort(), non_neg_integer(), non_neg_integer()
 ) -> {ok, [sumo_internal:doc()]} | {error, term()}.
-find_by(Name, DocName, Conditions) ->
-  wpool:call(Name, {find_by, DocName, Conditions}).
+find_by(Name, DocName, Conditions, SortFields, Limit, Offset) ->
+  wpool:call(Name, {find_by, DocName, Conditions, SortFields, Limit, Offset}).
+
 
 %% @doc Calls a custom function in the given repository name.
 -spec call(
@@ -223,11 +233,11 @@ handle_call(
   {reply, {OkOrError, Reply}, State#state{handler_state = NewState}};
 
 handle_call(
-  {find_all, DocName, OrderField, Limit, Offset}, _From,
+  {find_all, DocName, SortFields, Limit, Offset}, _From,
   #state{handler=Handler, handler_state=HState}=State
 ) ->
   {OkOrError, Reply, NewState} = Handler:find_all(
-    DocName, OrderField, Limit, Offset, HState
+    DocName, SortFields, Limit, Offset, HState
   ),
   {reply, {OkOrError, Reply}, State#state{handler_state = NewState}};
 
@@ -248,8 +258,17 @@ handle_call(
   {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(
+  {find_by, DocName, Conditions, SortFields, Limit, Offset}, _From,
+  #state{handler = Handler, handler_state = HState} = State
+) ->
+  {OkOrError, Reply, NewState} = Handler:find_by(
+    DocName, Conditions, SortFields, Limit, Offset, HState
+  ),
+  {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
+
+handle_call(
   {call, DocName, Function, Args}, _From,
-  #state{handler=Handler,handler_state=HState}=State
+  #state{handler = Handler, handler_state = HState} = State
 ) ->
   RealArgs = lists:append(Args, [DocName, HState]),
   {OkOrError, Reply, NewState} = erlang:apply(Handler, Function, RealArgs),

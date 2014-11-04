@@ -23,6 +23,8 @@ And you can check all of our open-source projects at [inaka.github.io](http://in
  * Some native domain events are supported, that are dispatched through a `gen_event:notify/2` automatically when an entity is created, updated, deleted. Also when a schema is created and when all entities of a given type are deleted. Events are described in [this article](http://marcelog.github.com/articles/erlang_epers_persist_entities_domain_events.html).
  * Full conditional logic support when using `find_by/2` and `delete_by/2` function. You can find more information about
  the syntax of this conditional logic operators [here](./wiki/Conditional-Logic-Syntax).
+ * Support for sorting (`asc` or `desc`) based on multiple fields unsing `find_by/5` and `find_all/4` functions.
+ For example this `[{age, desc}, {name, asc}]]` will sort descendently by `age` and ascendently by `name`.
 
 ## Example
 See: [**examples/blog**](https://github.com/inaka/sumo_db/tree/master/examples/blog)

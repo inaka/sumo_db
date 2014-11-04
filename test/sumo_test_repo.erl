@@ -89,7 +89,9 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
   sumo_repo_mysql:find_by(DocName, Conditions, Limit, Offset, State).
 
 find_by(DocName, Conditions, SortFields, Limit, Offset, State) ->
-  sumo_repo_mysql:find_by(DocName, Conditions, SortFields, Limit, Offset, State).
+  sumo_repo_mysql:find_by(
+    DocName, Conditions, SortFields, Limit, Offset, State
+  ).
 
 persist(Doc, State) ->
   sumo_repo_mysql:persist(Doc, State).

@@ -39,7 +39,8 @@
 
 -type schema_name() :: atom().
 
--type field_attr()  :: id|unique|index|not_null|auto_increment|{length, integer()}.
+-type field_attr()  ::
+        id | unique | index | not_null | auto_increment | {length, integer()}.
 -type field_attrs() :: [field_attr()].
 
 -type field_type()  :: integer|string|binary|text|float|date|datetime.
@@ -110,7 +111,7 @@ find_all(DocName) ->
 -spec find_all(schema_name(), sort(), non_neg_integer(), non_neg_integer()) ->
   [user_doc()].
 find_all(DocName, SortFields0, Limit, Offset) ->
-  SortFields = ensure_sort_fields(SortFields0),
+  SortFields = normalize_sort_fields(SortFields0),
   Repo = sumo_internal:get_repo(DocName),
   case sumo_repo:find_all(Repo, DocName, SortFields, Limit, Offset) of
     {ok, Docs} -> docs_wakeup(DocName, Docs);
@@ -144,7 +145,7 @@ find_by(DocName, Conditions, Limit, Offset) ->
   schema_name(), conditions(), sort(), non_neg_integer(), non_neg_integer()
 ) -> [user_doc()].
 find_by(DocName, Conditions, SortFields0, Limit, Offset) ->
-  SortFields = ensure_sort_fields(SortFields0),
+  SortFields = normalize_sort_fields(SortFields0),
   Repo = sumo_internal:get_repo(DocName),
   case sumo_repo:find_by(
          Repo, DocName, Conditions, SortFields, Limit, Offset
@@ -177,9 +178,9 @@ delete_all(DocName) ->
   Repo = sumo_internal:get_repo(DocName),
   case sumo_repo:delete_all(Repo, DocName) of
     {ok, NumRows} ->
-      if
-        NumRows > 0 -> sumo_event:dispatch(DocName, deleted_all);
-        true -> ok
+      case NumRows > 0 of
+        true  -> sumo_event:dispatch(DocName, deleted_all);
+        _ -> ok
       end,
       NumRows;
     Error -> throw(Error)
@@ -199,9 +200,13 @@ delete(DocName, Id) ->
 delete_by(DocName, Conditions) ->
   Repo = sumo_internal:get_repo(DocName),
   case sumo_repo:delete_by(Repo, DocName, Conditions) of
-    {ok, 0} -> 0;
-    {ok, NumRows} -> sumo_event:dispatch(DocName, deleted_total, [NumRows]), NumRows;
-    Error -> throw(Error)
+    {ok, 0} ->
+      0;
+    {ok, NumRows} ->
+      sumo_event:dispatch(DocName, deleted_total, [NumRows]),
+      NumRows;
+    Error ->
+      throw(Error)
   end.
 
 %% @doc Creates the schema for the docs of type DocName.
@@ -262,9 +267,9 @@ docs_wakeup(DocName, Docs) ->
     Docs
   ).
 
-ensure_sort_fields(FieldName) when is_atom(FieldName) ->
+normalize_sort_fields(FieldName) when is_atom(FieldName) ->
   [{FieldName, asc}];
-ensure_sort_fields({Name, Order}) ->
+normalize_sort_fields({Name, Order}) ->
   [{Name, Order}];
-ensure_sort_fields(SortFields) when is_list(SortFields) ->
-  lists:flatmap(fun ensure_sort_fields/1, SortFields).
+normalize_sort_fields(SortFields) when is_list(SortFields) ->
+  lists:flatmap(fun normalize_sort_fields/1, SortFields).

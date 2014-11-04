@@ -259,7 +259,7 @@ handle_call(
 
 handle_call(
   {find_by, DocName, Conditions, SortFields, Limit, Offset}, _From,
-  #state{handler=Handler,handler_state=HState}=State
+  #state{handler = Handler, handler_state = HState} = State
 ) ->
   {OkOrError, Reply, NewState} = Handler:find_by(
     DocName, Conditions, SortFields, Limit, Offset, HState
@@ -268,7 +268,7 @@ handle_call(
 
 handle_call(
   {call, DocName, Function, Args}, _From,
-  #state{handler=Handler,handler_state=HState}=State
+  #state{handler = Handler, handler_state = HState} = State
 ) ->
   RealArgs = lists:append(Args, [DocName, HState]),
   {OkOrError, Reply, NewState} = erlang:apply(Handler, Function, RealArgs),

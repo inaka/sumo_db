@@ -47,6 +47,6 @@ init([]) ->
   {ok, {
     {one_for_one, 5, 10},
     [ ?SUP(sumo_backend_sup)
-    , ?SUP(sumo_repo_sup)
+    , ?SUP(sumo_store_sup)
     ]
   }}.

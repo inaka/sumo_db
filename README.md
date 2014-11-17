@@ -27,10 +27,11 @@ And you can check all of our open-source projects at [inaka.github.io](http://in
  For example this `[{age, desc}, {name, asc}]]` will sort descendently by `age` and ascendently by `name`.
 
 ## Example
+
 See: [**examples/blog**](https://github.com/inaka/sumo_db/tree/master/examples/blog)
 for a full example. To run it, while being in the top level directory:
 
     make all blog
 
 ## Contributors
-We want to thank all of [our contributors](CONTRIBUTORS.md) for their hard work :muscle:
+We want to thank all of [our contributors](CONTRIBUTORS.md) for their hard work :muscle:.

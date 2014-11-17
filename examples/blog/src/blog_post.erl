@@ -123,7 +123,7 @@ sumo_schema() ->
 % -spec total_posts(sumo:schema_name(), State ) -> {ok, {raw, non_neg_integer()}, State} | {ok, error, State}.
 % count(DocName, State) ->
 %   Sql = "SELECT COUNT(1) FROM `" ++ atom_to_list(DocName) ++ "`",
-%   Result = sumo_repo_mysql:execute(Sql, State),
+%   Result = sumo_store_mysql:execute(Sql, State),
 %   case Result of
 %     #result_packet{rows=[[N]]} -> {ok, {raw, N}, State};
 %     _ -> {ok, error, State}

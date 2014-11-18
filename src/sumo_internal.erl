@@ -23,26 +23,6 @@
 -license("Apache License 2.0").
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Records.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
--record(sumo_doc, {
-  name :: atom(),
-  fields=[] :: sumo:doc()
-}).
-
--record(sumo_field, {
-  name :: atom(),
-  type :: atom(),
-  attrs=[] :: sumo:field_attrs()
-}).
-
--record(sumo_schema, {
-  name :: atom(),
-  fields=[] :: [field()]
-}).
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -66,9 +46,15 @@
 
 -export([report_overrun/1]).
 
--opaque schema()  :: #sumo_schema{}.
--opaque doc()     :: #sumo_doc{}.
--opaque field()   :: #sumo_field{}.
+-opaque schema() :: #{name => atom(),
+                      fields => [field()]}.
+
+-opaque doc()    :: #{name => atom(),
+                      fields => sumo:doc()}.
+
+-opaque field()  :: #{name => atom(),
+                      type => atom(),
+                      attrs => sumo:field_attrs()}.
 
 -export_type([schema/0, doc/0, field/0]).
 
@@ -100,21 +86,21 @@
 %% @doc Returns the name of the schema
 -spec schema_name(schema()) -> sumo:schema_name().
 schema_name(Schema) ->
-  Schema#sumo_schema.name.
+  maps:get(name, Schema, undefined).
 
 %% @doc Returns the fields of the schema
 -spec schema_fields(schema()) -> [field()].
 schema_fields(Schema) ->
-  Schema#sumo_schema.fields.
+  maps:get(fields, Schema, []).
 
 %% @doc Returns the doc name
 -spec doc_name(doc()) -> atom().
 doc_name(Doc) ->
-  Doc#sumo_doc.name.
+  maps:get(name, Doc, undefined).
 
 -spec doc_fields(doc()) -> sumo:doc().
 doc_fields(Doc) ->
-  Doc#sumo_doc.fields.
+  maps:get(fields, Doc, []).
 
 %% @doc Wakes up the document
 -spec wakeup(doc()) -> sumo:user_doc().
@@ -124,7 +110,8 @@ wakeup(Doc) ->
 %% @doc Wakes up the document
 -spec wakeup(module(), doc()) -> sumo:user_doc().
 wakeup(DocName, Doc) ->
-  DocName:sumo_wakeup(Doc#sumo_doc.fields).
+  Fields = maps:get(fields, Doc, []),
+  DocName:sumo_wakeup(Fields).
 
 %% @doc Returns all the configured docs.
 -spec get_docs() -> [{atom(), atom()}].
@@ -138,7 +125,7 @@ get_docs() ->
 get_repo(DocName) when is_atom(DocName) ->
   proplists:get_value(DocName, get_docs());
 
-get_repo(#sumo_doc{name=Name}) ->
+get_repo(_Doc = #{name := Name}) ->
   get_repo(Name).
 
 %% @doc Returns the schema for a given DocName.
@@ -148,12 +135,12 @@ get_schema(DocName) ->
 
 %% @doc Returns the value of a field from a sumo_doc.
 -spec get_field(sumo:field_name(), doc()) -> sumo:field_value().
-get_field(Name, #sumo_doc{fields=Fields}) ->
-  proplists:get_value(Name, Fields).
+get_field(Name, Doc) ->
+  proplists:get_value(Name, doc_fields(Doc)).
 
 %% @doc Sets a value in an sumo_doc.
 -spec set_field(sumo:field_name(), sumo:field_value(), doc()) -> doc().
-set_field(FieldName, Value, #sumo_doc{fields=Fields, name=Name}) ->
+set_field(FieldName, Value, _Doc = #{fields := Fields, name := Name}) ->
   new_doc(Name, lists:keystore(FieldName, 1, Fields, {FieldName, Value})).
 
 %% @doc Returns name of field marked as ID for the given schema or doc name.
@@ -162,9 +149,9 @@ id_field_name(DocName) ->
   field_name(get_id_field(get_schema(DocName))).
 
 %% @doc Returns field marked as ID for the given schema or doc name.
-get_id_field(#sumo_schema{fields=Fields}) ->
+get_id_field(_Schema = #{fields := Fields}) ->
   hd(lists:filter(
-    fun(#sumo_field{attrs=Attributes}) ->
+    fun(_Field = #{attrs := Attributes}) ->
       length(lists:filter(fun(T) -> T =:= id end, Attributes)) > 0
     end,
     Fields
@@ -172,40 +159,44 @@ get_id_field(#sumo_schema{fields=Fields}) ->
 
 %% @doc Returns the name of the given field.
 -spec field_name(field()) -> sumo:field_name().
-field_name(#sumo_field{name=Name}) ->
+field_name(#{name := Name}) ->
   Name.
 
 %% @doc Returns the type of the given field.
 -spec field_type(field()) -> sumo:field_type().
-field_type(#sumo_field{type=Type}) ->
+field_type(#{type := Type}) ->
   Type.
 
 %% @doc Returns all attributes of the given field.
 -spec field_attrs(field()) -> sumo:field_attrs().
-field_attrs(#sumo_field{attrs=Attributes}) ->
+field_attrs(_Field = #{attrs := Attributes}) ->
   Attributes.
 
 %% @doc True if the field has a given attribute.
 -spec field_is(atom(), field()) -> boolean().
-field_is(What, #sumo_field{attrs=Attributes}) ->
+field_is(What, _Field = #{attrs := Attributes}) ->
   proplists:is_defined(What, Attributes).
 
 %% @doc Returns a new doc.
 -spec new_doc(sumo:schema_name(), sumo:doc()) -> doc().
 new_doc(Name, Fields) ->
-  #sumo_doc{name=Name, fields=Fields}.
+  #{name => Name,
+    fields => Fields}.
 
 %% @doc Returns a new schema.
 -spec new_schema(sumo:schema_name(), [field()]) -> schema().
 new_schema(Name, Fields) ->
-  #sumo_schema{name=Name, fields=Fields}.
+  #{name => Name,
+    fields => Fields}.
 
 %% @doc Returns a new field of the given type and attributes.
 -spec new_field(
   sumo:field_name(), sumo:field_type(), sumo:field_attrs()
 ) -> field().
 new_field(Name, Type, Attributes) ->
-  #sumo_field{name=Name, type=Type, attrs=Attributes}.
+  #{name => Name,
+    type => Type,
+    attrs => Attributes}.
 
 %% @doc Checks the operator is known, throws otherwise.
 -spec check_operator(operator()) -> ok.

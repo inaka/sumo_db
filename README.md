@@ -43,24 +43,12 @@ And you can check all of our open-source projects at
 
  * Full conditional logic support when using `find_by/2` and `delete_by/2`
  function. You can find more information about the syntax of this conditional
- logic operators [here](./wiki/Conditional-Logic-Syntax).
+ logic operators [here][cond-syntax].
 
  * Support for sorting (`asc` or `desc`) based on multiple fields unsing
  `find_by/5` and `find_all/4` functions. For example this
  `[{age, desc}, {name, asc}]]` will sort descendently by `age` and ascendently
   by `name`.
-
-## Example
-
-See: [**examples/blog**][example-blog] for a full example. To run it, while
-being in the top level directory:
-
-    make all blog
-
-## Contributors
-
-We want to thank all of [our contributors](CONTRIBUTORS.md) for their hard work
-:muscle:.
 
 ## Backends, Stores and Repositories modules
 
@@ -76,12 +64,25 @@ These three concepts have a specific meaning in the context of sumo_db.
  repository for each entity that's defined in it. The repository is the module
  that bridges the model and the store.
 
+## Example
+
+See: [**examples/blog**][example-blog] for a full example. To run it, while
+being in the top level directory:
+
+    make all blog
+
 ## Change Log
 
 All notable changes to this project will be documented in the
 [CHANGELOG.md](CHANGELOG.md).
 
+## Contributors
+
+We want to thank all of [our contributors](CONTRIBUTORS.md) for their hard work
+:muscle:.
+
  [sumo-article]: http://marcelog.github.com/articles/erlang_persistence_entities.html
  [domain-article]: http://marcelog.github.com/articles/erlang_epers_persist_entities_domain_events.html
  [issue]: https://github.com/inaka/sumo_db/issues/new
  [example-blog]: https://github.com/inaka/sumo_db/tree/master/examples/blog
+ [cond-syntax]: https://github.com/inaka/sumo_db/wiki/Conditional-Logic-Syntax

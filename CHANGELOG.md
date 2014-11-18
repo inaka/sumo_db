@@ -20,7 +20,7 @@ All notable changes to this project will be documented in this file.
 
  - None.
 
-## 0.1.3 - 2014-11-04
+## 0.1.4 - 2014-11-04
 
 ### Added
 

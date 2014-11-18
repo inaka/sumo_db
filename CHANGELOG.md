@@ -1,4 +1,6 @@
-# Changelog
+# Change Log
+
+All notable changes to this project will be documented in this file.
 
 ## `master`
 
@@ -85,7 +87,7 @@
 
 ## 0.1.0 - 2014-06-04
 
-### Added 
+### Added
 
 - All basic sumo_db features:
   - Backends

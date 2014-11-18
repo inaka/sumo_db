@@ -72,7 +72,8 @@ These three concepts have a specific meaning in the context of sumo_db.
  backend and retrieves the information it holds.
 
  - **Repository**: the application that uses `sumo_db` should implement one
- repository for each entity that exists in it.
+ repository for each entity that's defined in it. The repository is the module
+ that bridges the model and the store.
 
 ## Change Log
 

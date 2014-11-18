@@ -6,6 +6,24 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+ - None.
+
+### Deprecated
+
+ - [#62] Renamed all `sumo_repo*` modules to `sumo_store*`. Existing repo modules in your application should be updated with the new names.
+
+### Removed
+
+ - None.
+
+### Fixed
+
+ - None.
+
+## 0.1.3 - 2014-11-04
+
+### Added
+
  - [#21] asc/desc option for ordering.
  - `CONTRIBUTORS.md`.
  - [#3]  Full conditional logic for MySQL and MongoDB.
@@ -17,7 +35,7 @@ All notable changes to this project will be documented in this file.
 
 ### Deprecated
 
- - [#62] Renamed all `sumo_repo*` modules to `sumo_store*`. Existing repo modules in your application should be updated with the new names.
+ - None.
 
 ### Removed
 

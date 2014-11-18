@@ -3,7 +3,8 @@
 ## About
 
 This is a work in progress. There's also [an article][sumo-article] about
-sumo_db.
+sumo_db. This articles might be a little outdated by now, but can still
+provide some basic information on how to get started.
 
 **sumo_db** aims to ease db access for erlang applications. It offers a very
 simple persistance layer capable of interacting with different db's, while

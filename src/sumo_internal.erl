@@ -37,7 +37,8 @@
 -export([get_repo/1]).
 
 %%% API for opaqueness
--export([wakeup/1, wakeup/2, new_doc/2,
+-export([wakeup/1, wakeup/2,
+         new_doc/1, new_doc/2,
          doc_name/1, doc_fields/1,
          schema_name/1, schema_fields/1]).
 
@@ -136,12 +137,12 @@ get_schema(DocName) ->
 %% @doc Returns the value of a field from a sumo_doc.
 -spec get_field(sumo:field_name(), doc()) -> sumo:field_value().
 get_field(Name, Doc) ->
-  proplists:get_value(Name, doc_fields(Doc)).
+  maps:get(Name, doc_fields(Doc), undefined).
 
 %% @doc Sets a value in an sumo_doc.
 -spec set_field(sumo:field_name(), sumo:field_value(), doc()) -> doc().
 set_field(FieldName, Value, _Doc = #{fields := Fields, name := Name}) ->
-  new_doc(Name, lists:keystore(FieldName, 1, Fields, {FieldName, Value})).
+  new_doc(Name, maps:put(FieldName, Value, Fields)).
 
 %% @doc Returns name of field marked as ID for the given schema or doc name.
 -spec id_field_name(sumo:schema_name()) -> sumo:field_name().
@@ -174,8 +175,13 @@ field_attrs(_Field = #{attrs := Attributes}) ->
 
 %% @doc True if the field has a given attribute.
 -spec field_is(atom(), field()) -> boolean().
-field_is(What, _Field = #{attrs := Attributes}) ->
+field_is(What, #{attrs := Attributes}) ->
   proplists:is_defined(What, Attributes).
+
+%% @doc Returns a new doc.
+-spec new_doc(sumo:schema_name()) -> doc().
+new_doc(Name) ->
+  new_doc(Name, #{}).
 
 %% @doc Returns a new doc.
 -spec new_doc(sumo:schema_name(), sumo:doc()) -> doc().

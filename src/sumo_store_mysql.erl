@@ -73,29 +73,31 @@ persist(Doc, State) ->
     end,
 
   Fields   = sumo_internal:doc_fields(NewDoc),
-  NPFields = Fields -- [{IdField, NewId}], % Non-primary fields.
+  NPFields = maps:remove(IdField, Fields), % Non-primary fields.
+  FieldNames = maps:keys(Fields),
+  NPFieldNames = maps:keys(NPFields),
 
   Fun =
     fun() ->
       [ColumnDqls, ColumnSqls] =
         lists:foldl(
-          fun({Name, _Value}, [Dqls, Sqls]) ->
+          fun(Name, [Dqls, Sqls]) ->
             Dql = [escape(atom_to_list(Name))],
             Sql = "?",
             [[Dql | Dqls], [Sql | Sqls]]
           end,
           [[], []],
-          Fields
+          FieldNames
         ),
 
       NPColumnDqls =
         lists:foldl(
-          fun({Name, _Value}, Dqls) ->
+          fun(Name, Dqls) ->
             Dql = [escape(atom_to_list(Name))],
             [Dql | Dqls]
           end,
           [],
-          NPFields
+          NPFieldNames
         ),
 
       TableName          = escape(atom_to_list(DocName)),
@@ -113,8 +115,10 @@ persist(Doc, State) ->
     end,
 
   StatementName   = prepare(DocName, Statement, Fun),
-  ColumnValues    = lists:reverse([V || {_K, V} <- Fields]),
-  NPColumnValues  = lists:reverse([V || {_K, V} <- NPFields]),
+  ColumnValues    = lists:reverse([maps:get(K, Fields)
+                                   || K <- maps:keys(Fields)]),
+  NPColumnValues  = lists:reverse([maps:get(K, Fields)
+                                   || K <- maps:keys(NPFields)]),
   StatementValues = lists:append(ColumnValues, NPColumnValues),
 
   case execute(StatementName, StatementValues, State) of
@@ -253,7 +257,7 @@ find_by(DocName, Conditions, SortFields, Limit, Offset, State) ->
               FieldName = list_to_atom(binary_to_list(FieldRecord#field.name)),
               [sumo_internal:set_field(FieldName, Field, Doc), N+1]
             end,
-            [sumo_internal:new_doc(DocName, []), 1],
+            [sumo_internal:new_doc(DocName), 1],
             Row
           ),
           [hd(NewDoc)|DocList]

@@ -73,13 +73,12 @@ persist(Doc, #{index := Index, pool_name := PoolName} = State) ->
     Id =  sumo_internal:get_field(IdField, Doc),
 
     Fields = sumo_internal:doc_fields(Doc),
-    FieldsMap = maps:from_list(Fields),
 
     Doc1 =
         case Id of
             undefined ->
                 {ok, Json} =
-                    tirerl:insert_doc(PoolName, Index, Type, Id, FieldsMap),
+                    tirerl:insert_doc(PoolName, Index, Type, Id, Fields),
 
                 %% Get the Id that was assigned by elasticsearch.
                 GenId = maps:get(<<"_id">>, Json),
@@ -90,7 +89,7 @@ persist(Doc, #{index := Index, pool_name := PoolName} = State) ->
 
                 sumo_internal:set_field(IdField, GenId, Doc);
             Id ->
-                Update = #{doc => FieldsMap},
+                Update = #{doc => Fields},
                 {ok, _ } =
                     tirerl:update_doc(PoolName, Index, Type, Id, Update),
                 Doc
@@ -181,7 +180,7 @@ map_to_doc(DocName, Item) ->
               sumo_internal:set_field(FieldName, Value, Doc)
           end,
     Keys = maps:keys(Values),
-    Doc = lists:foldl(Fun, sumo_internal:new_doc(DocName, []), Keys),
+    Doc = lists:foldl(Fun, sumo_internal:new_doc(DocName), Keys),
     sumo_internal:set_field(IdField, maps:get(<<"_id">>, Item), Doc).
 
 build_query(Conditions) ->

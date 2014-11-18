@@ -52,9 +52,10 @@ persist(Doc, #state{pool=Pool}=State) ->
   NewDoc = sumo_internal:set_field(
     '_id', {oid, NewId}, sumo_internal:set_field(IdField, emongo:dec2hex(NewId), Doc)
   ),
+  Fields = sumo_internal:doc_fields(NewDoc),
   ok = emongo:update(
     Pool, atom_to_list(DocName), Selector,
-    sumo_internal:doc_fields(NewDoc), true
+    maps:to_list(Fields), true
   ),
   {ok, NewDoc, State}.
 
@@ -122,7 +123,7 @@ find_by(
       fun(Row) ->
           lists:foldl(
             FoldFun,
-            sumo_internal:new_doc(DocName, []),
+            sumo_internal:new_doc(DocName),
             Row
            )
       end,

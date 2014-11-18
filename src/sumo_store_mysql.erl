@@ -17,14 +17,14 @@
 %%% @end
 %%% @copyright Inaka <hello@inaka.net>
 %%%
--module(sumo_repo_mysql).
+-module(sumo_store_mysql).
 -author("Marcelo Gornstein <marcelog@gmail.com>").
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
 -include_lib("emysql/include/emysql.hrl").
 
--behavior(sumo_repo).
+-behavior(sumo_store).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.

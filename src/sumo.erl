@@ -102,7 +102,7 @@ find(DocName, Id) ->
 %% @doc Returns all docs from the given repo.
 -spec find_all(schema_name()) -> [user_doc()].
 find_all(DocName) ->
-  case sumo_repo:find_all(sumo_internal:get_repo(DocName), DocName) of
+  case sumo_store:find_all(sumo_internal:get_repo(DocName), DocName) of
     {ok, Docs} -> docs_wakeup(DocName, Docs);
     Error -> throw(Error)
   end.
@@ -113,7 +113,7 @@ find_all(DocName) ->
 find_all(DocName, SortFields0, Limit, Offset) ->
   SortFields = normalize_sort_fields(SortFields0),
   Repo = sumo_internal:get_repo(DocName),
-  case sumo_repo:find_all(Repo, DocName, SortFields, Limit, Offset) of
+  case sumo_store:find_all(Repo, DocName, SortFields, Limit, Offset) of
     {ok, Docs} -> docs_wakeup(DocName, Docs);
     Error -> throw(Error)
   end.
@@ -122,7 +122,7 @@ find_all(DocName, SortFields0, Limit, Offset) ->
 -spec find_by(schema_name(), conditions()) -> [user_doc()].
 find_by(DocName, Conditions) ->
   Repo = sumo_internal:get_repo(DocName),
-  case sumo_repo:find_by(Repo, DocName, Conditions) of
+  case sumo_store:find_by(Repo, DocName, Conditions) of
     {ok, Docs} -> docs_wakeup(DocName, Docs);
     Error -> throw(Error)
   end.
@@ -134,7 +134,7 @@ find_by(DocName, Conditions) ->
 ) -> [user_doc()].
 find_by(DocName, Conditions, Limit, Offset) ->
   Repo = sumo_internal:get_repo(DocName),
-  case sumo_repo:find_by(Repo, DocName, Conditions, Limit, Offset) of
+  case sumo_store:find_by(Repo, DocName, Conditions, Limit, Offset) of
     {ok, Docs} -> docs_wakeup(DocName, Docs);
     Error -> throw(Error)
   end.
@@ -147,7 +147,7 @@ find_by(DocName, Conditions, Limit, Offset) ->
 find_by(DocName, Conditions, SortFields0, Limit, Offset) ->
   SortFields = normalize_sort_fields(SortFields0),
   Repo = sumo_internal:get_repo(DocName),
-  case sumo_repo:find_by(
+  case sumo_store:find_by(
          Repo, DocName, Conditions, SortFields, Limit, Offset
         ) of
     {ok, Docs} -> docs_wakeup(DocName, Docs);
@@ -164,7 +164,7 @@ persist(DocName, State) ->
     _ -> updated
   end,
   Repo = sumo_internal:get_repo(DocName),
-  case sumo_repo:persist(Repo, sumo_internal:new_doc(DocName, PropList)) of
+  case sumo_store:persist(Repo, sumo_internal:new_doc(DocName, PropList)) of
     {ok, NewDoc} ->
       Ret = sumo_internal:wakeup(DocName, NewDoc),
       sumo_event:dispatch(DocName, EventName, [Ret]),
@@ -176,7 +176,7 @@ persist(DocName, State) ->
 -spec delete_all(schema_name()) -> non_neg_integer().
 delete_all(DocName) ->
   Repo = sumo_internal:get_repo(DocName),
-  case sumo_repo:delete_all(Repo, DocName) of
+  case sumo_store:delete_all(Repo, DocName) of
     {ok, NumRows} ->
       case NumRows > 0 of
         true  -> sumo_event:dispatch(DocName, deleted_all);
@@ -199,7 +199,7 @@ delete(DocName, Id) ->
 -spec delete_by(schema_name(), conditions()) -> non_neg_integer().
 delete_by(DocName, Conditions) ->
   Repo = sumo_internal:get_repo(DocName),
-  case sumo_repo:delete_by(Repo, DocName, Conditions) of
+  case sumo_store:delete_by(Repo, DocName, Conditions) of
     {ok, 0} ->
       0;
     {ok, NumRows} ->
@@ -218,7 +218,7 @@ create_schema(DocName) ->
 %% repository.
 -spec create_schema(schema_name(), atom()) -> ok.
 create_schema(DocName, Repo) ->
-  case sumo_repo:create_schema(Repo, sumo_internal:get_schema(DocName)) of
+  case sumo_store:create_schema(Repo, sumo_internal:get_schema(DocName)) of
     ok ->
       sumo_event:dispatch(DocName, schema_created),
       ok;
@@ -234,7 +234,7 @@ call(DocName, Function) ->
 -spec call(schema_name(), atom(), [term()]) -> term().
 call(DocName, Function, Args) ->
   Repo = sumo_internal:get_repo(DocName),
-  case sumo_repo:call(Repo, DocName, Function, Args) of
+  case sumo_store:call(Repo, DocName, Function, Args) of
     {ok, {docs, Docs}} -> docs_wakeup(DocName, Docs);
     {ok, {raw, Value}} -> Value
   end.

@@ -17,11 +17,11 @@
 %%% @end
 %%% @copyright Inaka <hello@inaka.net>
 %%%
--module(sumo_repo_elasticsearch).
+-module(sumo_store_elasticsearch).
 -author("Juan Facorro <juan@inaka.net>").
 -license("Apache License 2.0").
 
--behavior(sumo_repo).
+-behavior(sumo_store).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.

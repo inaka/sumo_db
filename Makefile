@@ -18,7 +18,7 @@ ERLC_OPTS += +warn_export_vars +warn_exported_vars +warn_missing_spec +warn_unty
 # Commont Test Config
 
 TEST_ERLC_OPTS += +'{parse_transform, lager_transform}'
-CT_SUITES = sumo_find sumo_config conditional_logic
+CT_SUITES = sumo_basic sumo_find sumo_config conditional_logic
 CT_OPTS = -s emysql -s sumo_db -erl_args -config test/test.config
 
 test-shell: app

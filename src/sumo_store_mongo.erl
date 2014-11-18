@@ -66,10 +66,11 @@ delete(DocName, Id, #state{pool=Pool}=State) ->
   ),
   {ok, 1, State}.
 
-delete_by(DocName, Conditions, State) ->
-  Args = [?MODULE, DocName, Conditions, State],
-  lager:critical("Unimplemented function: ~p:delete_by(~p, ~p, ~p)", Args),
-  {error, not_implemented, State}.
+delete_by(DocName, Conditions, #state{pool = Pool} = State) ->
+  ok = emongo:delete(Pool,
+                     atom_to_list(DocName),
+                     build_query(Conditions)),
+  {ok, 1, State}.
 
 delete_all(DocName, #state{pool=Pool}=State) ->
   lager:debug("dropping collection: ~p", [DocName]),

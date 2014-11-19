@@ -50,7 +50,9 @@ persist(Doc, #state{pool=Pool}=State) ->
   end,
   Selector = [{"_id", {oid, NewId}}],
   NewDoc = sumo_internal:set_field(
-    '_id', {oid, NewId}, sumo_internal:set_field(IdField, emongo:dec2hex(NewId), Doc)
+    '_id',
+    {oid, NewId},
+    sumo_internal:set_field(IdField, emongo:dec2hex(NewId), Doc)
   ),
   Fields = sumo_internal:doc_fields(NewDoc),
   ok = emongo:update(

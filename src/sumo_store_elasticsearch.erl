@@ -194,6 +194,8 @@ build_query(Conditions, Limit, Offset) ->
                     size => Limit}
     end.
 
+build_query_conditions([]) ->
+    #{};
 build_query_conditions(Conditions) when is_list(Conditions) ->
     QueryConditions = lists:map(fun build_query_conditions/1, Conditions),
     #{query => #{bool => #{must => QueryConditions}}};

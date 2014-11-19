@@ -21,8 +21,8 @@ TEST_ERLC_OPTS += +'{parse_transform, lager_transform}'
 CT_SUITES = sumo_basic sumo_find sumo_config conditional_logic
 CT_OPTS = -s emysql -s sumo_db -erl_args -config test/test.config
 
-test-shell: app
-	erl -pa ebin -pa deps/*/ebin -pa test -s sync -s emysql -s sumo_db -config test/test.config
+test-shell: build-ct-suites app
+	erl -pa ebin -pa deps/*/ebin -pa test -s sync -s lager -config test/test.config
 
 erldocs:
 	erldocs . -o docs

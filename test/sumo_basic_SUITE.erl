@@ -70,7 +70,6 @@ delete_all(_Config) ->
 delete(_Config) ->
   run_all_stores(fun delete_module/1).
 
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Internal functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,32 +78,36 @@ init_store(Module) ->
   sumo:create_schema(Module),
   sumo:delete_all(Module),
 
-  sumo:persist(Module, Module:new("A", "E", 6)),
-  sumo:persist(Module, Module:new("B", "D", 3)),
-  sumo:persist(Module, Module:new("C", "C", 5)),
-  sumo:persist(Module, Module:new("D", "B", 4)),
-  sumo:persist(Module, Module:new("E", "A", 2)),
-  sumo:persist(Module, Module:new("F", "E", 1)).
+  sumo:persist(Module, Module:new(<<"A">>, <<"E">>, 6)),
+  sumo:persist(Module, Module:new(<<"B">>, <<"D">>, 3)),
+  sumo:persist(Module, Module:new(<<"C">>, <<"C">>, 5)),
+  sumo:persist(Module, Module:new(<<"D">>, <<"D">>, 4)),
+  sumo:persist(Module, Module:new(<<"E">>, <<"A">>, 2)),
+  sumo:persist(Module, Module:new(<<"F">>, <<"E">>, 1)),
+
+  %% This is necessary to get elasticsearch in
+  %% particular to index its stuff.
+  timer:sleep(1000).
+
+find_all_module(Module) ->
+  6 = length(sumo:find_all(Module)).
 
 find_by_module(Module) ->
-  [First, Second | _] = sumo:find_by(Module, [{age, '>', 2}], age, 0, 0),
+  Results = sumo:find_by(Module, [{last_name, <<"D">>}]),
+  [First, Second | _] = lists:sort(Results),
 
   "B" = to_str(Module:name(First)),
   "D" = to_str(Module:name(Second)).
 
-find_all_module(Module) ->
-  All = sumo:find_all(Module, age, 0, 0),
-  6 = length(All).
-
 delete_all_module(Module) ->
   sumo:delete_all(Module),
-  [] = sumo:find_all(Module, age, 0, 0).
+  [] = sumo:find_all(Module).
 
 delete_module(Module) ->
-  [First | _ ] = All = sumo:find_all(Module, age, 0, 0),
+  [First | _ ] = All = sumo:find_all(Module),
   Id = Module:id(First),
   sumo:delete(Module, Id),
-  NewAll = sumo:find_all(Module, age, 0, 0),
+  NewAll = sumo:find_all(Module),
 
   1 = length(All) - length(NewAll).
 

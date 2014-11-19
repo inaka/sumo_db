@@ -94,12 +94,12 @@ set(Key, Value, Author) when is_atom(Key), is_list(Author) ->
 %% @doc Part of the sumo_doc behavior.
 -spec sumo_wakeup(sumo:doc()) -> author().
 sumo_wakeup(Data) ->
-  Data.
+  maps:to_list(Data).
 
 %% @doc Part of the sumo_doc behavior.
 -spec sumo_sleep(author()) -> sumo:doc().
 sumo_sleep(Author) ->
-  Author.
+  maps:from_list(Author).
 
 %% @doc Part of the sumo_doc behavior.
 -spec sumo_schema() -> sumo:schema().

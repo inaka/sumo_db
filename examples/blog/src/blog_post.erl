@@ -100,12 +100,12 @@ set(Key, Value, Post) when is_atom(Key), is_list(Post) ->
 %% @doc Part of the sumo_doc behavior.
 -spec sumo_wakeup(sumo:doc()) -> post().
 sumo_wakeup(Data) ->
-  Data.
+  maps:to_list(Data).
 
 %% @doc Part of the sumo_doc behavior.
 -spec sumo_sleep(post()) -> sumo:doc().
 sumo_sleep(Post) ->
-  Post.
+  maps:from_list(Post).
 
 %% @doc Part of the sumo_doc behavior.
 -spec sumo_schema() -> sumo:schema().

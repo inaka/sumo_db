@@ -1,4 +1,4 @@
--module(sumo_test_people).
+-module(sumo_test_people_elasticsearch).
 
 -behavior(sumo_doc).
 
@@ -8,10 +8,10 @@
 -export([new/2, new/3, new/4, name/1, id/1]).
 
 -record(person, {id :: integer(),
-                 name :: string(),
-                 last_name :: string(),
-                 age :: integer(),
-                 address :: string()}).
+                    name :: string(),
+                    last_name :: string(),
+                    age :: integer(),
+                    address :: string()}).
 
 -type person() :: #person{}.
 
@@ -22,7 +22,7 @@
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
     Fields =
-    [sumo:new_field(id,        integer, [id, not_null, auto_increment]),
+    [sumo:new_field(id,        string, [id, not_null, auto_increment]),
      sumo:new_field(name,      string,  [{length, 255}, not_null]),
      sumo:new_field(last_name, string,  [{length, 255}, not_null]),
      sumo:new_field(age,       integer),
@@ -53,19 +53,19 @@ sumo_wakeup(Person) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 new(Name, LastName) ->
-  #person{name = Name,
-          last_name = LastName}.
+  new(Name, LastName, undefined).
 
 new(Name, LastName, Age) ->
-  #person{name = Name,
-          last_name = LastName,
-          age = Age}.
+  new(Name, LastName, Age, undefined).
 
 new(Name, LastName, Age, Address) ->
-  #person{name = Name,
-          last_name = LastName,
-          age = Age,
-          address = Address}.
+  #person{
+     id = undefined,
+     name = Name,
+     last_name = LastName,
+     age = Age,
+     address = Address
+    }.
 
 name(Person) ->
   Person#person.name.

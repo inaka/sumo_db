@@ -79,12 +79,12 @@ get(Key, Vote) when is_atom(Key), is_list(Vote) ->
 %% @doc Part of the sumo_doc behavior.
 -spec sumo_wakeup(sumo:doc()) -> vote().
 sumo_wakeup(Data) ->
-  Data.
+  maps:to_list(Data).
 
 %% @doc Part of the sumo_doc behavior.
 -spec sumo_sleep(vote()) -> sumo:doc().
 sumo_sleep(Vote) ->
-  Vote.
+  maps:from_list(Vote).
 
 %% @doc Part of the sumo_doc behavior.
 -spec sumo_schema() -> sumo:schema().

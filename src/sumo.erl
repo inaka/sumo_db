@@ -43,7 +43,8 @@
         id | unique | index | not_null | auto_increment | {length, integer()}.
 -type field_attrs() :: [field_attr()].
 
--type field_type()  :: integer|string|binary|text|float|date|datetime.
+-type field_type()  ::
+        integer | string | binary | text | float | date | datetime.
 -type field_name()  :: atom().
 -type field_value() :: term().
 -type doc()         :: [{field_name(), field_value()}].
@@ -59,7 +60,7 @@
 
 -export_type([schema/0, field/0]).
 
-%% The user representation of a doc (i.e. not the proplists)
+%% The user representation of a doc (i.e. not the map)
 -type user_doc()    :: term().
 
 -export_type([user_doc/0]).
@@ -158,13 +159,13 @@ find_by(DocName, Conditions, SortFields0, Limit, Offset) ->
 -spec persist(schema_name(), UserDoc) -> UserDoc.
 persist(DocName, State) ->
   IdField = sumo_internal:id_field_name(DocName),
-  PropList = DocName:sumo_sleep(State),
-  EventName = case proplists:get_value(IdField, PropList) of
+  DocMap = DocName:sumo_sleep(State),
+  EventName = case maps:get(IdField, DocMap) of
     undefined -> created;
     _ -> updated
   end,
   Repo = sumo_internal:get_repo(DocName),
-  case sumo_store:persist(Repo, sumo_internal:new_doc(DocName, PropList)) of
+  case sumo_store:persist(Repo, sumo_internal:new_doc(DocName, DocMap)) of
     {ok, NewDoc} ->
       Ret = sumo_internal:wakeup(DocName, NewDoc),
       sumo_event:dispatch(DocName, EventName, [Ret]),

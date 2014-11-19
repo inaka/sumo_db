@@ -68,6 +68,7 @@ setup_codepath() ->
   ],
   DepsDir = filename:absname(Dir ++ "/../../deps/"),
   code:add_patha(filename:absname(Dir ++ "/../../ebin")),
+  code:add_patha(filename:absname(Dir ++ "/ebin")),
   [ code:add_patha(DepsDir ++ "/" ++ X ++ "/ebin") || X <- Deps].
 
 start_apps() ->

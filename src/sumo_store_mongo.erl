@@ -38,9 +38,22 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -record(state, {pool:: pid()}).
 
+-type state() :: #state{}.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% External API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+-spec init(term()) -> {ok, term()}.
+init(Options) ->
+  % The storage backend key in the options specifies the name of the process
+  % which creates and initializes the storage backend.
+  Backend = proplists:get_value(storage_backend, Options),
+  Pool    = sumo_backend_mysql:get_pool(Backend),
+  {ok, #state{pool=Pool}}.
+
+-spec persist(sumo_internal:doc(), state()) ->
+  sumo_store:result(sumo_internal:doc(), state()).
 persist(Doc, #state{pool=Pool}=State) ->
   DocName = sumo_internal:doc_name(Doc),
   IdField = sumo_internal:id_field_name(DocName),
@@ -61,6 +74,8 @@ persist(Doc, #state{pool=Pool}=State) ->
   ),
   {ok, NewDoc, State}.
 
+-spec delete(sumo:schema_name(), sumo:field_value(), state()) ->
+  sumo_store:result(sumo_store:affected_rows(), state()).
 delete(DocName, Id, #state{pool=Pool}=State) ->
   IdField = sumo_internal:id_field_name(DocName),
   ok = emongo:delete(
@@ -68,23 +83,45 @@ delete(DocName, Id, #state{pool=Pool}=State) ->
   ),
   {ok, 1, State}.
 
+-spec delete_by(sumo:schema_name(), sumo:conditions(), state()) ->
+  sumo_store:result(sumo_store:affected_rows(), state()).
 delete_by(DocName, Conditions, #state{pool = Pool} = State) ->
   ok = emongo:delete(Pool,
                      atom_to_list(DocName),
                      build_query(Conditions)),
   {ok, 1, State}.
 
+
+-spec delete_all(sumo:schema_name(), state()) ->
+  sumo_store:result(sumo_store:affected_rows(), state()).
 delete_all(DocName, #state{pool=Pool}=State) ->
   lager:debug("dropping collection: ~p", [DocName]),
   ok = emongo:delete(Pool, atom_to_list(DocName)),
   {ok, unknown, State}.
 
+-spec find_by(sumo:schema_name(),
+              sumo:conditions(),
+              non_neg_integer(),
+              non_neg_integer(),
+              state()) ->
+  sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName, Conditions, Limit, Offset, State) ->
   find_by(DocName, Conditions, [], Limit, Offset, State).
 
-find_by(
-  DocName, Conditions, SortFields, Limit, Offset, #state{pool = Pool} = State
-) ->
+-spec find_by(sumo:schema_name(),
+              sumo:conditions(),
+              term(),
+              non_neg_integer(),
+              non_neg_integer(),
+              state()) ->
+  sumo_store:result([sumo_internal:doc()], state()).
+find_by(DocName,
+        Conditions,
+        SortFields,
+        Limit,
+        Offset,
+        #state{pool = Pool} = State
+       ) ->
   Options = case Offset of
     0 -> [];
     Offset -> [{limit, Limit}, {offset, Offset}]
@@ -135,18 +172,29 @@ find_by(
 
   {ok, Docs, State}.
 
+-spec find_by(sumo:schema_name(), sumo:conditions(), state()) ->
+  sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName, Conditions, State) ->
   find_by(DocName, Conditions, 0, 0, State).
 
+-spec find_all(sumo:schema_name(), state()) ->
+  sumo_store:result([sumo_internal:doc()], state()).
 find_all(DocName, State) ->
   find_all(DocName, [], 0, 0, State).
 
+-spec find_all(sumo:schema_name(),
+               term(),
+               non_neg_integer(),
+               non_neg_integer(),
+               state()) ->
+  sumo_store:result([sumo_internal:doc()], state()).
 find_all(DocName, SortFields, Limit, Offset, State) ->
   %% If conditions is empty then no documents are returned.
   Conditions = [{'_id', not_null}],
   find_by(DocName, Conditions, SortFields, Limit, Offset, State).
 
-create_schema(Schema, #state{pool=Pool}=State) ->
+-spec create_schema(sumo:schema(), state()) -> sumo_store:result(state()).
+create_schema(Schema, #state{pool=Pool} = State) ->
   SchemaName = sumo_internal:schema_name(Schema),
   Fields = sumo_internal:schema_fields(Schema),
   lists:foreach(
@@ -183,13 +231,6 @@ create_index(id) ->
 
 create_index(_Attr) ->
   none.
-
-init(Options) ->
-  % The storage backend key in the options specifies the name of the process
-  % which creates and initializes the storage backend.
-  Backend = proplists:get_value(storage_backend, Options),
-  Pool    = sumo_backend_mysql:get_pool(Backend),
-  {ok, #state{pool=Pool}}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Private API.

@@ -32,8 +32,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+-spec start(term(), term()) -> ok.
 start(_StartType, _StartArgs) ->
   sumo_sup:start_link().
 
+-spec stop(term()) -> ok.
 stop(_State) ->
   ok.

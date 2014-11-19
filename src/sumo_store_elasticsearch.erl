@@ -51,6 +51,7 @@
 %% External API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+-spec init(term()) -> {ok, term()}.
 init(Options) ->
     %% ElasticSearch client uses poolboy to handle its own pool of workers
     %% so no pool is required.
@@ -97,6 +98,8 @@ persist(Doc, #{index := Index, pool_name := PoolName} = State) ->
 
     {ok, Doc1, State}.
 
+-spec delete(sumo:schema_name(), sumo:field_value(), state()) ->
+  sumo_store:result(sumo_store:affected_rows(), state()).
 delete(DocName, Id,  #{index := Index, pool_name := PoolName} = State) ->
     Type = atom_to_binary(DocName, utf8),
     Result = case tirerl:delete_doc(PoolName, Index, Type, Id) of
@@ -105,6 +108,8 @@ delete(DocName, Id,  #{index := Index, pool_name := PoolName} = State) ->
              end,
     {ok, Result, State}.
 
+-spec delete_by(sumo:schema_name(), sumo:conditions(), state()) ->
+  sumo_store:result(sumo_store:affected_rows(), state()).
 delete_by(DocName,
           Conditions,
           #{index := Index, pool_name := PoolName} = State) ->
@@ -117,6 +122,8 @@ delete_by(DocName,
 
     {ok, Count, State}.
 
+-spec delete_all(sumo:schema_name(), state()) ->
+  sumo_store:result(sumo_store:affected_rows(), state()).
 delete_all(DocName, #{index := Index, pool_name := PoolName} = State) ->
     lager:debug("deleting all: ~p", [DocName]),
     Type = atom_to_binary(DocName, utf8),
@@ -128,6 +135,12 @@ delete_all(DocName, #{index := Index, pool_name := PoolName} = State) ->
 
     {ok, Count, State}.
 
+-spec find_by(sumo:schema_name(),
+              sumo:conditions(),
+              non_neg_integer(),
+              non_neg_integer(),
+              state()) ->
+  sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName, Conditions, Limit, Offset,
         #{index := Index, pool_name := PoolName} = State) ->
     Type = atom_to_binary(DocName, utf8),
@@ -141,15 +154,26 @@ find_by(DocName, Conditions, Limit, Offset,
 
     {ok, Docs, State}.
 
+-spec find_by(sumo:schema_name(), sumo:conditions(), state()) ->
+  sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName, Conditions, State) ->
     find_by(DocName, Conditions, 0, 0, State).
 
+-spec find_all(sumo:schema_name(), state()) ->
+  sumo_store:result([sumo_internal:doc()], state()).
 find_all(DocName, State) ->
     find_by(DocName, [], State).
 
+-spec find_all(sumo:schema_name(),
+               term(),
+               non_neg_integer(),
+               non_neg_integer(),
+               state()) ->
+  sumo_store:result([sumo_internal:doc()], state()).
 find_all(DocName, _OrderField, Limit, Offset, State) ->
     find_by(DocName, [], Limit, Offset, State).
 
+-spec create_schema(sumo:schema(), state()) -> sumo_store:result(state()).
 create_schema(Schema, #{index := Index, pool_name := PoolName} = State) ->
     SchemaName = sumo_internal:schema_name(Schema),
     Type = atom_to_binary(SchemaName, utf8),

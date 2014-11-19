@@ -285,17 +285,30 @@ handle_call(
   {reply, Result, State#state{handler_state=NewState}}.
 
 %% @hidden
+-spec handle_cast(term(), state()) ->
+  {noreply, state()}
+  | {noreply, state(), non_neg_integer()}
+  | {noreply, state(), hibernate}
+  | {stop, term(), state()}.
 handle_cast(_Msg, State) ->
   {noreply, State}.
 
 %% @hidden
+-spec handle_info(term(), state()) ->
+  {noreply, state()}
+  | {noreply, state(), non_neg_integer()}
+  | {noreply, state(), hibernate}
+  | {stop, term(), state()}.
 handle_info(_Info, State) ->
   {noreply, State}.
 
 %% @hidden
+-spec terminate(term(), state()) -> ok.
 terminate(_Reason, _State) ->
   ok.
 
 %% @hidden
+-spec code_change(term(), state(), term()) ->
+  {ok, state()} | {error, term()}.
 code_change(_OldVsn, State, _Extra) ->
   {ok, State}.

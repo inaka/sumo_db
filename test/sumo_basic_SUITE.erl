@@ -120,7 +120,8 @@ delete_module(Module) ->
 run_all_stores(Fun) ->
   Modules = [sumo_test_people_mysql,
              sumo_test_people_mongo,
-             sumo_test_people_elasticsearch],
+             sumo_test_people_elasticsearch,
+             sumo_test_people_pgsql],
   lists:foreach(Fun, Modules).
 
 -spec to_str(any()) -> string().

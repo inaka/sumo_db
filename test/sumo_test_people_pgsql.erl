@@ -20,10 +20,14 @@
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
     Fields =
-    [sumo:new_field(id,        integer, [id, not_null, auto_increment]),
+    [sumo:new_field(id,        integer, [id, auto_increment]),
      sumo:new_field(name,      string,  [{length, 255}, not_null]),
      sumo:new_field(last_name, string,  [{length, 255}, not_null]),
      sumo:new_field(age,       integer),
-     sumo:new_field(address,   string, [{length, 255}])
+     sumo:new_field(address,   string,  [{length, 255}]),
+     sumo:new_field(birthday,  date),
+     sumo:new_field(created,   datetime),
+     sumo:new_field(description, text),
+     sumo:new_field(profile_image, binary)
     ],
     sumo:new_schema(?MODULE, Fields).

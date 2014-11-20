@@ -26,7 +26,7 @@ CT_SUITES = sumo_basic sumo_find sumo_config conditional_logic
 CT_OPTS = -s emysql -s sumo_db -erl_args -config test/test.config
 
 test-shell: build-ct-suites app
-	erl -pa ebin -pa deps/*/ebin -pa test -s sync -s lager -config test/test.config
+	erl -pa ebin -pa deps/*/ebin -pa test -s lager -s sync -config test/test.config
 
 erldocs:
 	erldocs . -o docs

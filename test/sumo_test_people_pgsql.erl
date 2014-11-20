@@ -1,4 +1,4 @@
--module(sumo_test_people_elasticsearch).
+-module(sumo_test_people_pgsql).
 
 -behavior(sumo_doc).
 
@@ -20,7 +20,7 @@
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
     Fields =
-    [sumo:new_field(id,        string, [id, not_null, auto_increment]),
+    [sumo:new_field(id,        integer, [id, not_null, auto_increment]),
      sumo:new_field(name,      string,  [{length, 255}, not_null]),
      sumo:new_field(last_name, string,  [{length, 255}, not_null]),
      sumo:new_field(age,       integer),

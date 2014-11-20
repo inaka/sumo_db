@@ -40,8 +40,10 @@ all() ->
 -spec init_per_suite(config()) -> config().
 init_per_suite(Config) ->
   application:ensure_all_started(emysql),
+  application:ensure_all_started(epgsql),
   application:ensure_all_started(emongo),
   application:ensure_all_started(tirerl),
+
   application:ensure_all_started(sumo_db),
 
   Config.
@@ -94,7 +96,8 @@ find_all_module(Module) ->
 
 find_by_module(Module) ->
   Results = sumo:find_by(Module, [{last_name, <<"D">>}]),
-  [First, Second | _] = lists:sort(Results),
+  SortFun = fun(A, B) -> Module:name(A) < Module:name(B) end,
+  [First, Second | _] = lists:sort(SortFun, Results),
 
   "B" = to_str(Module:name(First)),
   "D" = to_str(Module:name(Second)).
@@ -115,7 +118,7 @@ delete_module(Module) ->
 
 -spec run_all_stores(fun()) -> ok.
 run_all_stores(Fun) ->
-  Modules = [sumo_test_people,
+  Modules = [sumo_test_people_mysql,
              sumo_test_people_mongo,
              sumo_test_people_elasticsearch],
   lists:foreach(Fun, Modules).

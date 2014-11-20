@@ -28,32 +28,30 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Public API.
--export(
-  [ get_pool/1
-  ]).
+-export([
+         get_connection/1
+        ]).
 
 %%% Exports for sumo_backend
--export(
-  [ start_link/2
-  ]).
+-export([
+         start_link/2
+        ]).
 
 %%% Exports for gen_server
--export(
-  [ init/1
-  , handle_call/3
-  , handle_cast/2
-  , handle_info/2
-  , terminate/2
-  , code_change/3
-  ]).
+-export([
+         init/1,
+         handle_call/3,
+         handle_cast/2,
+         handle_info/2,
+         terminate/2,
+         code_change/3
+        ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--record(state, {
-  pool = undefined :: atom()
-}).
--type state() :: #state{}.
+
+-type state() :: #{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% External API.
@@ -62,46 +60,42 @@
 start_link(Name, Options) ->
   gen_server:start_link({local, Name}, ?MODULE, Options, []).
 
--spec get_pool(atom() | pid()) -> atom().
-get_pool(Name) ->
-  gen_server:call(Name, get_pool).
+-spec get_connection(atom() | pid()) -> atom().
+get_connection(Name) ->
+  gen_server:call(Name, get_connection).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% gen_server stuff.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec init([term()]) -> {ok, #state{}}.
+-spec init([term()]) -> {ok, state()}.
 init(Options) ->
-  PoolSize = proplists:get_value(poolsize, Options),
-  Pool     = list_to_atom(erlang:ref_to_list(make_ref())),
-  emysql:add_pool(
-    Pool,
-    PoolSize,
-    proplists:get_value(username, Options),
-    proplists:get_value(password, Options),
-    proplists:get_value(host,     Options, "localhost"),
-    proplists:get_value(port,     Options, 3306),
-    proplists:get_value(database, Options),
-    proplists:get_value(encoding, Options, utf8)
-  ),
-  {ok, #state{pool=Pool}}.
+  Host     = proplists:get_value(host,     Options, "localhost"),
+  Username = proplists:get_value(username, Options),
+  Password = proplists:get_value(password, Options),
+  Opts = [{port,     proplists:get_value(port,     Options, 5432)},
+          {database, proplists:get_value(database, Options)}],
 
--spec handle_call(term(), term(), state()) -> {reply, term(), #state{}}.
-handle_call(get_pool, _From, State = #state{pool=Pool}) ->
-  {reply, Pool, State}.
+  {ok, Conn} = pgsql:connect(Host, Username, Password, Opts),
+
+  {ok, #{conn => Conn}}.
+
+-spec handle_call(term(), term(), state()) -> {reply, term(), state()}.
+handle_call(get_connection, _From, State = #{conn := Conn}) ->
+  {reply, Conn, State}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Unused Callbacks
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec handle_cast(term(), #state{}) -> {noreply, #state{}}.
+-spec handle_cast(term(), state()) -> {noreply, state()}.
 handle_cast(_Msg, State) -> {noreply, State}.
 
--spec handle_info(term(), #state{}) -> {noreply, #state{}}.
+-spec handle_info(term(), state()) -> {noreply, state()}.
 handle_info(_Msg, State) -> {noreply, State}.
 
--spec terminate(term(), #state{}) -> ok.
+-spec terminate(term(), state()) -> ok.
 terminate(_Reason, _State) -> ok.
 
--spec code_change(term(), #state{}, term()) -> {ok, #state{}}.
+-spec code_change(term(), state(), term()) -> {ok, state()}.
 code_change(_OldVsn, State, _Extra) -> {ok, State}.

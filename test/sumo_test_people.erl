@@ -3,7 +3,10 @@
 -behavior(sumo_doc).
 
 %%% sumo_db callbacks
--export([sumo_schema/0, sumo_wakeup/1, sumo_sleep/1]).
+-export([
+         sumo_wakeup/1,
+         sumo_sleep/1
+        ]).
 
 -export([new/2, new/3, new/4, name/1, id/1]).
 
@@ -18,17 +21,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% sumo_doc callbacks
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
--spec sumo_schema() -> sumo:schema().
-sumo_schema() ->
-    Fields =
-    [sumo:new_field(id,        integer, [id, not_null, auto_increment]),
-     sumo:new_field(name,      string,  [{length, 255}, not_null]),
-     sumo:new_field(last_name, string,  [{length, 255}, not_null]),
-     sumo:new_field(age,       integer),
-     sumo:new_field(address,   string, [{length, 255}])
-    ],
-    sumo:new_schema(?MODULE, Fields).
 
 -spec sumo_sleep(person()) -> sumo:doc().
 sumo_sleep(Person) ->

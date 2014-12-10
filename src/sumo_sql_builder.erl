@@ -32,6 +32,21 @@
 -export([i/2, u/3, d/2]).
 -export([s/7, s_count/4]).
 
+-export([
+         values_conditions/1,
+         where_clause/1,
+         where_clause/2,
+         where_clause/3,
+         order_by_clause/1,
+         order_by_clause/2
+        ]).
+
+-export([
+         escape/1,
+         slot_numbered/1,
+         slot_question/1
+        ]).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Public API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -68,8 +83,8 @@ i(TableName, Proplist) ->
   ),
   {
     [
-      "INSERT INTO ", escape(TableName), " (", string:join(Fields, ","), ") ",
-      "VALUES (", string:join(Args, ","),")"
+     "INSERT INTO ", escape(TableName), " (", string:join(Fields, ","), ") ",
+     "VALUES (", string:join(Args, ","),")"
     ],
     Values
   }.
@@ -88,7 +103,7 @@ u(TableName, UpdateFields, Conditions) ->
     UpdateFields
   ),
   Update = string:join(UFields, ","),
-  {["UPDATE ", escape(TableName), " SET ", Update, " WHERE ", Where], UValues, WValues}. 
+  {["UPDATE ", escape(TableName), " SET ", Update, " WHERE ", Where], UValues, WValues}.
 
 %% @doc DELETE.
 -spec d(string(), condition()) -> {iolist(), [term()]}.
@@ -112,8 +127,8 @@ escape(Field) when is_list(Field) ->
 
 -spec form_select_query([field()], condition(), string()) -> {string(), string(), [string()]}.
 form_select_query(SelectFields, Conditions, ExtraWhere) ->
-  WhereTmp = form_condition(Conditions),
-  WValues = lists:reverse(condition_values([Conditions])),
+  {Values, CleanConditions} = values_conditions(Conditions),
+  WhereTmp = where_clause(CleanConditions),
   SFields = [escape(F) || F <- SelectFields],
   Where = case ExtraWhere of
     [] -> WhereTmp;
@@ -121,100 +136,110 @@ form_select_query(SelectFields, Conditions, ExtraWhere) ->
   end,
   Select = string:join(SFields, ","),
   % SelectedFields, Where clause, and Where values
-  {Select, Where, WValues}.
+  {Select, Where, Values}.
 
-form_condition({'and', Conditions}) ->
-  join_conditions(Conditions, "AND");
+-spec values_conditions(sumo_internal:expression()) ->
+  {[any()], sumo_internal:expression()}.
+values_conditions(Expr) ->
+  {Values, CleanExprs, _} = values_conditions(Expr, {[], [], 1}),
+  {lists:reverse(Values), lists:reverse(CleanExprs)}.
 
-form_condition({'or', Conditions}) ->
-  join_conditions(Conditions, "OR");
-
-form_condition({_Key, {any, []}}) ->
-  "";
-
-form_condition({Key, {any, Values}}) ->
-  Conditions = [{Key, V} || V <- Values],
-  form_condition({'or', Conditions});
-
-form_condition({_Key, {_, undefined}}) ->
-  "";
-
-form_condition({Key, {le, _Value}}) ->
-  lists:flatten(["(", escape(Key), "<=?", ")"]);
-
-form_condition({Key, {gt, _Value}}) ->
-  lists:flatten(["(", escape(Key), ">?", ")"]);
-
-form_condition({Key, {ge, _Value}}) ->
-  lists:flatten(["(", escape(Key), ">=?", ")"]);
-
-form_condition({Key, {lt, _Value}}) ->
-  lists:flatten(["(", escape(Key), "<?", ")"]);
-
-form_condition({_Key, undefined}) ->
-  "";
-
-form_condition({Key, {'not', _Value}}) ->
-  lists:flatten(["(", escape(Key), "!=?", ")"]);
-
-form_condition({Key, is_null}) ->
-  lists:flatten(["(", escape(Key), " IS NULL", ")"]);
-
-form_condition({Key, not_null}) ->
-  lists:flatten(["(", escape(Key), " IS NOT NULL", ")"]);
-
-form_condition({Key, _Value}) ->
-  lists:flatten(["(", escape(Key), "=?", ")"]).
-
-join_conditions([], _Operator) ->
-  "";
-
-join_conditions(Conditions, Operator) ->
-  FormedConditions = [form_condition(C) || C <- Conditions],
-  WithoutEmptyConditions = [C || C <- FormedConditions, C =/= ""],
-  case WithoutEmptyConditions of
-    [] -> "";
-    _ -> lists:flatten(["(", string:join(WithoutEmptyConditions, " " ++ Operator ++ " "), ")"])
-  end.
-
-condition_values(Conditions) ->
-  condition_values(Conditions, []).
-
-condition_values([], Acc) ->
+values_conditions(Exprs, Acc) when is_list(Exprs) ->
+  lists:foldl(fun values_conditions/2, Acc, Exprs);
+values_conditions({LogicalOp, Exprs}, {Values, CleanExprs, Count})
+  when (LogicalOp == 'and')
+       or (LogicalOp == 'or')
+       or (LogicalOp == 'not') ->
+  {NewValues, NewCleanExprs, NewCount} = values_conditions(Exprs, {Values, [], Count}),
+  {NewValues, [{LogicalOp, lists:reverse(NewCleanExprs)} | CleanExprs], NewCount};
+values_conditions({Name, Op, Value}, {Values, CleanExprs, Count})
+  when not is_atom(Value) ->
+  sumo_internal:check_operator(Op),
+  {[Value | Values],
+   [{Name, Op, {'?', Count}} | CleanExprs],
+   Count + 1};
+values_conditions({Name1, Op, Name2}, {Values, CleanExprs, Count})
+  when is_atom(Name2) ->
+  sumo_internal:check_operator(Op),
+  {Values,
+   [{Name1, Op, Name2} | CleanExprs],
+   Count};
+values_conditions({Name, Value}, {Values, CleanExprs, Count})
+  when Value =/= 'null', Value =/= 'not_null' ->
+  {[Value | Values],
+   [{Name, {'?', Count}} | CleanExprs],
+   Count + 1};
+values_conditions({Name, Value}, {Values, CleanExprs, Count}) ->
+  {Values,
+   [{Name, Value} | CleanExprs],
+   Count};
+values_conditions([], Acc) ->
   Acc;
+values_conditions(Expr, _) ->
+  throw({unsupported_expression, Expr}).
 
-condition_values([{'and', Conditions}|Rest], Acc) ->
-  NewAcc = condition_values(Conditions, Acc),
-  condition_values(Rest, NewAcc);
+-spec where_clause(sumo_internal:expression()) -> iodata().
+where_clause(Exprs) ->
+  where_clause(Exprs, fun escape/1, fun slot_question/1).
 
-condition_values([{'or', Conditions}|Rest], Acc) ->
-  NewAcc = condition_values(Conditions, Acc),
-  condition_values(Rest, NewAcc);
+-spec where_clause(sumo_internal:expression(), fun()) -> iodata().
+where_clause(Exprs, EscapeFun) ->
+  where_clause(Exprs, EscapeFun, fun slot_question/1).
 
-condition_values([{_Key, {any, Values}}|Rest], Acc) ->
-  NewAcc = lists:foldl(fun(V, InnerAcc) -> [V|InnerAcc] end, Acc, Values),
-  condition_values(Rest, NewAcc);
+-spec where_clause(sumo_internal:expression(), fun(), fun()) -> iodata().
+where_clause(Exprs, EscapeFun, SlotFun) when is_list(Exprs) ->
+  Clauses = lists:map(fun(Expr) -> where_clause(Expr, EscapeFun, SlotFun) end, Exprs),
+  ["(", interpose(" AND ", Clauses), ")"];
+where_clause({'and', Exprs}, EscapeFun, SlotFun) ->
+  where_clause(Exprs, EscapeFun, SlotFun);
+where_clause({'or', Exprs}, EscapeFun, SlotFun) ->
+  Clauses = lists:map(fun(Expr) -> where_clause(Expr, EscapeFun, SlotFun) end, Exprs),
+  ["(", interpose(" OR ", Clauses), ")"];
+where_clause({'not', Expr}, EscapeFun, SlotFun) ->
+  [" NOT ", "(", where_clause(Expr, EscapeFun, SlotFun), ")"];
+where_clause({Name, Op, {'?', _} = Slot}, EscapeFun, SlotFun) ->
+  [EscapeFun(Name), " ", operator_to_string(Op), SlotFun(Slot)];
+where_clause({Name1, Op, Name2}, EscapeFun, _SlotFun) ->
+  [EscapeFun(Name1), " ", operator_to_string(Op), " ", escape(Name2)];
+where_clause({Name,  {'?', _} = Slot}, EscapeFun, SlotFun) ->
+  [EscapeFun(Name), " = ", SlotFun(Slot)];
+where_clause({Name, 'null'}, EscapeFun, _SlotFun) ->
+  [EscapeFun(Name), " IS NULL "];
+where_clause({Name, 'not_null'}, EscapeFun, _SlotFun) ->
+  [EscapeFun(Name), " IS NOT NULL "].
 
-condition_values([{_Key, {gt, Value}}|Rest], Acc) ->
-  condition_values(Rest, [Value|Acc]);
+-spec slot_question({'?', integer()}) -> string().
+slot_question(_) -> " ? ".
 
-condition_values([{_Key, {lt, Value}}|Rest], Acc) ->
-  condition_values(Rest, [Value|Acc]);
+-spec slot_numbered({'?', integer()}) -> string().
+slot_numbered({_, N}) -> [" $", integer_to_list(N), " "].
 
-condition_values([{_Key, {ge, Value}}|Rest], Acc) ->
-  condition_values(Rest, [Value|Acc]);
+-spec interpose(term(), list()) -> list().
+interpose(Sep, List) ->
+  interpose(Sep, List, []).
 
-condition_values([{_Key, {le, Value}}|Rest], Acc) ->
-  condition_values(Rest, [Value|Acc]);
+-spec interpose(term(), list(), list()) -> list().
+interpose(_Sep, [], Result) ->
+  lists:reverse(Result);
+interpose(Sep, [Item | []], Result) ->
+  interpose(Sep, [], [Item | Result]);
+interpose(Sep, [Item | Rest], Result) ->
+  interpose(Sep, Rest, [Sep, Item | Result]).
 
-condition_values([{_Key, {'not', Value}}|Rest], Acc) ->
-  condition_values(Rest, [Value|Acc]);
+-spec operator_to_string(atom()) -> string().
+operator_to_string('=<') -> "<=";
+operator_to_string('/=') -> "!=";
+operator_to_string('==') -> "=";
+operator_to_string(Op) -> atom_to_list(Op).
 
-condition_values([{_Key, is_null}|Rest], Acc) ->
-  condition_values(Rest, Acc);
+-spec order_by_clause([{atom(), sumo:sort_order()}]) -> iolist().
+order_by_clause(SortFields) ->
+  order_by_clause(SortFields, fun escape/1).
 
-condition_values([{_Key, not_null}|Rest], Acc) ->
-  condition_values(Rest, Acc);
-
-condition_values([{_Key, Value}|Rest], Acc) ->
-  condition_values(Rest, [Value|Acc]).
+-spec order_by_clause([{atom(), sumo:sort_order()}], fun()) -> iolist().
+order_by_clause(SortFields, EscapeFun) ->
+  ClauseFun = fun({Name, SortOrder}) ->
+                  [EscapeFun(atom_to_list(Name)), " ", atom_to_list(SortOrder)]
+              end,
+  Clauses = lists:map(ClauseFun, SortFields),
+  [" ORDER BY ", interpose(", ", Clauses)].

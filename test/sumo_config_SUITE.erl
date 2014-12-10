@@ -48,4 +48,4 @@ end_per_suite(Config) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 check_overrun_handler(_Config) ->
-  sumo:call(sumo_test_people, takes_too_long, []).
+  sumo:call(sumo_test_people_mysql, takes_too_long, []).

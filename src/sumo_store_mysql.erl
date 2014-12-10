@@ -160,8 +160,8 @@ delete(DocName, Id, State) ->
 -spec delete_by(sumo:schema_name(), sumo:conditions(), state()) ->
   sumo_store:result(sumo_store:affected_rows(), state()).
 delete_by(DocName, Conditions, State) ->
-  {Values, CleanConditions} = values_conditions(Conditions),
-  Clauses = build_where_clause(CleanConditions),
+  {Values, CleanConditions} = sumo_sql_builder:values_conditions(Conditions),
+  Clauses = sumo_sql_builder:where_clause(CleanConditions),
   HashClause = hash(Clauses),
   PreStatementName = list_to_atom("delete_by_" ++ HashClause),
 
@@ -229,8 +229,8 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
               state()) ->
   sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName, Conditions, SortFields, Limit, Offset, State) ->
-  {Values, CleanConditions} = values_conditions(Conditions),
-  Clauses = build_where_clause(CleanConditions),
+  {Values, CleanConditions} = sumo_sql_builder:values_conditions(Conditions),
+  Clauses = sumo_sql_builder:where_clause(CleanConditions),
   PreStatementName0 = hash(Clauses),
 
   PreStatementName1 =
@@ -244,7 +244,7 @@ find_by(DocName, Conditions, SortFields, Limit, Offset, State) ->
       [] ->
         {PreStatementName1, []};
       _ ->
-        OrderByClause0 = order_by_clause(SortFields),
+        OrderByClause0 = sumo_sql_builder:order_by_clause(SortFields),
         {
           PreStatementName1 ++ "_" ++ hash(OrderByClause0),
           OrderByClause0
@@ -454,86 +454,9 @@ log(Msg, Args) ->
     _          -> ok
   end.
 
--spec values_conditions(sumo_internal:expression()) ->
-  {[any()], sumo_internal:expression()}.
-values_conditions([Expr | RestExprs]) ->
-  {Values, CleanExpr} = values_conditions(Expr),
-  {ValuesRest, CleanRestExprs} = values_conditions(RestExprs),
-  {Values ++ ValuesRest, [CleanExpr | CleanRestExprs]};
-values_conditions({LogicalOp, Exprs})
-  when (LogicalOp == 'and')
-       or (LogicalOp == 'or')
-       or (LogicalOp == 'not') ->
-  {Values, CleanExprs} = values_conditions(Exprs),
-  {Values, {LogicalOp, CleanExprs}};
-values_conditions({Name, Op, Value}) when not is_atom(Value) ->
-  sumo_internal:check_operator(Op),
-  {[Value], {Name, Op, '?'}};
-values_conditions({Name1, Op, Name2}) when is_atom(Name2) ->
-  sumo_internal:check_operator(Op),
-  {[], {Name1, Op, Name2}};
-values_conditions({Name, Value})
-  when Value =/= 'null', Value =/= 'not_null' ->
-  {[Value], {Name, '?'}};
-values_conditions({Name, Value}) ->
-  {[], {Name, Value}};
-values_conditions([]) ->
-  {[], []};
-values_conditions(Expr) ->
-  throw({unsupported_expression, Expr}).
-
--spec build_where_clause(sumo_internal:expression()) -> iodata().
-build_where_clause(Exprs) when is_list(Exprs) ->
-  Clauses = lists:map(fun build_where_clause/1, Exprs),
-  ["(", interpose(" AND ", Clauses), ")"];
-build_where_clause({'and', Exprs}) ->
-  build_where_clause(Exprs);
-build_where_clause({'or', Exprs}) ->
-  Clauses = lists:map(fun build_where_clause/1, Exprs),
-  ["(", interpose(" OR ", Clauses), ")"];
-build_where_clause({'not', Expr}) ->
-  [" NOT ", "(", build_where_clause(Expr), ")"];
-build_where_clause({Name, Op, '?'}) ->
-  [escape(Name), " ", operator_to_string(Op), " ? "];
-build_where_clause({Name1, Op, Name2}) ->
-  [escape(Name1), " ", operator_to_string(Op), " ", escape(Name2)];
-build_where_clause({Name, '?'}) ->
-  [escape(Name), " = ? "];
-build_where_clause({Name, 'null'}) ->
-  [escape(Name), " IS NULL "];
-build_where_clause({Name, 'not_null'}) ->
-  [escape(Name), " IS NOT NULL "].
-
--spec interpose(term(), list()) -> list().
-interpose(Sep, List) ->
-  interpose(Sep, List, []).
-
--spec interpose(term(), list(), list()) -> list().
-interpose(_Sep, [], Result) ->
-  lists:reverse(Result);
-interpose(Sep, [Item | []], Result) ->
-  interpose(Sep, [], [Item | Result]);
-interpose(Sep, [Item | Rest], Result) ->
-  interpose(Sep, Rest, [Sep, Item | Result]).
-
 -spec hash(iodata()) -> string().
 hash(Clause) ->
   Bin = crypto:hash(md5, Clause),
   List = binary_to_list(Bin),
   Fun = fun(Num) -> string:right(integer_to_list(Num, 16), 2, $0) end,
   lists:flatmap(Fun, List).
-
--spec operator_to_string(atom()) -> string().
-operator_to_string('=<') -> "<=";
-operator_to_string('/=') -> "!=";
-operator_to_string('==') -> "=";
-operator_to_string(Op) -> atom_to_list(Op).
-
-
--spec order_by_clause([{atom(), sumo:sort_order()}]) -> iolist().
-order_by_clause(SortFields) ->
-  ClauseFun = fun({Name, SortOrder}) ->
-                  [escape(atom_to_list(Name)), " ", atom_to_list(SortOrder)]
-              end,
-  Clauses = lists:map(ClauseFun, SortFields),
-  [" ORDER BY ", interpose(", ", Clauses)].

@@ -1,12 +1,16 @@
 PROJECT = sumo_db
 
-DEPS = lager emysql emongo tirerl worker_pool
+DEPS = lager emysql emongo tirerl pgsql worker_pool
 
 dep_lager = git https://github.com/basho/lager.git 2.1.0
 dep_emysql = git https://github.com/Eonblast/Emysql.git v0.4.1
 dep_emongo = git https://github.com/inaka/emongo.git v0.2.1
 dep_tirerl = git https://github.com/inaka/tirerl 0.1.0
+dep_pgsql = git https://github.com/epgsql/epgsql 2.0.0
 dep_worker_pool = git https://github.com/inaka/worker_pool.git 1.0
+
+TEST_DEPS = mixer
+dep_mixer = git https://github.com/opscode/mixer.git 0.1.1
 
 include erlang.mk
 
@@ -22,7 +26,7 @@ CT_SUITES = sumo_basic sumo_find sumo_config conditional_logic
 CT_OPTS = -s emysql -s sumo_db -erl_args -config test/test.config
 
 test-shell: build-ct-suites app
-	erl -pa ebin -pa deps/*/ebin -pa test -s sync -s lager -config test/test.config
+	erl -pa ebin -pa deps/*/ebin -pa test -s lager -s sync -config test/test.config
 
 erldocs:
 	erldocs . -o docs

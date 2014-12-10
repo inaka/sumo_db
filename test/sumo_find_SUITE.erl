@@ -52,7 +52,7 @@ init_per_suite(Config) ->
         sumo:persist(Module, Module:new("F", "E", 1))
     end,
 
-  lists:foreach(Fun, [sumo_test_people, sumo_test_people_mongo]),
+  lists:foreach(Fun, [sumo_test_people_mysql, sumo_test_people_mongo]),
 
   Config.
 
@@ -65,8 +65,8 @@ end_per_suite(Config) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 find_sort_mysql(_Config) ->
-  find_by_sort(sumo_test_people),
-  find_all_sort(sumo_test_people).
+  find_by_sort(sumo_test_people_mysql),
+  find_all_sort(sumo_test_people_mysql).
 
 find_sort_mongo(_Config) ->
   find_by_sort(sumo_test_people_mongo),

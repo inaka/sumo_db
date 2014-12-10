@@ -131,7 +131,6 @@ persist(Doc,  #{conn := Conn} = State) ->
 -spec delete(sumo:schema_name(), sumo:field_value(), state()) ->
                 sumo_store:result(sumo_store:affected_rows(), state()).
 delete(DocName, Id, #{conn := Conn} = State) ->
-  lager:info("deleting..."),
   Sql= ["DELETE FROM ", escape(atom_to_list(DocName)),
         " WHERE ", escape(atom_to_list(sumo_internal:id_field_name(DocName))),
         "= $1 LIMIT 1"] ,
@@ -145,14 +144,29 @@ delete(DocName, Id, #{conn := Conn} = State) ->
 
 -spec delete_by(sumo:schema_name(), sumo:conditions(), state()) ->
   sumo_store:result(sumo_store:affected_rows(), state()).
-delete_by(_DocName, _Conditions, State) ->
-  lager:info("deleting by..."),
-  {ok, 1, State}.
+delete_by(DocName, Conditions, #{conn := Conn} = State) ->
+  {Values, CleanConditions} = sumo_sql_builder:values_conditions(Conditions),
+  Clauses = sumo_sql_builder:where_clause(CleanConditions,
+                                          fun escape/1,
+                                          fun sumo_sql_builder:slot_numbered/1),
+
+  Sql =
+    [ "DELETE FROM ",
+      escape(atom_to_list(DocName)),
+      " WHERE ",
+      lists:flatten(Clauses)
+    ],
+
+  case pgsql:equery(Conn, Sql, Values) of
+    {ok, Count} ->
+      {ok, Count, State};
+    {error, Error} ->
+      {error, Error, State}
+  end.
 
 -spec delete_all(sumo:schema_name(), state()) ->
-  sumo_store:result(sumo_store:affected_rows(), state()).
+                    sumo_store:result(sumo_store:affected_rows(), state()).
 delete_all(DocName,  #{conn := Conn} = State) ->
-  lager:info("deleting all..."),
   Sql = ["DELETE FROM ", escape(DocName)],
 
   case pgsql:equery(Conn, Sql, []) of

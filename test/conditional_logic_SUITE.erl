@@ -8,7 +8,8 @@
 
 -export([
          mysql_conditional_logic/1,
-         mongo_conditional_logic/1
+         mongo_conditional_logic/1,
+         pgsql_conditional_logic/1
         ]).
 
 -export([
@@ -56,6 +57,7 @@ all() ->
 init_per_suite(Config) ->
   application:ensure_all_started(emongo),
   application:ensure_all_started(emysql),
+  application:ensure_all_started(epgsql),
   application:ensure_all_started(sumo_db),
 
   Fun =
@@ -70,7 +72,9 @@ init_per_suite(Config) ->
         sumo:persist(Module, Module:new("Alan", "Turing", 102, "Computer St."))
     end,
 
-  lists:foreach(Fun, [sumo_test_people_mysql, sumo_test_people_mongo]),
+  lists:foreach(Fun, [sumo_test_people_mysql,
+                      sumo_test_people_mongo,
+                      sumo_test_people_pgsql]),
 
   Config.
 
@@ -89,6 +93,11 @@ mysql_conditional_logic(_Config) ->
 mongo_conditional_logic(_Config) ->
   Fun = fun(F) -> conditional_logic_SUITE:F(sumo_test_people_mongo) end,
   lists:foreach(Fun, ?LOGIC_FUNS).
+
+pgsql_conditional_logic(_Config) ->
+  Fun = fun(F) -> conditional_logic_SUITE:F(sumo_test_people_pgsql) end,
+  lists:foreach(Fun, ?LOGIC_FUNS).
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Tests cases

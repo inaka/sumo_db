@@ -36,8 +36,15 @@
          values_conditions/1,
          where_clause/1,
          where_clause/2,
+         where_clause/3,
          order_by_clause/1,
          order_by_clause/2
+        ]).
+
+-export([
+         escape/1,
+         slot_numbered/1,
+         slot_question/1
         ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -133,57 +140,79 @@ form_select_query(SelectFields, Conditions, ExtraWhere) ->
 
 -spec values_conditions(sumo_internal:expression()) ->
   {[any()], sumo_internal:expression()}.
-values_conditions([Expr | RestExprs]) ->
-  {Values, CleanExpr} = values_conditions(Expr),
-  {ValuesRest, CleanRestExprs} = values_conditions(RestExprs),
-  {Values ++ ValuesRest, [CleanExpr | CleanRestExprs]};
-values_conditions({LogicalOp, Exprs})
+values_conditions(Expr) ->
+  {Values, CleanExprs, _} = values_conditions(Expr, {[], [], 1}),
+  {lists:reverse(Values), lists:reverse(CleanExprs)}.
+
+values_conditions(Exprs, Acc) when is_list(Exprs) ->
+  lists:foldl(fun values_conditions/2, Acc, Exprs);
+values_conditions({LogicalOp, Exprs}, {Values, CleanExprs, Count})
   when (LogicalOp == 'and')
        or (LogicalOp == 'or')
        or (LogicalOp == 'not') ->
-  {Values, CleanExprs} = values_conditions(Exprs),
-  {Values, {LogicalOp, CleanExprs}};
-values_conditions({Name, Op, Value}) when not is_atom(Value) ->
+  {NewValues, NewCleanExprs, NewCount} = values_conditions(Exprs, {Values, [], Count}),
+  {NewValues, [{LogicalOp, lists:reverse(NewCleanExprs)} | CleanExprs], NewCount};
+values_conditions({Name, Op, Value}, {Values, CleanExprs, Count})
+  when not is_atom(Value) ->
   sumo_internal:check_operator(Op),
-  {[Value], {Name, Op, '?'}};
-values_conditions({Name1, Op, Name2}) when is_atom(Name2) ->
+  {[Value | Values],
+   [{Name, Op, {'?', Count}} | CleanExprs],
+   Count + 1};
+values_conditions({Name1, Op, Name2}, {Values, CleanExprs, Count})
+  when is_atom(Name2) ->
   sumo_internal:check_operator(Op),
-  {[], {Name1, Op, Name2}};
-values_conditions({Name, Value})
+  {Values,
+   [{Name1, Op, Name2} | CleanExprs],
+   Count};
+values_conditions({Name, Value}, {Values, CleanExprs, Count})
   when Value =/= 'null', Value =/= 'not_null' ->
-  {[Value], {Name, '?'}};
-values_conditions({Name, Value}) ->
-  {[], {Name, Value}};
-values_conditions([]) ->
-  {[], []};
-values_conditions(Expr) ->
+  {[Value | Values],
+   [{Name, {'?', Count}} | CleanExprs],
+   Count + 1};
+values_conditions({Name, Value}, {Values, CleanExprs, Count}) ->
+  {Values,
+   [{Name, Value} | CleanExprs],
+   Count};
+values_conditions([], Acc) ->
+  Acc;
+values_conditions(Expr, _) ->
   throw({unsupported_expression, Expr}).
 
 -spec where_clause(sumo_internal:expression()) -> iodata().
 where_clause(Exprs) ->
-  where_clause(Exprs, fun escape/1).
+  where_clause(Exprs, fun escape/1, fun slot_question/1).
 
 -spec where_clause(sumo_internal:expression(), fun()) -> iodata().
-where_clause(Exprs, EscapeFun) when is_list(Exprs) ->
-  Clauses = lists:map(fun(Expr) -> where_clause(Expr, EscapeFun) end, Exprs),
+where_clause(Exprs, EscapeFun) ->
+  where_clause(Exprs, EscapeFun, fun slot_question/1).
+
+-spec where_clause(sumo_internal:expression(), fun(), fun()) -> iodata().
+where_clause(Exprs, EscapeFun, SlotFun) when is_list(Exprs) ->
+  Clauses = lists:map(fun(Expr) -> where_clause(Expr, EscapeFun, SlotFun) end, Exprs),
   ["(", interpose(" AND ", Clauses), ")"];
-where_clause({'and', Exprs}, EscapeFun) ->
-  where_clause(Exprs, EscapeFun);
-where_clause({'or', Exprs}, EscapeFun) ->
-  Clauses = lists:map(fun(Expr) -> where_clause(Expr, EscapeFun) end, Exprs),
+where_clause({'and', Exprs}, EscapeFun, SlotFun) ->
+  where_clause(Exprs, EscapeFun, SlotFun);
+where_clause({'or', Exprs}, EscapeFun, SlotFun) ->
+  Clauses = lists:map(fun(Expr) -> where_clause(Expr, EscapeFun, SlotFun) end, Exprs),
   ["(", interpose(" OR ", Clauses), ")"];
-where_clause({'not', Expr}, EscapeFun) ->
-  [" NOT ", "(", where_clause(Expr, EscapeFun), ")"];
-where_clause({Name, Op, '?'}, EscapeFun) ->
-  [EscapeFun(Name), " ", operator_to_string(Op), " ? "];
-where_clause({Name1, Op, Name2}, EscapeFun) ->
+where_clause({'not', Expr}, EscapeFun, SlotFun) ->
+  [" NOT ", "(", where_clause(Expr, EscapeFun, SlotFun), ")"];
+where_clause({Name, Op, {'?', _} = Slot}, EscapeFun, SlotFun) ->
+  [EscapeFun(Name), " ", operator_to_string(Op), SlotFun(Slot)];
+where_clause({Name1, Op, Name2}, EscapeFun, _SlotFun) ->
   [EscapeFun(Name1), " ", operator_to_string(Op), " ", escape(Name2)];
-where_clause({Name, '?'}, EscapeFun) ->
-  [EscapeFun(Name), " = ? "];
-where_clause({Name, 'null'}, EscapeFun) ->
+where_clause({Name,  {'?', _} = Slot}, EscapeFun, SlotFun) ->
+  [EscapeFun(Name), " = ", SlotFun(Slot)];
+where_clause({Name, 'null'}, EscapeFun, _SlotFun) ->
   [EscapeFun(Name), " IS NULL "];
-where_clause({Name, 'not_null'}, EscapeFun) ->
+where_clause({Name, 'not_null'}, EscapeFun, _SlotFun) ->
   [EscapeFun(Name), " IS NOT NULL "].
+
+-spec slot_question({'?', integer()}) -> string().
+slot_question(_) -> " ? ".
+
+-spec slot_numbered({'?', integer()}) -> string().
+slot_numbered({_, N}) -> [" $", integer_to_list(N), " "].
 
 -spec interpose(term(), list()) -> list().
 interpose(Sep, List) ->

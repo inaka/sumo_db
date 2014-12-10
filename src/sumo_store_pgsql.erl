@@ -285,7 +285,6 @@ find_by(DocName, Conditions, SortFields, Limit, Offset, #{conn := Conn} = State)
 %% for when we have migrations.
 -spec create_schema(sumo:schema(), state()) -> sumo_store:result(state()).
 create_schema(Schema, #{conn := Conn} = State) ->
-  lager:info("creating schema..."),
   Name = sumo_internal:schema_name(Schema),
   Fields = sumo_internal:schema_fields(Schema),
   FieldsDql = lists:map(fun create_column/1, Fields),

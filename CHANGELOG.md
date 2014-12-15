@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 ### Deprecated
 
- - [#62] Renamed all `sumo_repo*` modules to `sumo_store*`. Existing repo modules in your application should be updated with the new names.
+ - None.
 
 ### Removed
 
@@ -19,6 +19,27 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
  - None.
+
+## 0.1.5 - 2014-12-15
+
+### Added
+
+ - [#9] If id attribute is present in 3rd paramenter to sumo:new_field/3, sumo_db should assume not_null as well.
+ - [#15] Write unit tests.
+ - [#21] Add asc/desc option for ordering.
+ - [#39] PostgreSQL storage backend.
+
+### Deprecated
+
+ - [#62] Renamed all `sumo_repo*` modules to `sumo_store*`. Existing repo modules in your application should be updated with the new names.
+
+### Removed
+
+ - [#87] Decide between implementing SQLite repo or deleting it.
+
+### Fixed
+
+ - [#51] Use a proper overrun warning for wpool.
 
 ## 0.1.4 - 2014-11-04
 

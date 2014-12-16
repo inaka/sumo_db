@@ -143,7 +143,11 @@ find_by(DocName, Conditions, Limit, Offset) ->
 %% @doc Returns Limit number of docs that match Conditions, starting at
 %% offset Offset.
 -spec find_by(
-        schema_name(), conditions(), sort(), non_neg_integer(), non_neg_integer()
+        schema_name(),
+        conditions(),
+        sort(),
+        non_neg_integer(),
+        non_neg_integer()
        ) -> [user_doc()].
 find_by(DocName, Conditions, SortFields0, Limit, Offset) ->
   SortFields = normalize_sort_fields(SortFields0),

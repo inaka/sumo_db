@@ -1,8 +1,8 @@
 # About
 This is an escript that uses sumo_db (and the code in ./src) to implement a blog.
 
-It uses different repositories (mysql, mongo) just as an example and
-to make a point about how easy it is to switch or mix different databases.
+It only uses an elasticsearch store, for an example on using multiple stores check
+the `blog` example.
 
 # Tour
  * Start by taking a rough look at **./run**, and then **src/blog.erl**.

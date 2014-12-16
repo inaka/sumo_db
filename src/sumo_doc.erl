@@ -1,4 +1,4 @@
-%%% @doc Implement this behavior on your entities so the repositories can
+%%% @doc Implement this behavior on your entities so the stores can
 %%% properly (un)marshall them.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;

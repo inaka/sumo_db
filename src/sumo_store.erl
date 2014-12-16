@@ -1,4 +1,4 @@
-%%% @doc Main interface for repositories.
+%%% @doc Main interface for stores.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;
 %%%
@@ -83,7 +83,7 @@
 %% External API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% @doc Starts and links a new process for the given repo implementation.
+%% @doc Starts and links a new process for the given store implementation.
 -spec start_link(atom(), module(), [term()]) -> {ok, pid()}.
 start_link(Name, Module, Options) ->
   Poolsize        = proplists:get_value(workers, Options, 100),
@@ -95,19 +95,19 @@ start_link(Name, Module, Options) ->
                     ],
   wpool:start_pool(Name, WPoolConfigOpts ++ WPoolOptions).
 
-%% @doc Creates the schema of the given docs in the given repository name.
+%% @doc Creates the schema of the given docs in the given store name.
 -spec create_schema(atom(), sumo:schema()) -> ok | {error, term()}.
 create_schema(Name, Schema) ->
   wpool:call(Name, {create_schema, Schema}).
 
-%% @doc Persist the given doc with the given repository name.
+%% @doc Persist the given doc with the given store name.
 -spec persist(
   atom(), sumo_internal:doc()
 ) -> {ok, sumo_internal:doc()} | {error, term()}.
 persist(Name, Doc) ->
   wpool:call(Name, {persist, Doc}).
 
-%% @doc Deletes the doc identified by id in the given repository name.
+%% @doc Deletes the doc identified by id in the given store name.
 -spec delete(
   atom(), sumo:schema_name(), sumo:field_value()
 ) -> ok | {error, term()}.
@@ -121,21 +121,21 @@ delete(Name, DocName, Id) ->
 delete_by(Name, DocName, Conditions) ->
   wpool:call(Name, {delete_by, DocName, Conditions}).
 
-%% @doc Deletes all docs in the given repository name.
+%% @doc Deletes all docs in the given store name.
 -spec delete_all(
   atom(), sumo:schema_name()
 ) -> {ok, non_neg_integer()} | {error, term()}.
 delete_all(Name, DocName) ->
   wpool:call(Name, {delete_all, DocName}).
 
-%% @doc Returns all docs from the given repositoru name.
+%% @doc Returns all docs from the given store name.
 -spec find_all(
   atom(), sumo:schema_name()
 ) -> {ok, [sumo_internal:doc()]} | {error, term()}.
 find_all(Name, DocName) ->
   wpool:call(Name, {find_all, DocName}).
 
-%% @doc Returns Limit docs starting at Offset from the given repository name,
+%% @doc Returns Limit docs starting at Offset from the given store name,
 %% ordered by OrderField. OrderField may be 'undefined'.
 -spec find_all(
   atom(), sumo:schema_name(), sumo:field_name(),
@@ -145,7 +145,7 @@ find_all(Name, DocName, SortFields, Limit, Offset) ->
   wpool:call(Name, {find_all, DocName, SortFields, Limit, Offset}).
 
 %% @doc Finds documents that match the given conditions in the given
-%% repository name.
+%% store name.
 -spec find_by(
   atom(), sumo:schema_name(), sumo:conditions()
 ) -> {ok, [sumo_internal:doc()]} | {error, term()}.
@@ -153,7 +153,7 @@ find_by(Name, DocName, Conditions) ->
   wpool:call(Name, {find_by, DocName, Conditions}).
 
 %% @doc Finds documents that match the given conditions in the given
-%% repository name.
+%% store name.
 -spec find_by(
   atom(), sumo:schema_name(), sumo:conditions(),
   non_neg_integer(), non_neg_integer()
@@ -162,7 +162,7 @@ find_by(Name, DocName, Conditions, Limit, Offset) ->
   wpool:call(Name, {find_by, DocName, Conditions, Limit, Offset}).
 
 %% @doc Finds documents that match the given conditions in the given
-%% repository name.
+%% store name.
 -spec find_by(
   atom(), sumo:schema_name(), sumo:conditions(),
   sumo:sort(), non_neg_integer(), non_neg_integer()
@@ -171,7 +171,7 @@ find_by(Name, DocName, Conditions, SortFields, Limit, Offset) ->
   wpool:call(Name, {find_by, DocName, Conditions, SortFields, Limit, Offset}).
 
 
-%% @doc Calls a custom function in the given repository name.
+%% @doc Calls a custom function in the given store name.
 -spec call(
   atom(), sumo:schema_name(), atom(), [term()]
 ) -> ok | {ok, term()} | {error, term()}.

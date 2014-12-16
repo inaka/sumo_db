@@ -1,5 +1,5 @@
 %%% @hidden
-%%% @doc ElasticSearch repository implementation.
+%%% @doc ElasticSearch store implementation.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;
 %%%

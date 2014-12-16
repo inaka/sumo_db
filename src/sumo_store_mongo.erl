@@ -1,5 +1,5 @@
 %%% @hidden
-%%% @doc MongoDB repository implementation.
+%%% @doc MongoDB store implementation.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;
 %%%

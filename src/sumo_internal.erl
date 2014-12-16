@@ -33,8 +33,8 @@
 -export([get_field/2, set_field/3, id_field_name/1, get_schema/1, field_is/2]).
 -export([field_name/1, field_type/1, field_attrs/1]).
 
-%%% API for repo handling.
--export([get_repo/1]).
+%%% API for store handling.
+-export([get_store/1]).
 
 %%% API for opaqueness
 -export([wakeup/1, wakeup/2,
@@ -122,12 +122,12 @@ get_docs() ->
 
 %% @doc Returns the process name that handles persistence for the given
 %% Doc or DocName.
--spec get_repo(sumo:schema_name() | doc()) -> atom().
-get_repo(DocName) when is_atom(DocName) ->
+-spec get_store(sumo:schema_name() | doc()) -> atom().
+get_store(DocName) when is_atom(DocName) ->
   proplists:get_value(DocName, get_docs());
 
-get_repo(_Doc = #{name := Name}) ->
-  get_repo(Name).
+get_store(_Doc = #{name := Name}) ->
+  get_store(Name).
 
 %% @doc Returns the schema for a given DocName.
 -spec get_schema(sumo:schema_name()) -> schema().

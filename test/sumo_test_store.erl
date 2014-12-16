@@ -1,14 +1,14 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% @author Juan Facorro <juan.facorro@inakanetworks.com>
-%%% @doc Sumo DB repo
+%%% @doc Sumo DB Store
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--module(sumo_test_repo).
+-module(sumo_test_store).
 
 -behaviour(sumo_store).
 
 -include_lib("emysql/include/emysql.hrl").
 
-%%% Default repo functions.
+%%% Default store functions.
 -export(
    [ init/1
    , create_schema/2
@@ -25,7 +25,7 @@
    , persist/2
    ]).
 
-%%% Custom repo functions.
+%%% Custom store functions.
 -export([
          takes_too_long/2
         ]).

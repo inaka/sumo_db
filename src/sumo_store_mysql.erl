@@ -1,5 +1,5 @@
 %%% @hidden
-%%% @doc MySql repository implementation.
+%%% @doc MySql store implementation.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;
 %%%
@@ -434,7 +434,7 @@ execute(PreQuery, #state{pool=Pool}) when is_list(PreQuery)->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% @doc We can extend this to wrap around emysql records, so they don't end up
-%% leaking details in all the repo.
+%% leaking details in all the store.
 evaluate_execute_result(#error_packet{status = Status, msg = Msg}, State) ->
   {error, <<Status/binary, ":", (list_to_binary(Msg))/binary>>, State}.
 

@@ -79,8 +79,8 @@ get_docs() ->
 -spec create_schema() -> ok.
 create_schema() ->
   lists:foreach(
-    fun({DocName, Repo}) ->
-      create_schema(DocName, Repo)
+    fun({DocName, Store}) ->
+        create_schema(DocName, Store)
     end,
     get_docs()
   ),
@@ -100,21 +100,21 @@ find(DocName, Id) ->
   IdFieldName = sumo_internal:id_field_name(DocName),
   find_one(DocName, [{IdFieldName, Id}]).
 
-%% @doc Returns all docs from the given repo.
+%% @doc Returns all docs from the given store.
 -spec find_all(schema_name()) -> [user_doc()].
 find_all(DocName) ->
-  case sumo_store:find_all(sumo_internal:get_repo(DocName), DocName) of
+  case sumo_store:find_all(sumo_internal:get_store(DocName), DocName) of
     {ok, Docs} -> docs_wakeup(DocName, Docs);
     Error -> throw(Error)
   end.
 
-%% @doc Returns Limit docs from the given repo, starting at offset.
+%% @doc Returns Limit docs from the given store, starting at offset.
 -spec find_all(schema_name(), sort(), non_neg_integer(), non_neg_integer()) ->
   [user_doc()].
 find_all(DocName, SortFields0, Limit, Offset) ->
   SortFields = normalize_sort_fields(SortFields0),
-  Repo = sumo_internal:get_repo(DocName),
-  case sumo_store:find_all(Repo, DocName, SortFields, Limit, Offset) of
+  Store = sumo_internal:get_store(DocName),
+  case sumo_store:find_all(Store, DocName, SortFields, Limit, Offset) of
     {ok, Docs} -> docs_wakeup(DocName, Docs);
     Error -> throw(Error)
   end.
@@ -122,8 +122,8 @@ find_all(DocName, SortFields0, Limit, Offset) ->
 %% @doc Returns *all* docs that match Conditions.
 -spec find_by(schema_name(), conditions()) -> [user_doc()].
 find_by(DocName, Conditions) ->
-  Repo = sumo_internal:get_repo(DocName),
-  case sumo_store:find_by(Repo, DocName, Conditions) of
+  Store = sumo_internal:get_store(DocName),
+  case sumo_store:find_by(Store, DocName, Conditions) of
     {ok, Docs} -> docs_wakeup(DocName, Docs);
     Error -> throw(Error)
   end.
@@ -131,11 +131,11 @@ find_by(DocName, Conditions) ->
 %% @doc Returns Limit number of docs that match Conditions, starting at
 %% offset Offset.
 -spec find_by(
-  schema_name(), conditions(), non_neg_integer(), non_neg_integer()
-) -> [user_doc()].
+        schema_name(), conditions(), non_neg_integer(), non_neg_integer()
+       ) -> [user_doc()].
 find_by(DocName, Conditions, Limit, Offset) ->
-  Repo = sumo_internal:get_repo(DocName),
-  case sumo_store:find_by(Repo, DocName, Conditions, Limit, Offset) of
+  Store = sumo_internal:get_store(DocName),
+  case sumo_store:find_by(Store, DocName, Conditions, Limit, Offset) of
     {ok, Docs} -> docs_wakeup(DocName, Docs);
     Error -> throw(Error)
   end.
@@ -143,13 +143,13 @@ find_by(DocName, Conditions, Limit, Offset) ->
 %% @doc Returns Limit number of docs that match Conditions, starting at
 %% offset Offset.
 -spec find_by(
-  schema_name(), conditions(), sort(), non_neg_integer(), non_neg_integer()
-) -> [user_doc()].
+        schema_name(), conditions(), sort(), non_neg_integer(), non_neg_integer()
+       ) -> [user_doc()].
 find_by(DocName, Conditions, SortFields0, Limit, Offset) ->
   SortFields = normalize_sort_fields(SortFields0),
-  Repo = sumo_internal:get_repo(DocName),
+  Store = sumo_internal:get_store(DocName),
   case sumo_store:find_by(
-         Repo, DocName, Conditions, SortFields, Limit, Offset
+         Store, DocName, Conditions, SortFields, Limit, Offset
         ) of
     {ok, Docs} -> docs_wakeup(DocName, Docs);
     Error -> throw(Error)
@@ -161,11 +161,11 @@ persist(DocName, State) ->
   IdField = sumo_internal:id_field_name(DocName),
   DocMap = DocName:sumo_sleep(State),
   EventName = case maps:get(IdField, DocMap) of
-    undefined -> created;
-    _ -> updated
-  end,
-  Repo = sumo_internal:get_repo(DocName),
-  case sumo_store:persist(Repo, sumo_internal:new_doc(DocName, DocMap)) of
+                undefined -> created;
+                _ -> updated
+              end,
+  Store = sumo_internal:get_store(DocName),
+  case sumo_store:persist(Store, sumo_internal:new_doc(DocName, DocMap)) of
     {ok, NewDoc} ->
       Ret = sumo_internal:wakeup(DocName, NewDoc),
       sumo_event:dispatch(DocName, EventName, [Ret]),
@@ -176,8 +176,8 @@ persist(DocName, State) ->
 %% @doc Deletes all docs of type DocName.
 -spec delete_all(schema_name()) -> non_neg_integer().
 delete_all(DocName) ->
-  Repo = sumo_internal:get_repo(DocName),
-  case sumo_store:delete_all(Repo, DocName) of
+  Store = sumo_internal:get_store(DocName),
+  case sumo_store:delete_all(Store, DocName) of
     {ok, NumRows} ->
       case NumRows > 0 of
         true  -> sumo_event:dispatch(DocName, deleted_all);
@@ -199,8 +199,8 @@ delete(DocName, Id) ->
 %% @doc Deletes the doc identified by Conditions.
 -spec delete_by(schema_name(), conditions()) -> non_neg_integer().
 delete_by(DocName, Conditions) ->
-  Repo = sumo_internal:get_repo(DocName),
-  case sumo_store:delete_by(Repo, DocName, Conditions) of
+  Store = sumo_internal:get_store(DocName),
+  case sumo_store:delete_by(Store, DocName, Conditions) of
     {ok, 0} ->
       0;
     {ok, NumRows} ->
@@ -213,29 +213,29 @@ delete_by(DocName, Conditions) ->
 %% @doc Creates the schema for the docs of type DocName.
 -spec create_schema(schema_name()) -> ok.
 create_schema(DocName) ->
-  create_schema(DocName, sumo_internal:get_repo(DocName)).
+  create_schema(DocName, sumo_internal:get_store(DocName)).
 
 %% @doc Creates the schema for the docs of type DocName using the given
-%% repository.
+%% store.
 -spec create_schema(schema_name(), atom()) -> ok.
-create_schema(DocName, Repo) ->
-  case sumo_store:create_schema(Repo, sumo_internal:get_schema(DocName)) of
+create_schema(DocName, Store) ->
+  case sumo_store:create_schema(Store, sumo_internal:get_schema(DocName)) of
     ok ->
       sumo_event:dispatch(DocName, schema_created),
       ok;
     Error -> throw(Error)
   end.
 
-%% @doc Calls the given custom function of a repo.
+%% @doc Calls the given custom function of a store.
 -spec call(schema_name(), atom()) -> term().
 call(DocName, Function) ->
   call(DocName, Function, []).
 
-%% @doc Calls the given custom function of a repo with the given args.
+%% @doc Calls the given custom function of a store with the given args.
 -spec call(schema_name(), atom(), [term()]) -> term().
 call(DocName, Function, Args) ->
-  Repo = sumo_internal:get_repo(DocName),
-  case sumo_store:call(Repo, DocName, Function, Args) of
+  Store = sumo_internal:get_store(DocName),
+  case sumo_store:call(Store, DocName, Function, Args) of
     {ok, {docs, Docs}} -> docs_wakeup(DocName, Docs);
     {ok, {raw, Value}} -> Value
   end.

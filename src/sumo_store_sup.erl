@@ -1,5 +1,5 @@
 %%% @hidden
-%%% @doc Repository supervisor.
+%%% @doc Stores supervisor.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;
 %%%
@@ -58,9 +58,9 @@ start_link() ->
 
 -spec init(term()) -> init_result().
 init([]) ->
-  {ok, Repositories} = application:get_env(sumo_db, repositories),
+  {ok, Stores} = application:get_env(sumo_db, stores),
   Children = lists:map(
     fun({Name, Module, Options}) -> ?CLD(Name, Module, Options) end,
-    Repositories
+    Stores
   ),
   {ok, { {one_for_one, 5, 10}, Children} }.

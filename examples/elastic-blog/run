@@ -54,11 +54,11 @@ main(_) ->
     io:format("A blog: ~p~n", [blog:find_post(blog_post:id(Post2))]),
     io:format("An author: ~p~n", [blog:find_author(blog_author:id(Author2))]),
 
-    %% Call a specific method of a repo (not handled by the generic repo,
+    %% Call a specific method of a store (not handled by the generic store,
     %% i.e: a "complex" work).
     %% io:format("Total number of posts: ~p~n", [blog:total_posts()]),
 
-    %% Create a blog reader, in a nother repo and backend.
+    %% Create a blog reader, in a nother store and backend.
     Reader = blog:new_reader("Marcelo Gornstein", "marcelo@inakanetworks.com"),
     Reader2 = blog:new_reader("Pepe Gorostiga", "pepe@asd.com"),
 

@@ -1,5 +1,5 @@
 %%% @hidden
-%%% @doc PostgreSql repository implementation.
+%%% @doc PostgreSql store implementation.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;
 %%%

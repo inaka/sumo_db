@@ -441,7 +441,7 @@ build_docs(DocName, #result_packet{rows = Rows, field_list = Fields}) ->
   Docs = lists:foldl(
     fun(Row, DocList) ->
       NewDoc = lists:foldl(
-        fun(Field, [Doc,N]) ->
+        fun(Field, [Doc, N]) ->
           FieldRecord = lists:nth(N, Fields),
           FieldName = list_to_atom(binary_to_list(FieldRecord#field.name)),
           [sumo_internal:set_field(FieldName, Field, Doc), N+1]

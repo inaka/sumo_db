@@ -36,6 +36,7 @@
 -export([persist/2]).
 -export([delete/3, delete_by/3, delete_all/2]).
 -export([prepare/3, execute/2, execute/3]).
+-export([just_execute/2, just_execute/3, get_docs/3, get_docs/4]).
 -export([find_all/2, find_all/5, find_by/3, find_by/5, find_by/6]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -282,25 +283,10 @@ find_by(DocName, Conditions, SortFields, Limit, Offset, State) ->
     end,
 
   case execute(StatementName, ExecArgs, State) of
-    #result_packet{rows = Rows, field_list = Fields} ->
-      Docs = lists:foldl(
-        fun(Row, DocList) ->
-          NewDoc = lists:foldl(
-            fun(Field, [Doc,N]) ->
-              FieldRecord = lists:nth(N, Fields),
-              FieldName = list_to_atom(binary_to_list(FieldRecord#field.name)),
-              [sumo_internal:set_field(FieldName, Field, Doc), N+1]
-            end,
-            [sumo_internal:new_doc(DocName), 1],
-            Row
-          ),
-          [hd(NewDoc)|DocList]
-        end,
-        [],
-        Rows
-      ),
-      {ok, lists:reverse(Docs), State};
-    Error -> evaluate_execute_result(Error, State)
+    #result_packet{} = Result ->
+      {ok, build_docs(DocName, Result), State};
+    Error ->
+      evaluate_execute_result(Error, State)
   end.
 
 %% XXX: Refactor:
@@ -412,6 +398,63 @@ prepare(DocName, PreName, Fun) when is_atom(PreName), is_function(Fun) ->
       log("Using already prepared query: ~p: ~p", [Name, Q])
   end,
   Name.
+
+%% @doc Call prepare/3 first, to get a well formed statement name.
+-spec just_execute(atom() | list(), state()) ->
+  {ok, {raw, ok}, state()} | {error, binary(), state()}.
+just_execute(Query, State) ->
+  case execute(Query, State) of
+    #ok_packet{} -> {ok, {raw, ok}, State};
+    Error -> evaluate_execute_result(Error, State)
+  end.
+
+-spec just_execute(atom(), list(), state()) ->
+  {ok, {raw, ok}, state()} | {error, binary(), state()}.
+just_execute(Name, Args, State) ->
+  case execute(Name, Args, State) of
+    #ok_packet{} -> {ok, {raw, ok}, State};
+    Error -> evaluate_execute_result(Error, State)
+  end.
+
+%% @doc Call prepare/3 first, to get a well formed statement name.
+-spec get_docs(atom(), atom() | list(), state()) ->
+  {ok, {docs, [sumo_internal:doc()]}, state()} | {error, binary(), state()}.
+get_docs(DocName, Query, State) ->
+  case execute(Query, State) of
+    #result_packet{} = Result ->
+      {ok, {docs, build_docs(DocName, Result)}, State};
+    Error ->
+      evaluate_execute_result(Error, State)
+  end.
+
+-spec get_docs(atom(), atom(), list(), state()) ->
+  {ok, {docs, [sumo_internal:doc()]}, state()} | {error, binary(), state()}.
+get_docs(DocName, Name, Args, State) ->
+  case execute(Name, Args, State) of
+    #result_packet{} = Result ->
+      {ok, {docs, build_docs(DocName, Result)}, State};
+    Error ->
+      evaluate_execute_result(Error, State)
+  end.
+
+build_docs(DocName, #result_packet{rows = Rows, field_list = Fields}) ->
+  Docs = lists:foldl(
+    fun(Row, DocList) ->
+      NewDoc = lists:foldl(
+        fun(Field, [Doc,N]) ->
+          FieldRecord = lists:nth(N, Fields),
+          FieldName = list_to_atom(binary_to_list(FieldRecord#field.name)),
+          [sumo_internal:set_field(FieldName, Field, Doc), N+1]
+        end,
+        [sumo_internal:new_doc(DocName), 1],
+        Row
+      ),
+      [hd(NewDoc)|DocList]
+    end,
+    [],
+    Rows
+  ),
+  lists:reverse(Docs).
 
 %% @doc Call prepare/3 first, to get a well formed statement name.
 -spec execute(atom(), list(), state()) -> term().

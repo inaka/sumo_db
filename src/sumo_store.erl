@@ -77,6 +77,14 @@
 -callback find_by(sumo:schema_name(), sumo:conditions(), non_neg_integer(),
                   non_neg_integer(), State) ->
             result([sumo_internal:doc()], State).
+-callback find_by(sumo:schema_name(), sumo:conditions(), sumo:sort(),
+                  non_neg_integer(), non_neg_integer(), State) ->
+            result([sumo_internal:doc()], State).
+-callback find_all(sumo:schema_name(), State) ->
+            result([sumo_internal:doc()], State).
+-callback find_all(sumo:schema_name(), sumo:sort(), non_neg_integer(),
+                   non_neg_integer(), State) ->
+            result([sumo_internal:doc()], State).
 -callback create_schema(sumo:schema(), State) -> result(State).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -10,7 +10,7 @@ dep_pgsql = git https://github.com/epgsql/epgsql 2.0.0
 dep_worker_pool = git https://github.com/inaka/worker_pool.git 1.0
 
 TEST_DEPS = mixer
-dep_mixer = git https://github.com/opscode/mixer.git 0.1.1
+dep_mixer = git git://github.com/inaka/mixer.git 0.1.2
 
 include erlang.mk
 

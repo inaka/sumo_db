@@ -33,6 +33,7 @@
          persist/2,
          find_by/3,
          find_by/5,
+         find_by/6,
          find_all/2,
          find_all/5,
          delete/3,
@@ -153,6 +154,16 @@ find_by(DocName, Conditions, Limit, Offset,
     Docs = lists:map(Fun, Results),
 
     {ok, Docs, State}.
+
+-spec find_by(sumo:schema_name(),
+              sumo:conditions(),
+              sumo:sort(),
+              non_neg_integer(),
+              non_neg_integer(),
+              state()) ->
+  sumo_store:result([sumo_internal:doc()], state()).
+find_by(_DocName, _Conditions, _SortFields, _Limit, _Offset, State) ->
+    {error, not_supported, State}.
 
 -spec find_by(sumo:schema_name(), sumo:conditions(), state()) ->
   sumo_store:result([sumo_internal:doc()], state()).

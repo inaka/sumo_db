@@ -438,23 +438,12 @@ get_docs(DocName, Name, Args, State) ->
   end.
 
 build_docs(DocName, #result_packet{rows = Rows, field_list = Fields}) ->
-  Docs = lists:foldl(
-    fun(Row, DocList) ->
-      NewDoc = lists:foldl(
-        fun(Field, [Doc, N]) ->
-          FieldRecord = lists:nth(N, Fields),
-          FieldName = list_to_atom(binary_to_list(FieldRecord#field.name)),
-          [sumo_internal:set_field(FieldName, Field, Doc), N+1]
-        end,
-        [sumo_internal:new_doc(DocName), 1],
-        Row
-      ),
-      [hd(NewDoc)|DocList]
-    end,
-    [],
-    Rows
-  ),
-  lists:reverse(Docs).
+  FieldNames = [binary_to_atom(Field#field.name, utf8) || Field <- Fields],
+  [build_doc(sumo_internal:new_doc(DocName), FieldNames, Row) || Row <- Rows].
+
+build_doc(Doc, [], []) -> Doc;
+build_doc(Doc, [FieldName|FieldNames], [Value|Values]) ->
+  build_doc(sumo_internal:set_field(FieldName, Value, Doc), FieldNames, Values).
 
 %% @doc Call prepare/3 first, to get a well formed statement name.
 -spec execute(atom(), list(), state()) -> term().

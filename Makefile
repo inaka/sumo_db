@@ -1,13 +1,13 @@
 PROJECT = sumo_db
 
-DEPS = lager emysql emongo tirerl pgsql worker_pool
+DEPS = lager emysql emongo tirerl pgsql wpool
 
 dep_lager = git https://github.com/basho/lager.git 2.1.0
 dep_emysql = git https://github.com/Eonblast/Emysql.git v0.4.1
 dep_emongo = git https://github.com/inaka/emongo.git v0.2.1
 dep_tirerl = git https://github.com/inaka/tirerl 0.1.0
 dep_pgsql = git https://github.com/epgsql/epgsql 2.0.0
-dep_worker_pool = git https://github.com/inaka/worker_pool.git 1.0
+dep_wpool = git https://github.com/inaka/worker_pool.git 1.0
 
 TEST_DEPS = mixer
 dep_mixer = git git://github.com/inaka/mixer.git 0.1.2

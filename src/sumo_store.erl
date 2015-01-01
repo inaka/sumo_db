@@ -146,7 +146,7 @@ find_all(Name, DocName) ->
 %% @doc Returns Limit docs starting at Offset from the given store name,
 %% ordered by OrderField. OrderField may be 'undefined'.
 -spec find_all(
-  atom(), sumo:schema_name(), sumo:field_name(),
+  atom(), sumo:schema_name(), sumo:sort(),
   non_neg_integer(), non_neg_integer()
 ) -> {ok, [sumo_internal:doc()]} | {error, term()}.
 find_all(Name, DocName, SortFields, Limit, Offset) ->

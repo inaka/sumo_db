@@ -88,7 +88,7 @@ persist(Doc, State) ->
       [ColumnDqls, ColumnSqls] =
         lists:foldl(
           fun(Name, [Dqls, Sqls]) ->
-            Dql = [escape(atom_to_list(Name))],
+            Dql = [escape(Name)],
             Sql = "?",
             [[Dql | Dqls], [Sql | Sqls]]
           end,
@@ -99,14 +99,14 @@ persist(Doc, State) ->
       NPColumnDqls =
         lists:foldl(
           fun(Name, Dqls) ->
-            Dql = [escape(atom_to_list(Name))],
+            Dql = [escape(Name)],
             [Dql | Dqls]
           end,
           [],
           NPFieldNames
         ),
 
-      TableName          = escape(atom_to_list(DocName)),
+      TableName          = escape(DocName),
       ColumnsText        = string:join(ColumnDqls, ","),
       InsertValueSlots   = string:join(ColumnSqls, ","),
       OnDuplicateColumns = [[ColumnName, "=?"] || ColumnName <- NPColumnDqls],
@@ -149,8 +149,8 @@ persist(Doc, State) ->
   sumo_store:result(sumo_store:affected_rows(), state()).
 delete(DocName, Id, State) ->
   StatementName = prepare(DocName, delete, fun() -> [
-    "DELETE FROM ", escape(atom_to_list(DocName)),
-    " WHERE ", escape(atom_to_list(sumo_internal:id_field_name(DocName))),
+    "DELETE FROM ", escape(DocName),
+    " WHERE ", escape(sumo_internal:id_field_name(DocName)),
     "=? LIMIT 1"
   ] end),
   case execute(StatementName, [Id], State) of
@@ -169,7 +169,7 @@ delete_by(DocName, Conditions, State) ->
   StatementFun =
     fun() ->
       [ "DELETE FROM ",
-        escape(atom_to_list(DocName)),
+        escape(DocName),
         " WHERE ",
         lists:flatten(Clauses)
       ]
@@ -185,7 +185,7 @@ delete_by(DocName, Conditions, State) ->
   sumo_store:result(sumo_store:affected_rows(), state()).
 delete_all(DocName, State) ->
   StatementName = prepare(DocName, delete_all, fun() ->
-    ["DELETE FROM ", escape(atom_to_list(DocName))]
+    ["DELETE FROM ", escape(DocName)]
   end),
   case execute(StatementName, State) of
     #ok_packet{affected_rows = NumRows} -> {ok, NumRows, State};
@@ -263,7 +263,7 @@ find_by(DocName, Conditions, SortFields, Limit, Offset, State) ->
   Fun = fun() ->
     % Select * is not good..
     Sql1 = [ "SELECT * FROM ",
-             escape(atom_to_list(DocName)),
+             escape(DocName),
              WhereClause,
              OrderByClause
            ],
@@ -306,8 +306,8 @@ create_schema(Schema, State) ->
     lists:map(fun create_index/1, Fields)
   ),
   Dql = [
-    "CREATE TABLE IF NOT EXISTS ", escape(atom_to_list(Name)), " (",
-    string:join(FieldsDql, ","), ",", string:join(Indexes, ","),
+    "CREATE TABLE IF NOT EXISTS ", escape(Name), " (",
+    string:join(FieldsDql, ", "), ", ", string:join(Indexes, ", "),
     ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8"
   ],
   case execute(Dql, State) of
@@ -322,25 +322,25 @@ create_column(Field) ->
     sumo_internal:field_attrs(Field)).
 
 create_column(Name, integer, Attrs) ->
-  [escape(atom_to_list(Name)), " INT(11) ", create_column_options(Attrs)];
+  [escape(Name), " INT(11) ", create_column_options(Attrs)];
 
 create_column(Name, float, Attrs) ->
-  [escape(atom_to_list(Name)), " FLOAT ", create_column_options(Attrs)];
+  [escape(Name), " FLOAT ", create_column_options(Attrs)];
 
 create_column(Name, text, Attrs) ->
-  [escape(atom_to_list(Name)), " TEXT ", create_column_options(Attrs)];
+  [escape(Name), " TEXT ", create_column_options(Attrs)];
 
 create_column(Name, binary, Attrs) ->
-  [escape(atom_to_list(Name)), " BLOB ", create_column_options(Attrs)];
+  [escape(Name), " BLOB ", create_column_options(Attrs)];
 
 create_column(Name, string, Attrs) ->
-  [escape(atom_to_list(Name)), " VARCHAR ", create_column_options(Attrs)];
+  [escape(Name), " VARCHAR ", create_column_options(Attrs)];
 
 create_column(Name, date, Attrs) ->
-  [escape(atom_to_list(Name)), " DATE ", create_column_options(Attrs)];
+  [escape(Name), " DATE ", create_column_options(Attrs)];
 
 create_column(Name, datetime, Attrs) ->
-  [escape(atom_to_list(Name)), " DATETIME ", create_column_options(Attrs)].
+  [escape(Name), " DATETIME ", create_column_options(Attrs)].
 
 create_column_options(Attrs) ->
   lists:filter(fun(T) -> is_list(T) end, lists:map(
@@ -373,7 +373,7 @@ create_index(Field) ->
   )).
 
 create_index(Name, id) ->
-  ["PRIMARY KEY(", escape(atom_to_list(Name)), ")"];
+  ["PRIMARY KEY(", escape(Name), ")"];
 
 create_index(Name, unique) ->
   List = atom_to_list(Name),

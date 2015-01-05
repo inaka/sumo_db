@@ -29,8 +29,7 @@
     {{supervisor:strategy(), non_neg_integer(), non_neg_integer()},
      [supervisor:child_spec()]
     }
-   }
-   | ignore.
+   }.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
@@ -41,23 +40,20 @@
 %% Supervisor callbacks
 -export([init/1]).
 
-%% Helper macro for declaring children of supervisor
--define(CLD(I), {I, {I, start_link, []}, permanent, 5000, worker, [I]}).
--define(SUP(I), {I, {I, start_link, []}, permanent, infinity, supervisor, [I]}).
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec start_link() -> supervisor:startlink_ret().
-start_link() ->
-    supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+-spec start_link() -> {ok, pid()} | {error, term()}.
+start_link() -> supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
--spec init(term()) -> init_result().
+-spec init([]) -> init_result().
 init([]) ->
   {ok, {
     {one_for_one, 5, 10},
-    [ ?SUP(sumo_backend_sup)
-    , ?SUP(sumo_store_sup)
+    [ sup(sumo_backend_sup)
+    , sup(sumo_store_sup)
     ]
   }}.
+
+sup(I) -> {I, {I, start_link, []}, permanent, infinity, supervisor, [I]}.

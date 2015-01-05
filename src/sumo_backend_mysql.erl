@@ -72,7 +72,7 @@ get_pool(Name) ->
 %% gen_server stuff.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec init([term()]) -> {ok, #state{}}.
+-spec init([term()]) -> {ok, state()}.
 init(Options) ->
   PoolSize = proplists:get_value(poolsize, Options),
   Pool     = list_to_atom(erlang:ref_to_list(make_ref())),
@@ -88,7 +88,7 @@ init(Options) ->
   ),
   {ok, #state{pool=Pool}}.
 
--spec handle_call(term(), term(), state()) -> {reply, term(), #state{}}.
+-spec handle_call(term(), term(), state()) -> {reply, term(), state()}.
 handle_call(get_pool, _From, State = #state{pool=Pool}) ->
   {reply, Pool, State}.
 
@@ -96,14 +96,14 @@ handle_call(get_pool, _From, State = #state{pool=Pool}) ->
 %%% Unused Callbacks
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec handle_cast(term(), #state{}) -> {noreply, #state{}}.
+-spec handle_cast(term(), state()) -> {noreply, state()}.
 handle_cast(_Msg, State) -> {noreply, State}.
 
--spec handle_info(term(), #state{}) -> {noreply, #state{}}.
+-spec handle_info(term(), state()) -> {noreply, state()}.
 handle_info(_Msg, State) -> {noreply, State}.
 
--spec terminate(term(), #state{}) -> ok.
+-spec terminate(term(), state()) -> ok.
 terminate(_Reason, _State) -> ok.
 
--spec code_change(term(), #state{}, term()) -> {ok, #state{}}.
+-spec code_change(term(), state(), term()) -> {ok, state()}.
 code_change(_OldVsn, State, _Extra) -> {ok, State}.

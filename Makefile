@@ -12,6 +12,10 @@ dep_wpool = git https://github.com/inaka/worker_pool.git 1.0
 TEST_DEPS = mixer
 dep_mixer = git git://github.com/inaka/mixer.git 0.1.2
 
+DIALYZER_DIRS := ebin/
+DIALYZER_OPTS := --verbose --statistics -Werror_handling \
+                 -Wrace_conditions #-Wunmatched_returns
+
 include erlang.mk
 
 ERLC_OPTS += +'{parse_transform, lager_transform}'

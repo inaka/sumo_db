@@ -146,7 +146,7 @@ find_all(Name, DocName) ->
 %% @doc Returns Limit docs starting at Offset from the given store name,
 %% ordered by OrderField. OrderField may be 'undefined'.
 -spec find_all(
-  atom(), sumo:schema_name(), sumo:field_name(),
+  atom(), sumo:schema_name(), sumo:sort(),
   non_neg_integer(), non_neg_integer()
 ) -> {ok, [sumo_internal:doc()]} | {error, term()}.
 find_all(Name, DocName, SortFields, Limit, Offset) ->
@@ -207,42 +207,42 @@ init([Module, Options]) ->
 -spec handle_call(term(), _, state()) -> {reply, tuple(), state()}.
 handle_call(
   {persist, Doc}, _From,
-  #state{handler=Handler, handler_state=HState}=State
+  #state{handler = Handler, handler_state = HState} = State
 ) ->
   {OkOrError, Reply, NewState} = Handler:persist(Doc, HState),
   {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(
   {delete, DocName, Id}, _From,
-  #state{handler=Handler,handler_state=HState}=State
+  #state{handler = Handler, handler_state = HState} = State
 ) ->
   {OkOrError, Reply, NewState} = Handler:delete(DocName, Id, HState),
   {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(
   {delete_by, DocName, Conditions}, _From,
-  #state{handler=Handler,handler_state=HState}=State
+  #state{handler = Handler, handler_state = HState} = State
 ) ->
   {OkOrError, Reply, NewState} = Handler:delete_by(DocName, Conditions, HState),
   {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(
   {delete_all, DocName}, _From,
-  #state{handler=Handler,handler_state=HState}=State
+  #state{handler = Handler, handler_state = HState} = State
 ) ->
   {OkOrError, Reply, NewState} = Handler:delete_all(DocName, HState),
   {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(
   {find_all, DocName}, _From,
-  #state{handler=Handler, handler_state=HState}=State
+  #state{handler = Handler, handler_state = HState} = State
 ) ->
   {OkOrError, Reply, NewState} = Handler:find_all(DocName, HState),
   {reply, {OkOrError, Reply}, State#state{handler_state = NewState}};
 
 handle_call(
   {find_all, DocName, SortFields, Limit, Offset}, _From,
-  #state{handler=Handler, handler_state=HState}=State
+  #state{handler = Handler, handler_state = HState} = State
 ) ->
   {OkOrError, Reply, NewState} = Handler:find_all(
     DocName, SortFields, Limit, Offset, HState
@@ -251,14 +251,14 @@ handle_call(
 
 handle_call(
   {find_by, DocName, Conditions}, _From,
-  #state{handler=Handler,handler_state=HState}=State
+  #state{handler = Handler, handler_state = HState} = State
 ) ->
   {OkOrError, Reply, NewState} = Handler:find_by(DocName, Conditions, HState),
   {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(
   {find_by, DocName, Conditions, Limit, Offset}, _From,
-  #state{handler=Handler,handler_state=HState}=State
+  #state{handler = Handler, handler_state = HState} = State
 ) ->
   {OkOrError, Reply, NewState} = Handler:find_by(
     DocName, Conditions, Limit, Offset, HState
@@ -284,7 +284,7 @@ handle_call(
 
 handle_call(
   {create_schema, Schema}, _From,
-  #state{handler=Handler,handler_state=HState}=State
+  #state{handler = Handler, handler_state = HState} = State
 ) ->
   {Result, NewState} = case Handler:create_schema(Schema, HState) of
     {ok, NewState_} -> {ok, NewState_};

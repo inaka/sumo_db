@@ -199,26 +199,28 @@ create_schema(Schema, #state{pool=Pool} = State) ->
   Fields = sumo_internal:schema_fields(Schema),
   lists:foreach(
     fun(Field) ->
+      create_field(Field),
       Name = sumo_internal:field_name(Field),
-      Attrs = sumo_internal:field_attrs(Field),
-      lists:foldl(
-        fun(Attr, Acc) ->
-          case create_index(Attr) of
-            none -> Acc;
-            IndexProp -> [IndexProp|Acc]
-          end
-        end,
-        [],
-        Attrs
-      ),
       lager:debug("creating index: ~p for ~p", [Name, SchemaName]),
       ok = emongo:ensure_index(
-        Pool, atom_to_list(SchemaName), [{atom_to_list(Name), 1}]
-      )
+        Pool, atom_to_list(SchemaName), [{atom_to_list(Name), 1}])
     end,
     Fields
   ),
   {ok, State}.
+
+create_field(Field) ->
+  Attrs = sumo_internal:field_attrs(Field),
+  lists:foldl(
+    fun(Attr, Acc) ->
+      case create_index(Attr) of
+        none -> Acc;
+        IndexProp -> [IndexProp|Acc]
+      end
+    end,
+    [],
+    Attrs
+  ).
 
 create_index(index) ->
   none;

@@ -47,13 +47,15 @@
         integer | string | binary | text | float | date | datetime.
 -type field_name()  :: atom().
 -type field_value() :: term().
--type doc()         :: [{field_name(), field_value()}].
--type conditions()  :: [{field_name(), field_value()}].
+-type doc()         :: #{field_name() => field_value()}.
+-type conditions()  :: [ {field_name(), field_value()}
+                       | {field_name(), atom(), field_value()}].
 -type sort_order()  :: asc | desc.
 -type sort()        :: field_name() | [{field_name(), sort_order()}].
 
 -export_type([schema_name/0, field_attr/0, field_attrs/0, field_type/0,
-              field_name/0, field_value/0, doc/0, conditions/0]).
+              field_name/0, field_value/0, doc/0, conditions/0,
+              sort/0, sort_order/0]).
 
 -type schema()      :: sumo_internal:schema().
 -type field()       :: sumo_internal:field().

@@ -117,7 +117,7 @@ persist(Doc,  #{conn := Conn} = State) ->
               end,
 
   ProcessedValues = lists:map(ToNullFun, Values),
-  case pgsql:equery(Conn, Sql, ProcessedValues) of
+  case pgsql:equery(Conn, stringify(Sql), ProcessedValues) of
     {ok, _Count, _Columns, Rows} ->
       {LastId} = hd(Rows),
       NewDoc = sumo_internal:set_field(IdField, LastId, Doc),
@@ -135,7 +135,7 @@ delete(DocName, Id, #{conn := Conn} = State) ->
         " WHERE ", escape(atom_to_list(sumo_internal:id_field_name(DocName))),
         "= $1 LIMIT 1"] ,
 
-  case pgsql:equery(Conn, Sql, [Id]) of
+  case pgsql:equery(Conn, stringify(Sql), [Id]) of
     {ok, Count} ->
       {ok, Count > 0, State};
     {error, Error} ->
@@ -157,7 +157,7 @@ delete_by(DocName, Conditions, #{conn := Conn} = State) ->
       lists:flatten(Clauses)
     ],
 
-  case pgsql:equery(Conn, Sql, Values) of
+  case pgsql:equery(Conn, stringify(Sql), Values) of
     {ok, Count} ->
       {ok, Count, State};
     {error, Error} ->
@@ -169,7 +169,7 @@ delete_by(DocName, Conditions, #{conn := Conn} = State) ->
 delete_all(DocName,  #{conn := Conn} = State) ->
   Sql = ["DELETE FROM ", escape(DocName)],
 
-  case pgsql:equery(Conn, Sql, []) of
+  case pgsql:equery(Conn, stringify(Sql), []) of
     {ok, Count} ->
       {ok, Count, State};
     {error, Error} ->
@@ -213,7 +213,8 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
               non_neg_integer(),
               state()) ->
   sumo_store:result([sumo_internal:doc()], state()).
-find_by(DocName, Conditions, SortFields, Limit, Offset, #{conn := Conn} = State) ->
+find_by(DocName, Conditions, SortFields, Limit, Offset, State) ->
+  #{conn := Conn} = State,
   {Values, CleanConditions} = sumo_sql_builder:values_conditions(Conditions),
   Clauses = sumo_sql_builder:where_clause(CleanConditions,
                                           fun escape/1,
@@ -256,7 +257,7 @@ find_by(DocName, Conditions, SortFields, Limit, Offset, #{conn := Conn} = State)
       Limit -> Values ++ [Limit, Offset]
     end,
 
-  case pgsql:equery(Conn, Sql2, AllValues) of
+  case pgsql:equery(Conn, stringify(Sql2), AllValues) of
     {ok, Columns, Rows} ->
       ColFun = fun(Col) -> binary_to_atom(Col#column.name, utf8) end,
       ColumnNames = lists:map(ColFun, Columns),
@@ -295,7 +296,7 @@ create_schema(Schema, #{conn := Conn} = State) ->
   ),
   Dql = [
     "CREATE TABLE IF NOT EXISTS ", escape(atom_to_list(Name)), " (",
-    string:join(FieldsDql, ","), ",", string:join(Indexes, ","),
+    string:join(FieldsDql, ", "), ", ", string:join(Indexes, ", "),
     ") "
   ],
   BinDql = iolist_to_binary(Dql),
@@ -380,3 +381,7 @@ create_index(Name, index) ->
   ["KEY ", escape(List), " (", escape(List), ")"];
 create_index(_, _) ->
   none.
+
+%% @todo remove this once pgsql specs are fixed to support iodata and make
+%%       dialyzer happy
+stringify(Sql) -> binary_to_list(iolist_to_binary(Sql)).

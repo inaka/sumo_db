@@ -61,7 +61,7 @@
 start_link(Name, Options) ->
     gen_server:start_link({local, Name}, ?MODULE, Options, []).
 
--spec get_index(atom() | pid()) -> atom().
+-spec get_index(atom() | pid()) -> atom() | string() | binary().
 get_index(Name) ->
     gen_server:call(Name, get_index).
 

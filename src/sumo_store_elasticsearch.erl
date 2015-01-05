@@ -66,7 +66,8 @@ init(Options) ->
 
     {ok, #{index => Index, pool_name => PoolName}}.
 
--spec persist(sumo:doc(), state()) -> sumo:user_doc().
+-spec persist(sumo_internal:doc(), state()) ->
+  sumo_store:result(sumo_internal:doc(), state()).
 persist(Doc, #{index := Index, pool_name := PoolName} = State) ->
     DocName = sumo_internal:doc_name(Doc),
     Type = atom_to_binary(DocName, utf8),

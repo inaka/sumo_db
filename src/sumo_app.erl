@@ -32,7 +32,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
--spec start(term(), term()) -> ignore | {error, term()} | {ok, pid()}.
+-spec start(term(), term()) -> {error, term()} | {ok, pid()}.
 start(_StartType, _StartArgs) ->
   sumo_sup:start_link().
 

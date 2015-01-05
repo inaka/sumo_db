@@ -81,7 +81,7 @@ s(TableName, SelectFields, Conditions, ExtraWhere, Page, PageSize, OrderBy) ->
   }.
 
 %% @doc INSERT.
--spec i(atom() | string(), sumo:doc()) -> {iolist(), [term()]}.
+-spec i(atom() | string(), proplists:proplist()) -> {iodata(), [term()]}.
 i(TableName, Proplist) ->
   {Fields, Values, Args} = lists:foldr(
     fun({K, V}, {Fs, Vs, Args}) ->
@@ -100,8 +100,8 @@ i(TableName, Proplist) ->
 
 %% @doc UPDATE.
 -spec u(
-  atom() | string(), sumo:doc(), condition()
-) -> {iolist(), [term()], [term()]}.
+  atom() | string(), proplists:proplist(), condition()
+) -> {iodata(), [term()], [term()]}.
 u(TableName, UpdateFields, Conditions) ->
   {_Select, Where, WValues} = form_select_query([], Conditions, ""),
   {UFields, UValues} = lists:foldr(
@@ -204,6 +204,8 @@ where_clause(Exprs, EscapeFun) ->
   where_clause(Exprs, EscapeFun, fun slot_question/1).
 
 -spec where_clause(sumo_internal:expression(), fun(), fun()) -> iodata().
+where_clause([], _EscapeFun, _SlotFun) ->
+  [];
 where_clause(Exprs, EscapeFun, SlotFun) when is_list(Exprs) ->
   Clauses = [where_clause(Expr, EscapeFun, SlotFun) || Expr <- Exprs],
   ["(", interpose(" AND ", Clauses), ")"];
@@ -228,7 +230,7 @@ where_clause({Name, 'not_null'}, EscapeFun, _SlotFun) ->
 -spec slot_question({'?', integer()}) -> string().
 slot_question(_) -> " ? ".
 
--spec slot_numbered({'?', integer()}) -> string().
+-spec slot_numbered({'?', integer()}) -> iodata().
 slot_numbered({_, N}) -> [" $", integer_to_list(N), " "].
 
 -spec interpose(term(), list()) -> list().

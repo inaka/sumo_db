@@ -1,4 +1,5 @@
-%%% @doc Main **internal** module for sumo. Use this one from your own applications.
+%%% @doc Main **internal** module for sumo.
+%%%      Use this one from your own applications.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;
 %%%

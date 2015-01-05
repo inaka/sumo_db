@@ -307,7 +307,7 @@ create_schema(Schema, State) ->
   ),
   Dql = [
     "CREATE TABLE IF NOT EXISTS ", escape(atom_to_list(Name)), " (",
-    string:join(FieldsDql, ","), ",", string:join(Indexes, ","),
+    string:join(FieldsDql, ", "), ", ", string:join(Indexes, ", "),
     ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8"
   ],
   case execute(Dql, State) of

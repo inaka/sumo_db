@@ -51,9 +51,12 @@
 %%% Public API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Returns number of results, useful for pagination.
--spec s_count(string(), [field()], condition(), string()) -> {iolist(), [term()]}.
+-spec s_count(
+  string(), [field()], condition(), string()
+) -> {iolist(), [term()]}.
 s_count(TableName, SelectFields, Conditions, ExtraWhere) ->
-  {_Select, Where, WValues} = form_select_query(SelectFields, Conditions, ExtraWhere),
+  {_Select, Where, WValues} =
+    form_select_query(SelectFields, Conditions, ExtraWhere),
   {
     ["SELECT COUNT(1) AS `count` FROM ", escape(TableName), " WHERE ", Where],
     WValues
@@ -61,18 +64,24 @@ s_count(TableName, SelectFields, Conditions, ExtraWhere) ->
 
 %% @doc Generic select function.
 -spec s(
-  string(), [field()], condition(), string(), non_neg_integer(), non_neg_integer(), string()
+  string(), [field()], condition(), string(), non_neg_integer(),
+  non_neg_integer(), string()
 ) -> {iolist(), [term()]}.
 s(TableName, SelectFields, Conditions, ExtraWhere, Page, PageSize, OrderBy) ->
-  Paging = [" LIMIT ", integer_to_list((Page-1) * PageSize), ",", integer_to_list(PageSize)],
-  {Select, Where, WValues} = form_select_query(SelectFields, Conditions, ExtraWhere),
+  Paging =
+    [ " LIMIT ", integer_to_list((Page-1) * PageSize), ", ",
+      integer_to_list(PageSize)],
+  {Select, Where, WValues} =
+    form_select_query(SelectFields, Conditions, ExtraWhere),
   {
-    ["SELECT ", Select, " FROM ", escape(TableName), " WHERE ", Where, " ", OrderBy, " ", Paging],
+    ["SELECT ", Select,
+     " FROM ", escape(TableName),
+     " WHERE ", Where, " ", OrderBy, " ", Paging],
     WValues
   }.
 
 %% @doc INSERT.
--spec i(string(), sumo:doc()) -> {iolist(), [term()]}.
+-spec i(atom() | string(), sumo:doc()) -> {iolist(), [term()]}.
 i(TableName, Proplist) ->
   {Fields, Values, Args} = lists:foldr(
     fun({K, V}, {Fs, Vs, Args}) ->
@@ -83,15 +92,15 @@ i(TableName, Proplist) ->
   ),
   {
     [
-     "INSERT INTO ", escape(TableName), " (", string:join(Fields, ","), ") ",
-     "VALUES (", string:join(Args, ","),")"
+     "INSERT INTO ", escape(TableName), " (", string:join(Fields, ", "), ") ",
+     "VALUES (", string:join(Args, ", "), ")"
     ],
     Values
   }.
 
 %% @doc UPDATE.
 -spec u(
-  string(), sumo:doc(), condition()
+  atom() | string(), sumo:doc(), condition()
 ) -> {iolist(), [term()], [term()]}.
 u(TableName, UpdateFields, Conditions) ->
   {_Select, Where, WValues} = form_select_query([], Conditions, ""),
@@ -103,7 +112,10 @@ u(TableName, UpdateFields, Conditions) ->
     UpdateFields
   ),
   Update = string:join(UFields, ","),
-  {["UPDATE ", escape(TableName), " SET ", Update, " WHERE ", Where], UValues, WValues}.
+  {["UPDATE ", escape(TableName), " SET ", Update, " WHERE ", Where],
+   UValues,
+   WValues
+  }.
 
 %% @doc DELETE.
 -spec d(string(), condition()) -> {iolist(), [term()]}.
@@ -125,14 +137,16 @@ escape(Field) when is_atom(Field) ->
 escape(Field) when is_list(Field) ->
   lists:flatten(["`", Field, "`"]).
 
--spec form_select_query([field()], condition(), string()) -> {string(), string(), [string()]}.
+-spec form_select_query([field()], condition(), string()) ->
+  {string(), string(), [string()]}.
 form_select_query(SelectFields, Conditions, ExtraWhere) ->
   {Values, CleanConditions} = values_conditions(Conditions),
   WhereTmp = where_clause(CleanConditions),
   SFields = [escape(F) || F <- SelectFields],
   Where = case ExtraWhere of
     [] -> WhereTmp;
-    ExtraWhere -> [WhereTmp, case WhereTmp of [] -> " "; _ -> " AND " end, ExtraWhere]
+    ExtraWhere ->
+      [WhereTmp, case WhereTmp of [] -> " "; _ -> " AND " end, ExtraWhere]
   end,
   Select = string:join(SFields, ","),
   % SelectedFields, Where clause, and Where values
@@ -150,8 +164,11 @@ values_conditions({LogicalOp, Exprs}, {Values, CleanExprs, Count})
   when (LogicalOp == 'and')
        or (LogicalOp == 'or')
        or (LogicalOp == 'not') ->
-  {NewValues, NewCleanExprs, NewCount} = values_conditions(Exprs, {Values, [], Count}),
-  {NewValues, [{LogicalOp, lists:reverse(NewCleanExprs)} | CleanExprs], NewCount};
+  {NewValues, NewCleanExprs, NewCount} =
+    values_conditions(Exprs, {Values, [], Count}),
+  {NewValues,
+   [{LogicalOp, lists:reverse(NewCleanExprs)} | CleanExprs],
+   NewCount};
 values_conditions({Name, Op, Value}, {Values, CleanExprs, Count})
   when not is_atom(Value) ->
   sumo_internal:check_operator(Op),
@@ -188,12 +205,12 @@ where_clause(Exprs, EscapeFun) ->
 
 -spec where_clause(sumo_internal:expression(), fun(), fun()) -> iodata().
 where_clause(Exprs, EscapeFun, SlotFun) when is_list(Exprs) ->
-  Clauses = lists:map(fun(Expr) -> where_clause(Expr, EscapeFun, SlotFun) end, Exprs),
+  Clauses = [where_clause(Expr, EscapeFun, SlotFun) || Expr <- Exprs],
   ["(", interpose(" AND ", Clauses), ")"];
 where_clause({'and', Exprs}, EscapeFun, SlotFun) ->
   where_clause(Exprs, EscapeFun, SlotFun);
 where_clause({'or', Exprs}, EscapeFun, SlotFun) ->
-  Clauses = lists:map(fun(Expr) -> where_clause(Expr, EscapeFun, SlotFun) end, Exprs),
+  Clauses = [where_clause(Expr, EscapeFun, SlotFun) || Expr <- Exprs],
   ["(", interpose(" OR ", Clauses), ")"];
 where_clause({'not', Expr}, EscapeFun, SlotFun) ->
   [" NOT ", "(", where_clause(Expr, EscapeFun, SlotFun), ")"];

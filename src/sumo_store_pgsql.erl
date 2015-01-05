@@ -213,7 +213,8 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
               non_neg_integer(),
               state()) ->
   sumo_store:result([sumo_internal:doc()], state()).
-find_by(DocName, Conditions, SortFields, Limit, Offset, #{conn := Conn} = State) ->
+find_by(DocName, Conditions, SortFields, Limit, Offset, State) ->
+  #{conn := Conn} = State,
   {Values, CleanConditions} = sumo_sql_builder:values_conditions(Conditions),
   Clauses = sumo_sql_builder:where_clause(CleanConditions,
                                           fun escape/1,
@@ -295,7 +296,7 @@ create_schema(Schema, #{conn := Conn} = State) ->
   ),
   Dql = [
     "CREATE TABLE IF NOT EXISTS ", escape(atom_to_list(Name)), " (",
-    string:join(FieldsDql, ","), ",", string:join(Indexes, ","),
+    string:join(FieldsDql, ", "), ", ", string:join(Indexes, ", "),
     ") "
   ],
   BinDql = iolist_to_binary(Dql),

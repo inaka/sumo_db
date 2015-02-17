@@ -21,7 +21,7 @@
 -author("Juan Facorro <juan@inaka.net>").
 -license("Apache License 2.0").
 
--include_lib("pgsql/include/pgsql.hrl").
+-include_lib("epgsql/include/pgsql.hrl").
 
 -behavior(sumo_store).
 

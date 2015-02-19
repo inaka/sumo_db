@@ -32,7 +32,7 @@
 -export([start_link/3]).
 -export([create_schema/2]).
 -export([persist/2]).
--export([delete/3, delete_by/3, delete_all/2]).
+-export([delete_by/3, delete_all/2]).
 -export([find_all/2, find_all/5, find_by/3, find_by/5, find_by/6]).
 -export([call/4]).
 
@@ -66,8 +66,6 @@
 -callback init(term()) -> {ok, term()}.
 -callback persist(sumo_internal:doc(), State) ->
             result(sumo_internal:doc(), State).
--callback delete(sumo:schema_name(), sumo:field_value(), State) ->
-            result(affected_rows(), State).
 -callback delete_by(sumo:schema_name(), sumo:conditions(), State) ->
             result(affected_rows(), State).
 -callback delete_all(sumo:schema_name(), State) ->
@@ -114,13 +112,6 @@ create_schema(Name, Schema) ->
 ) -> {ok, sumo_internal:doc()} | {error, term()}.
 persist(Name, Doc) ->
   wpool:call(Name, {persist, Doc}).
-
-%% @doc Deletes the doc identified by id in the given store name.
--spec delete(
-  atom(), sumo:schema_name(), sumo:field_value()
-) -> ok | {error, term()}.
-delete(Name, DocName, Id) ->
-  wpool:call(Name, {delete, DocName, Id}).
 
 %% @doc Deletes the docs identified by the given conditions.
 -spec delete_by(
@@ -210,13 +201,6 @@ handle_call(
   #state{handler = Handler, handler_state = HState} = State
 ) ->
   {OkOrError, Reply, NewState} = Handler:persist(Doc, HState),
-  {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
-
-handle_call(
-  {delete, DocName, Id}, _From,
-  #state{handler = Handler, handler_state = HState} = State
-) ->
-  {OkOrError, Reply, NewState} = Handler:delete(DocName, Id, HState),
   {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(

@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/inaka/sumo_db.png?label=ready&title=Ready)](https://waffle.io/inaka/sumo_db)
 # sumo_db
 
 ## About

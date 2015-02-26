@@ -87,13 +87,8 @@ init_store(Module) ->
   sumo:persist(Module, Module:new(<<"E">>, <<"A">>, 2)),
   sumo:persist(Module, Module:new(<<"F">>, <<"E">>, 1)),
 
-  %% 1. Necessary to get elasticsearch in particular to index its stuff.
-  %% 2. Necessary to Riak.
-  %% Riak clusters will retain deleted objects for some period of time
-  %% (3 seconds by default), and the MapReduce framework does not conceal
-  %% these from submitted jobs.
-  %% @see <a href="http://docs.basho.com/riak/latest/dev/advanced/mapreduce"></a>
-  timer:sleep(3000).
+  %% Necessary to get elasticsearch in particular to index its stuff.
+  timer:sleep(1000).
 
 find_all_module(Module) ->
   6 = length(sumo:find_all(Module)).
@@ -103,6 +98,8 @@ find_by_module(Module) ->
   2 = length(Results),
   SortFun = fun(A, B) -> Module:name(A) < Module:name(B) end,
   [First, Second | _] = lists:sort(SortFun, Results),
+
+  true = is_integer(Module:age(First)),
 
   "B" = to_str(Module:name(First)),
   "D" = to_str(Module:name(Second)).

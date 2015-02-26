@@ -53,7 +53,7 @@
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--record(state, {conn :: pid(), encoding :: atom(), bucket :: binary()}).
+-record(state, {conn :: pid(), bucket :: binary(), index :: binary()}).
 -type state() :: #state{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -82,14 +82,18 @@ init(Options) ->
   Host = proplists:get_value(host, Options, "127.0.0.1"),
   Port = proplists:get_value(port, Options, 8087),
   Opts = riak_opts(Options),
+  BucketType = iolist_to_binary(
+    proplists:get_value(bucket_type, Options)),
   Bucket = iolist_to_binary(
-    proplists:get_value(bucket, Options, <<"default">>)),
+    proplists:get_value(bucket, Options, <<"sumo_test">>)),
+  Index = iolist_to_binary(
+    proplists:get_value(index, Options, <<"sumo_test_index">>)),
   %% Encoding
-  Encoding = proplists:get_value(encoding, Options, json),
+  %%Encoding = proplists:get_value(encoding, Options, json),
   %% Place Riak connection
   {ok, Conn} = riakc_pb_socket:start_link(Host, Port, Opts),
   %% Initial state
-  {ok, #state{conn = Conn, encoding = Encoding, bucket = Bucket}}.
+  {ok, #state{conn = Conn, bucket = {BucketType, Bucket}, index = Index}}.
 
 -spec handle_call(term(), term(), state()) -> {reply, term(), state()}.
 handle_call(get_connection, _From, State = #state{conn = Conn}) ->

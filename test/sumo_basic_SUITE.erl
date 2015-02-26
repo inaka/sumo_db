@@ -87,8 +87,17 @@ init_store(Module) ->
   sumo:persist(Module, Module:new(<<"E">>, <<"A">>, 2)),
   sumo:persist(Module, Module:new(<<"F">>, <<"E">>, 1)),
 
-  %% Necessary to get elasticsearch in particular to index its stuff.
-  timer:sleep(1000).
+  %% Sync Timeout.
+  %% 1. Necessary to get elasticsearch in particular to index its stuff.
+  %% 2. Necessary to Riak.
+  %% Riak clusters will retain deleted objects for some period of time
+  %% (3 seconds by default), and the MapReduce framework does not conceal
+  %% these from submitted jobs.
+  %% @see <a href="http://docs.basho.com/riak/latest/dev/advanced/mapreduce"></a>
+  case Module of
+    sumo_test_people_riak -> timer:sleep(5000);
+    _                     -> timer:sleep(1000)
+  end.
 
 find_all_module(Module) ->
   6 = length(sumo:find_all(Module)).
@@ -102,7 +111,14 @@ find_by_module(Module) ->
   true = is_integer(Module:age(First)),
 
   "B" = to_str(Module:name(First)),
-  "D" = to_str(Module:name(Second)).
+  "D" = to_str(Module:name(Second)),
+
+  %% Check find_by ID
+  [First1] = sumo:find_by(Module, [{id, Module:id(First)}]),
+  First1 = First,
+  %% Check pagination
+  Results1 = sumo:find_by(Module, [], 3, 1),
+  3 = length(Results1).
 
 delete_all_module(Module) ->
   sumo:delete_all(Module),

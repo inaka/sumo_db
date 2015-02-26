@@ -36,58 +36,19 @@
 -export([find_all/2, find_all/5, find_by/3, find_by/5, find_by/6]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Types and Macros.
+%% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 -record(state, {conn :: pid(), bucket :: binary(), index :: binary()}).
 -type state() :: #state{}.
 
--define(KEY_FIND(Key_, TupleList_),
-  case lists:keyfind(Key_, 1, TupleList_) of
-    {_, V_} -> V_;
-    _       -> undefined
-  end
-).
-
--define(NORM_DOC_FIELD(Src_),
-  re:replace(
-    Src_, <<"_register|_set|_counter|_flag|_map">>, <<"">>,
-    [{return, binary}, global])
-).
-
--define(REG(Val_),
-  fun(R_) -> riakc_register:set(Val_, R_) end
-).
-
--define(RMAP_FETCH(Key_, Map_),
-  case riakc_map:find({Key_, register}, Map_) of
-    {ok, Val_} -> Val_;
-    _           -> undefined
-  end
-).
-
--define(RMAP_UPDATE(KV_, Map_),
-  {Key_, Val_} = KV_,
-  riakc_map:update({Key_, register}, ?REG(Val_), Map_)
-).
-
--define(FETCH_MAP(Conn_, Bucket_, Key_),
-  riakc_pb_socket:fetch_type(Conn_,Bucket_, Key_)
-).
-
--define(UPDATE_MAP(Conn_, Bucket_, Key_, Map_),
-  riakc_pb_socket:update_type(Conn_, Bucket_, Key_, riakc_map:to_op(Map_))
-).
-
--define(SEARCH(Conn_, Index_, Query_),
-  riakc_pb_socket:search(Conn_, Index_, Query_)
-).
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% External API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec init(term()) -> {ok, term()}.
+-spec init(
+  term()
+) -> {ok, term()}.
 init(Options) ->
   % The storage backend key in the options specifies the name of the process
   % which creates and initializes the storage backend.
@@ -99,11 +60,8 @@ init(Options) ->
   sumo_internal:doc(), state()
 ) -> sumo_store:result(sumo_internal:doc(), state()).
 persist(Doc, #state{conn = Conn, bucket = Bucket} = State) ->
-  NewDoc = new_doc(Doc),
-  DocName = sumo_internal:doc_name(NewDoc),
-  IdField = sumo_internal:id_field_name(DocName),
-  Id = iolist_to_binary(sumo_internal:get_field(IdField, NewDoc)),
-  case ?UPDATE_MAP(Conn, Bucket, Id, doc_to_rmap(NewDoc)) of
+  {Id, NewDoc} = new_doc(Doc, State),
+  case update_map(Conn, Bucket, Id, doc_to_rmap(NewDoc)) of
     {error, Error} ->
       {error, Error, State};
     _ ->
@@ -113,55 +71,58 @@ persist(Doc, #state{conn = Conn, bucket = Bucket} = State) ->
 -spec delete_by(
   sumo:schema_name(), sumo:conditions(), state()
 ) -> sumo_store:result(sumo_store:affected_rows(), state()).
-delete_by(DocName, Conditions, #state{conn = Conn, bucket = Bucket} = State) ->
+delete_by(DocName,
+          Conditions,
+          #state{conn = Conn, bucket = Bucket, index = Index} = State) ->
   IdField = sumo_internal:id_field_name(DocName),
   case lists:keyfind(IdField, 1, Conditions) of
     {_K, Key} ->
-      case riakc_pb_socket:delete(Conn, Bucket, iolist_to_binary(Key)) of
+      case delete_map(Conn, Bucket, iolist_to_binary(Key)) of
         ok ->
           {ok, 1, State};
         {error, Error} ->
           {error, Error, State}
       end;
     _ ->
-      %% @todo query keys that match with conditions and then delete them.
-      {ok, 1, State}
+      Query = build_query(Conditions),
+      case search_docs_by(DocName, Conn, Index, Query, 0, 0) of
+        {ok, {Total, Res}}  ->
+          delete_docs(Conn, Bucket, Res),
+          {ok, Total, State};
+        {error, Error} ->
+          {error, Error, State}
+      end
   end.
 
 -spec delete_all(
   sumo:schema_name(), state()
 ) -> sumo_store:result(sumo_store:affected_rows(), state()).
 delete_all(_DocName, #state{conn = Conn, bucket = Bucket} = State) ->
-  %% @todo Optimization required -- this should be a batch op.
-  %% Asking Riak to generate a list of all keys in a production environment
-  %% is generally a bad idea. It's an expensive operation.
-  Delete = fun(K, Acc) ->
-             case riakc_pb_socket:delete(Conn, Bucket, K) of
-               ok         -> Acc + 1;
-               {error, _} -> Acc
-             end
-           end,
-  Keys = case riakc_pb_socket:list_keys(Conn, Bucket) of
-           {ok, LK} -> LK;
-           _        -> []
-         end,
-  Count = lists:foldl(Delete, 0, Keys),
-  {ok, Count, State}.
+  Del = fun({C, B, Kst}, Acc) ->
+          lists:foreach(fun(K) -> delete_map(C, B, K) end, Kst),
+          Acc + length(Kst)
+        end,
+  case stream_keys(Conn, Bucket, Del, 0) of
+    {ok, Count} -> {ok, Count, State};
+    {_, Count}  -> {error, Count, State}
+  end.
 
 -spec find_all(
   sumo:schema_name(), state()
 ) -> sumo_store:result([sumo_internal:doc()], state()).
 find_all(DocName, #state{conn = Conn, bucket = Bucket} = State) ->
-  %% @todo Optimization required -- this should be a batch op.
-  %% Asking Riak to generate a list of all keys in a production environment
-  %% is generally a bad idea. It's an expensive operation.
-  case riakc_pb_socket:list_keys(Conn, Bucket) of
-    {ok, Keys} ->
-      F = fun(Item, Acc) -> [rmap_to_doc(DocName, Item) | Acc] end,
-      Docs = lists:foldl(F, [], fetch_bulk(Conn, Bucket, Keys)),
-      {ok, Docs, State};
-    _ ->
-      {ok, [], State}
+  Get = fun({C, B, Kst}, Acc) ->
+          Fun = fun(K, Acc) ->
+                  case fetch_map(C, B, K) of
+                    {ok, M} -> [rmap_to_doc(DocName, M) | Acc];
+                    _       -> Acc
+                  end
+                end,
+          lists:foldl(Fun, [], Kst) ++ Acc
+        end,
+  case stream_keys(Conn, Bucket, Get, []) of
+    {ok, Docs} -> {ok, Docs, State};
+    {_, Docs}  -> {error, Docs, State}
   end.
 
 -spec find_all(
@@ -172,6 +133,7 @@ find_all(DocName, #state{conn = Conn, bucket = Bucket} = State) ->
   state()
 ) -> sumo_store:result([sumo_internal:doc()], state()).
 find_all(DocName, _SortFields, Limit, Offset, State) ->
+  %% @todo implement search with sort parameters.
   find_by(DocName, [], Limit, Offset, State).
 
 -spec find_by(sumo:schema_name(), sumo:conditions(), state()) ->
@@ -188,13 +150,13 @@ find_by(DocName, Conditions, State) ->
 ) -> sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName,
         Conditions,
-        _Limit,
-        _Offset,
+        Limit,
+        Offset,
         #state{conn = Conn, bucket = Bucket, index = Index} = State) ->
   IdField = sumo_internal:id_field_name(DocName),
   case lists:keyfind(IdField, 1, Conditions) of
     {_K, Key} ->
-      case ?FETCH_MAP(Conn, Bucket, iolist_to_binary(Key)) of
+      case fetch_map(Conn, Bucket, iolist_to_binary(Key)) of
         {ok, RMap} ->
           Val = rmap_to_doc(DocName, RMap),
           {ok, [Val], State};
@@ -203,13 +165,9 @@ find_by(DocName,
       end;
     _ ->
       Query = build_query(Conditions),
-      case ?SEARCH(Conn, Index, Query) of
-        {ok, {search_results, Results, _, _Count}} ->
-          F = fun({_, KV}, Acc) -> [kv_to_doc(DocName, KV) | Acc] end,
-          NewRes = lists:foldl(F, [], Results),
-          {ok, NewRes, State};
-        {error, Error} ->
-          {error, Error, State}
+      case search_docs_by(DocName, Conn, Index, Query, Limit, Offset) of
+        {ok, {_, Res}} -> {ok, Res, State};
+        {error, Error} -> {error, Error, State}
       end
   end.
 
@@ -224,9 +182,10 @@ find_by(DocName,
 find_by(_DocName, _Conditions, _SortFields, _Limit, _Offset, State) ->
   {error, not_supported, State}.
 
--spec create_schema(sumo:schema(), state()) -> sumo_store:result(state()).
+-spec create_schema(
+  sumo:schema(), state()
+) -> sumo_store:result(state()).
 create_schema(_Schema, State) ->
-  %% @todo Search Schema (Solr), and probably create 2i into the given schema
   {ok, State}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -234,20 +193,32 @@ create_schema(_Schema, State) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% @private
-new_doc(Doc) ->
+doc_id(Doc) ->
+  DocName = sumo_internal:doc_name(Doc),
+  IdField = sumo_internal:id_field_name(DocName),
+  sumo_internal:get_field(IdField, Doc).
+
+%% @private
+new_doc(Doc, #state{conn = Conn, bucket = Bucket}) ->
   DocName = sumo_internal:doc_name(Doc),
   IdField = sumo_internal:id_field_name(DocName),
   Id = case sumo_internal:get_field(IdField, Doc) of
-         undefined -> next_id(32);
-         Id0       -> Id0
+         undefined ->
+           case update_map(Conn, Bucket, undefined, doc_to_rmap(Doc)) of
+             {ok, RiakMapId} -> RiakMapId;
+             {error, Error}  -> throw(Error);
+             _               -> throw(unexpected)
+           end;
+         Id0 ->
+           to_bin(Id0)
        end,
-  sumo_internal:set_field(IdField, Id, Doc).
+  {Id, sumo_internal:set_field(IdField, Id, Doc)}.
 
 %% @private
 doc_to_rmap(Doc) ->
   Fields = sumo_internal:doc_fields(Doc),
   F = fun({K, V}, Acc) ->
-        ?RMAP_UPDATE({atom_to_binary(K, utf8), to_bin(V)}, Acc)
+        rmap_update({atom_to_binary(K, utf8), to_bin(V)}, Acc)
       end,
   lists:foldl(F, riakc_map:new(), maps:to_list(Fields)).
 
@@ -261,68 +232,76 @@ rmap_to_doc(DocName, RMap) ->
 %% @private
 kv_to_doc(DocName, KV) ->
   F = fun({K, V}, Acc) ->
-        NK = ?NORM_DOC_FIELD(K),
+        NK = normalize_doc_fields(K),
         sumo_internal:set_field(binary_to_atom(NK, utf8), V, Acc)
       end,
   lists:foldl(F, sumo_internal:new_doc(DocName), KV).
 
 %% @private
-fetch_bulk(Conn, Bucket, Keys) ->
-  F = fun(K, Acc) ->
-        case ?FETCH_MAP(Conn, Bucket, K) of
-          {ok, RMap} -> [RMap | Acc];
-          _          -> Acc
-        end
-      end,
-  lists:foldl(F, [], Keys).
+normalize_doc_fields(Src) ->
+  re:replace(
+    Src, <<"_register|_set|_counter|_flag|_map">>, <<"">>,
+    [{return, binary}, global]).
 
 %% @private
-build_query({q_str, Q}) when is_binary(Q) ->
-  Q;
-build_query(PL) when is_list(PL) ->
-  build_query1(PL, <<"">>);
-build_query(_) ->
-  <<"*:*">>.
-
-build_query1([], Acc) ->
-  Acc;
-build_query1([{_, [{_, _} | _T0]} = KV | T], <<"">>) ->
-  build_query1(T, <<(<<"(">>)/binary, (build_query2(KV))/binary, (<<")">>)/binary>>);
-build_query1([{_, [{_, _} | _T0]} = KV | T], Acc) ->
-  build_query1(T, <<Acc/binary, (<<" AND (">>)/binary, (build_query2(KV))/binary, (<<")">>)/binary>>);
-build_query1([{K, V} | T], <<"">>) ->
-  build_query1(T, <<(query_eq(K, V))/binary>>);
-build_query1([{K, V} | T], Acc) ->
-  build_query1(T, <<Acc/binary, (<<" AND ">>)/binary, (query_eq(K, V))/binary>>).
-
-query_eq(K, V) ->
-  <<(atom_to_binary(K, utf8))/binary,
-    (<<"_register:">>)/binary,
-    (to_bin(V))/binary>>.
-
-build_query2({K, [{_, _} | _T] = V}) ->
-  F = fun({K_, V_}, Acc) ->
-        Eq = <<(atom_to_binary(K_, utf8))/binary,
-               (<<"_register:">>)/binary,
-               (to_bin(V_))/binary>>,
-        case Acc of
-          <<"">> ->
-            Eq;
-          _ ->
-            <<Acc/binary, (<<" ">>)/binary, (to_bin(K))/binary,
-              (<<" ">>)/binary, Eq/binary>>
-        end
-      end,
-  lists:foldl(F, <<"">>, V).
+rmap_update({K, V}, Map) ->
+  riakc_map:update({K, register}, fun(R) -> riakc_register:set(V, R) end, Map).
 
 %% @private
-next_id(Len) ->
-  <<A1:32, A2:32, A3:32>> = crypto:strong_rand_bytes(12),
-  random:seed({A1, A2, A3}),
-  Chrs = list_to_tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"),
-  ChrsSize = size(Chrs),
-  F = fun(_, R) -> [element(random:uniform(ChrsSize), Chrs) | R] end,
-  lists:foldl(F, "", lists:seq(1, Len)).
+fetch_map(Conn, Bucket, Key) ->
+  riakc_pb_socket:fetch_type(Conn, Bucket, Key).
+
+%% @private
+delete_map(Conn, Bucket, Key) ->
+  riakc_pb_socket:delete(Conn, Bucket, Key).
+
+%% @private
+update_map(Conn, Bucket, Key, Map) ->
+  riakc_pb_socket:update_type(Conn, Bucket, Key, riakc_map:to_op(Map)).
+
+%% @private
+search(Conn, Index, Query, 0, 0) ->
+  riakc_pb_socket:search(Conn, Index, Query);
+search(Conn, Index, Query, Limit, Offset) ->
+  riakc_pb_socket:search(Conn, Index, Query, [{start, Offset}, {rows, Limit}]).
+
+%% @private
+stream_keys(Conn, Bucket, F, Acc) ->
+  {ok, Ref} = riakc_pb_socket:get_index_eq(
+    Conn, Bucket, <<"$bucket">>, <<"">>, [{stream, true}]),
+  receive_stream(Ref, Conn, Bucket, F, Acc).
+
+%% @private
+receive_stream(Ref, Conn, Bucket, F, Acc) ->
+  receive
+    {Ref, {_, Stream, _}} ->
+      receive_stream(Ref, Conn, Bucket, F, F({Conn, Bucket, Stream}, Acc));
+    {Ref, {done, _}} ->
+      {ok, Acc};
+    _ ->
+      {error, Acc}
+  after
+    30000 -> {timeout, Acc}
+  end.
+
+%% @private
+search_docs_by(DocName, Conn, Index, Query, Limit, Offset) ->
+  case search(Conn, Index, Query, Limit, Offset) of
+    {ok, {search_results, Results, _, Total}} ->
+      F = fun({_, KV}, Acc) -> [kv_to_doc(DocName, KV) | Acc] end,
+      NewRes = lists:foldl(F, [], Results),
+      {ok, {Total, NewRes}};
+    {error, Error} ->
+      {error, Error}
+  end.
+
+%% @private
+delete_docs(Conn, Bucket, Docs) ->
+  F = fun(D) ->
+        K = doc_id(D),
+        delete_map(Conn, Bucket, K)
+      end,
+  lists:foreach(F, Docs).
 
 %% @private
 to_bin(Data) when is_integer(Data) ->
@@ -335,3 +314,55 @@ to_bin(Data) when is_list(Data) ->
   iolist_to_binary(Data);
 to_bin(Data) ->
   Data.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Private API - Query Builder.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% @private
+build_query({q_str, Q}) when is_binary(Q) ->
+  Q;
+build_query([]) ->
+  <<"*:*">>;
+build_query(PL) when is_list(PL) ->
+  build_query1(PL, <<"">>);
+build_query(_) ->
+  <<"*:*">>.
+
+%% @private
+build_query1([], Acc) ->
+  Acc;
+build_query1([{_, [{_, _} | _T0]} = KV | T], <<"">>) ->
+  build_query1(T,
+    <<(<<"(">>)/binary, (build_query2(KV))/binary, (<<")">>)/binary>>);
+build_query1([{_, [{_, _} | _T0]} = KV | T], Acc) ->
+  build_query1(T,
+    <<Acc/binary, (<<" AND (">>)/binary,
+      (build_query2(KV))/binary, (<<")">>)/binary>>);
+build_query1([{K, V} | T], <<"">>) ->
+  build_query1(T, <<(query_eq(K, V))/binary>>);
+build_query1([{K, V} | T], Acc) ->
+  build_query1(T,
+    <<Acc/binary, (<<" AND ">>)/binary, (query_eq(K, V))/binary>>).
+
+%% @private
+build_query2({K, [{_, _} | _T] = V}) ->
+  F = fun({K_, V_}, Acc) ->
+        Eq = <<(atom_to_binary(K_, utf8))/binary,
+        (<<"_register:">>)/binary,
+        (to_bin(V_))/binary>>,
+        case Acc of
+          <<"">> ->
+            Eq;
+          _ ->
+            <<Acc/binary, (<<" ">>)/binary, (to_bin(K))/binary,
+            (<<" ">>)/binary, Eq/binary>>
+        end
+      end,
+  lists:foldl(F, <<"">>, V).
+
+%% @private
+query_eq(K, V) ->
+  <<(atom_to_binary(K, utf8))/binary,
+    (<<"_register:">>)/binary,
+    (to_bin(V))/binary>>.

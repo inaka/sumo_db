@@ -112,10 +112,10 @@ delete_all(_DocName, #state{conn = Conn, bucket = Bucket} = State) ->
 ) -> sumo_store:result([sumo_internal:doc()], state()).
 find_all(DocName, #state{conn = Conn, bucket = Bucket} = State) ->
   Get = fun({C, B, Kst}, Acc) ->
-          Fun = fun(K, Acc) ->
+          Fun = fun(K, Acc0) ->
                   case fetch_map(C, B, K) of
-                    {ok, M} -> [rmap_to_doc(DocName, M) | Acc];
-                    _       -> Acc
+                    {ok, M} -> [rmap_to_doc(DocName, M) | Acc0];
+                    _       -> Acc0
                   end
                 end,
           lists:foldl(Fun, [], Kst) ++ Acc
@@ -217,23 +217,52 @@ new_doc(Doc, #state{conn = Conn, bucket = Bucket}) ->
 %% @private
 doc_to_rmap(Doc) ->
   Fields = sumo_internal:doc_fields(Doc),
+  map_to_rmap(Fields).
+
+%% @private
+map_to_rmap(Map) ->
   F = fun({K, V}, Acc) ->
-        rmap_update({atom_to_binary(K, utf8), to_bin(V)}, Acc)
+        case V of
+          V when is_map(V) ->
+            NewV = map_to_rmap(V),
+            riakc_map:update({to_bin(K), map}, fun(_M) -> NewV end, Acc);
+          V when is_list(V) ->
+            case io_lib:printable_list(V) of
+              true ->
+                riakc_map:update(
+                  {to_bin(K), register},
+                  fun(R) -> riakc_register:set(to_bin(V), R) end,
+                  Acc);
+              false ->
+                riakc_map:update({to_bin(K), set}, fun(_S) -> V end, Acc)
+            end;
+          _ ->
+            riakc_map:update(
+              {to_bin(K), register},
+              fun(R) -> riakc_register:set(to_bin(V), R) end,
+              Acc)
+        end
       end,
-  lists:foldl(F, riakc_map:new(), maps:to_list(Fields)).
+  lists:foldl(F, riakc_map:new(), maps:to_list(Map)).
 
 %% @private
 rmap_to_doc(DocName, RMap) ->
-  F = fun({{K, _}, V}, Acc) ->
-        sumo_internal:set_field(binary_to_atom(K, utf8), V, Acc)
+  sumo_internal:new_doc(DocName, rmap_to_map(RMap)).
+
+%% @private
+rmap_to_map(RMap) ->
+  F = fun({{K, map}, V}, Acc) ->
+        maps:put(to_atom(K), rmap_to_map(V), Acc);
+      ({{K, _}, V}, Acc) ->
+        maps:put(to_atom(K), V, Acc)
       end,
-  lists:foldl(F, sumo_internal:new_doc(DocName), riakc_map:value(RMap)).
+  lists:foldl(F, #{}, riakc_map:value(RMap)).
 
 %% @private
 kv_to_doc(DocName, KV) ->
   F = fun({K, V}, Acc) ->
         NK = normalize_doc_fields(K),
-        sumo_internal:set_field(binary_to_atom(NK, utf8), V, Acc)
+        sumo_internal:set_field(to_atom(NK), V, Acc)
       end,
   lists:foldl(F, sumo_internal:new_doc(DocName), KV).
 
@@ -242,10 +271,6 @@ normalize_doc_fields(Src) ->
   re:replace(
     Src, <<"_register|_set|_counter|_flag|_map">>, <<"">>,
     [{return, binary}, global]).
-
-%% @private
-rmap_update({K, V}, Map) ->
-  riakc_map:update({K, register}, fun(R) -> riakc_register:set(V, R) end, Map).
 
 %% @private
 fetch_map(Conn, Bucket, Key) ->
@@ -313,6 +338,16 @@ to_bin(Data) when is_atom(Data) ->
 to_bin(Data) when is_list(Data) ->
   iolist_to_binary(Data);
 to_bin(Data) ->
+  Data.
+
+%% @private
+to_atom(Data) when is_binary(Data) ->
+  binary_to_atom(Data, utf8);
+to_atom(Data) when is_list(Data) ->
+  list_to_atom(Data);
+to_atom(Data) when is_pid(Data); is_reference(Data); is_tuple(Data) ->
+  list_to_atom(integer_to_list(erlang:phash2(Data)));
+to_atom(Data) ->
   Data.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

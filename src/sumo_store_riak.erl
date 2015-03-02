@@ -1,5 +1,17 @@
 %%% @hidden
 %%% @doc Riak store implementation.
+%%% <u>Implementation Notes:</u>
+%%% <ul>
+%%% <li> Riak Data Types as main structures to push/pull data.</li>
+%%% <li> Bulk operations (such as: delete_all and find_all) were
+%%%      optimized using streaming. Records are streamed in portions
+%%%      (using Riak 2i to stream keys first), and then the current
+%%%      operation (e.g.: delete the record or accumulate the values
+%%%      to return them later) is applied. This allows better memory
+%%%      and cpu efficiency.</li>
+%%% <li> Querys were implemented using Riak Search on Data Types,
+%%%      to get better performance and flexibility.</li>
+%%% </ul>
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;
 %%%
@@ -220,6 +232,7 @@ doc_to_rmap(Doc) ->
   map_to_rmap(Fields).
 
 %% @private
+%% Support multi-level structures.
 map_to_rmap(Map) ->
   F = fun({K, V}, Acc) ->
         case V of
@@ -250,6 +263,7 @@ rmap_to_doc(DocName, RMap) ->
   sumo_internal:new_doc(DocName, rmap_to_map(RMap)).
 
 %% @private
+%% Support multi-level structures.
 rmap_to_map(RMap) ->
   F = fun({{K, map}, V}, Acc) ->
         maps:put(to_atom(K), rmap_to_map(V), Acc);
@@ -310,6 +324,10 @@ receive_stream(Ref, Conn, Bucket, F, Acc) ->
   end.
 
 %% @private
+%% @todo Add multi-level support.
+%%       Instead of transform search result to doc, get just the key and
+%%       fetch the value (`fetch_map`), then apply `rmap_to_doc` on that
+%%       value, since this function supports multi-level.
 search_docs_by(DocName, Conn, Index, Query, Limit, Offset) ->
   case search(Conn, Index, Query, Limit, Offset) of
     {ok, {search_results, Results, _, Total}} ->

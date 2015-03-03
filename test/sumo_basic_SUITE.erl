@@ -93,7 +93,7 @@ init_store(Module) ->
   %% Riak clusters will retain deleted objects for some period of time
   %% (3 seconds by default), and the MapReduce framework does not conceal
   %% these from submitted jobs.
-  %% @see <a href="http://docs.basho.com/riak/latest/dev/advanced/mapreduce"></a>
+  %% @see <a href="http://docs.basho.com/riak/latest/dev/advanced/mapreduce"/>
   case Module of
     sumo_test_people_riak -> timer:sleep(5000);
     _                     -> timer:sleep(1000)

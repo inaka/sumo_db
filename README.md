@@ -87,7 +87,7 @@ To run tests successfully, you need to follow these steps first:
 
 > - For **MongoDB** you first create the test database and then create an user
     to access that DB. For more information visit [MongoDB Tutorial](http://docs.mongodb.org/manual/tutorial).
-> - For **Riak** please follow instruction below first ([<i class="icon-refresh"></i> Riak](#riak)).
+> - For **Riak** please follow instructions below ([<i class="icon-refresh"></i> Riak](#riak)).
 
 ## Riak
 
@@ -98,8 +98,8 @@ To install/upgrade **Riak** please follow the instructions in this link:
 
 ### Initial Configurations
 
-Due to **Riak** comes with default configuration, we need to change some
-parameters required by `sumo_db`.
+Due to the fact that **Riak** comes with default configuration, we need to
+change some parameters required by `sumo_db`.
 
 **Riak** has a main configuration file `riak.conf`, which you can find into
 your installation path `$YOUR_INSTALL_PATH/etc/riak.conf`.
@@ -107,7 +107,7 @@ your installation path `$YOUR_INSTALL_PATH/etc/riak.conf`.
 > **Note:** For more information check this link [Configuration Files](http://docs.basho.com/riak/latest/ops/advanced/configs/configuration-files).
 
 First parameter to change is the default **Riak** backend from **Bitcask** to
-**LevelDB**. This change also eblables to use [Riak Secondary Indexes](http://docs.basho.com/riak/latest/ops/advanced/configs/secondary-index/).
+**LevelDB**. This change also enables the use of [Riak Secondary Indexes](http://docs.basho.com/riak/latest/ops/advanced/configs/secondary-index/).
 
     storage_backend = leveldb
 
@@ -137,7 +137,7 @@ our `maps` bucket type:
 
     $ riak-admin bucket-type update maps '{"props":{"search_index":"sumo_test_index"}}'
 
-Now we can start to working with **Riak** from `sumo_db`.
+Now we can start working with **Riak** from `sumo_db`.
 
 > **Note:** For more information check this link [Riak Data Types and Search](http://docs.basho.com/riak/latest/dev/search/search-data-types/#Maps-Example).
 

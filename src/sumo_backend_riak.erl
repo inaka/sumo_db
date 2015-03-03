@@ -82,14 +82,13 @@ init(Options) ->
   Host = proplists:get_value(host, Options, "127.0.0.1"),
   Port = proplists:get_value(port, Options, 8087),
   Opts = riak_opts(Options),
+  %% Get DB parameters
   BucketType = iolist_to_binary(
     proplists:get_value(bucket_type, Options)),
   Bucket = iolist_to_binary(
     proplists:get_value(bucket, Options, <<"sumo_test">>)),
   Index = iolist_to_binary(
     proplists:get_value(index, Options, <<"sumo_test_index">>)),
-  %% Encoding
-  %%Encoding = proplists:get_value(encoding, Options, json),
   %% Place Riak connection
   {ok, Conn} = riakc_pb_socket:start_link(Host, Port, Opts),
   %% Initial state

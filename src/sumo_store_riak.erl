@@ -229,16 +229,13 @@ doc_to_rmap(Doc) ->
 %% @private
 %% Support multi-level structures.
 map_to_rmap(Map) ->
-  F = fun({K, V}, Acc) ->
-        rmap_update(K, V, Acc)
-      end,
-  lists:foldl(F, riakc_map:new(), maps:to_list(Map)).
+  lists:foldl(fun rmap_update/2, riakc_map:new(), maps:to_list(Map)).
 
 %% @private
-rmap_update(K, V, RMap) when is_map(V) ->
+rmap_update({K, V}, RMap) when is_map(V) ->
   NewV = map_to_rmap(V),
   riakc_map:update({to_bin(K), map}, fun(_M) -> NewV end, RMap);
-rmap_update(K, V, RMap) when is_list(V) ->
+rmap_update({K, V}, RMap) when is_list(V) ->
   case io_lib:printable_list(V) of
     true ->
       riakc_map:update(
@@ -248,7 +245,7 @@ rmap_update(K, V, RMap) when is_list(V) ->
     false ->
       riakc_map:update({to_bin(K), set}, fun(_S) -> V end, RMap)
   end;
-rmap_update(K, V, RMap) ->
+rmap_update({K, V}, RMap) ->
   riakc_map:update(
     {to_bin(K), register},
     fun(R) -> riakc_register:set(to_bin(V), R) end,

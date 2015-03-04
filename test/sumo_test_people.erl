@@ -8,7 +8,7 @@
          sumo_sleep/1
         ]).
 
--export([new/2, new/3, new/4, name/1, id/1]).
+-export([new/2, new/3, new/4, name/1, id/1, age/1]).
 
 -record(person, {id :: integer(),
                  name :: string(),
@@ -36,7 +36,7 @@ sumo_wakeup(Person) ->
        id = maps:get(id, Person),
        name = maps:get(name, Person),
        last_name = maps:get(last_name, Person),
-       age = maps:get(age, Person),
+       age = from_bin(maps:get(age, Person), integer),
        address = maps:get(address, Person)
       }.
 
@@ -64,3 +64,27 @@ name(Person) ->
 
 id(Person) ->
   Person#person.id.
+
+age(Person) ->
+  Person#person.age.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Internals
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% @private
+%% @doc This helper function is needed by Riak, because data in Riak is stored
+%%      as Riak Maps, and values in the them must be binary, so when a data is
+%%      stored in Riak, all values in the map are converted to binary, because
+%%      of that, is necessary convert values to original types when data is
+%%      returned.
+from_bin(Bin, integer) when is_binary(Bin) ->
+  binary_to_integer(Bin);
+from_bin(Bin, float) when is_binary(Bin) ->
+  binary_to_float(Bin);
+from_bin(Bin, atom) when is_binary(Bin) ->
+  binary_to_atom(Bin, utf8);
+from_bin(Bin, string) when is_binary(Bin) ->
+  binary_to_list(Bin);
+from_bin(Bin, _) ->
+  Bin.

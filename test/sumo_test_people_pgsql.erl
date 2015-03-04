@@ -10,7 +10,8 @@
           new/3,
           new/4,
           name/1,
-          id/1
+          id/1,
+          age/1
          ]
         }
        ]).

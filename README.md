@@ -72,6 +72,76 @@ being in the top level directory:
 
     make all blog
 
+## Running Tests
+
+To run tests successfully, you need to follow these steps first:
+
+ * Start the database engines: **MySQL**, **PostgreSQL**, **MongoDB** and
+ **ElasticSearch**
+
+ * For **MySQL**, **PostgreSQL** and **MongoDB**, you need to:
+    - Create an user (or use defaults) and configure it on `test/test.config`
+      file.
+    - Create test database `sumo_test` on each DB.
+
+> **Note:**
+
+> - For **MongoDB** you first create the test database and then create an user
+    to access that DB. For more information visit [MongoDB Tutorial](http://docs.mongodb.org/manual/tutorial).
+> - For **Riak** please follow instructions below ([<i class="icon-refresh"></i> Riak](#riak)).
+
+## Riak
+
+### Install Riak
+
+To install/upgrade **Riak** please follow the instructions in this link:
+[Installing and Upgrading Riak](http://docs.basho.com/riak/latest/ops/building/installing).
+
+### Initial Configurations
+
+Due to the fact that **Riak** comes with default configuration, we need to
+change some parameters required by `sumo_db`.
+
+**Riak** has a main configuration file `riak.conf`, which you can find into
+your installation path `$YOUR_INSTALL_PATH/etc/riak.conf`.
+
+> **Note:** For more information check this link [Configuration Files](http://docs.basho.com/riak/latest/ops/advanced/configs/configuration-files).
+
+First parameter to change is the default **Riak** backend from **Bitcask** to
+**LevelDB**. This change also enables the use of [Riak Secondary Indexes](http://docs.basho.com/riak/latest/ops/advanced/configs/secondary-index/).
+
+    storage_backend = leveldb
+
+Then proceed to enable search capabilities:
+
+    search = on
+
+> **Note:** For more information check this link [Riak Search Settings](http://docs.basho.com/riak/latest/ops/advanced/configs/search/).
+
+### Configuring Riak Data Types and Search
+
+First, let's create and activate a bucket type simply called maps that is set up
+to store Riak maps:
+
+    $ riak-admin bucket-type create maps '{"props":{"datatype":"map"}}'
+    $ riak-admin bucket-type activate mapsdmin bucket-type activate maps
+
+Now, let's create a search index called `sumo_test_index` using the default
+schema:
+
+    $ curl -XPUT $RIAK_HOST/search/index/sumo_test_index \
+        -H 'Content-Type: application/json' \
+        -d '{"schema":"_yz_default"}'
+
+With our index created, we can associate our new `sumo_test_index` index with
+our `maps` bucket type:
+
+    $ riak-admin bucket-type update maps '{"props":{"search_index":"sumo_test_index"}}'
+
+Now we can start working with **Riak** from `sumo_db`.
+
+> **Note:** For more information check this link [Riak Data Types and Search](http://docs.basho.com/riak/latest/dev/search/search-data-types/#Maps-Example).
+
 ## Change Log
 
 All notable changes to this project will be documented in the

@@ -1,4 +1,4 @@
--module(sumo_test_people_mysql).
+-module(sumo_test_people_riak).
 
 -behavior(sumo_doc).
 
@@ -20,11 +20,11 @@
 
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
-    Fields =
-    [sumo:new_field(id,        integer, [id, not_null, auto_increment]),
-     sumo:new_field(name,      string,  [{length, 255}, not_null]),
-     sumo:new_field(last_name, string,  [{length, 255}, not_null]),
+  Fields =
+    [sumo:new_field(id,        string, [id, {length, 255}, not_null]),
+     sumo:new_field(name,      string, [{length, 255}, not_null]),
+     sumo:new_field(last_name, string, [{length, 255}, not_null]),
      sumo:new_field(age,       integer),
      sumo:new_field(address,   string, [{length, 255}])
     ],
-    sumo:new_schema(?MODULE, Fields).
+  sumo:new_schema(?MODULE, Fields).

@@ -51,7 +51,14 @@
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--record(state, {conn :: pid(), bucket :: binary(), index :: binary()}).
+-type r_param() :: r | pr | notfound_ok.
+-type w_param() :: w | pw | dw | returnbody.
+
+-record(state, {conn :: pid(),
+                bucket :: binary(),
+                index :: binary(),
+                r_args :: [{r_param(), integer() | (true | false)}],
+                w_args :: [{w_param(), integer() | (true | false)}]}).
 -type state() :: #state{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -61,19 +68,29 @@
 -spec init(
   term()
 ) -> {ok, term()}.
-init(Options) ->
+init(Opts) ->
   % The storage backend key in the options specifies the name of the process
   % which creates and initializes the storage backend.
-  Backend = proplists:get_value(storage_backend, Options),
-  State = sumo_backend_riak:get_state(Backend),
+  Backend = proplists:get_value(storage_backend, Opts),
+  Conn = sumo_backend_riak:get_connection(Backend),
+  BucketType = iolist_to_binary(proplists:get_value(bucket_type, Opts)),
+  Bucket = iolist_to_binary(proplists:get_value(bucket, Opts, <<"sumo">>)),
+  Index = iolist_to_binary(proplists:get_value(index, Opts, <<"sumo_idx">>)),
+  R = proplists:get_value(r_args, Opts, []),
+  W = proplists:get_value(w_args, Opts, []),
+  State = #state{conn = Conn,
+                 bucket = {BucketType, Bucket},
+                 index = Index,
+                 r_args = R,
+                 w_args = W},
   {ok, State}.
 
 -spec persist(
   sumo_internal:doc(), state()
 ) -> sumo_store:result(sumo_internal:doc(), state()).
-persist(Doc, #state{conn = Conn, bucket = Bucket} = State) ->
+persist(Doc, #state{conn = Conn, bucket = Bucket, w_args = W} = State) ->
   {Id, NewDoc} = new_doc(Doc, State),
-  case update_map(Conn, Bucket, Id, doc_to_rmap(NewDoc)) of
+  case update_map(Conn, Bucket, Id, doc_to_rmap(NewDoc), W) of
     {error, Error} ->
       {error, Error, State};
     _ ->
@@ -122,9 +139,9 @@ delete_all(_DocName, #state{conn = Conn, bucket = Bucket} = State) ->
 -spec find_all(
   sumo:schema_name(), state()
 ) -> sumo_store:result([sumo_internal:doc()], state()).
-find_all(DocName, #state{conn = Conn, bucket = Bucket} = State) ->
+find_all(DocName, #state{conn = Conn, bucket = Bucket, r_args = R} = State) ->
   Get = fun({C, B, Kst}, Acc) ->
-          fetch_map_bulk(DocName, C, B, Kst) ++ Acc
+          fetch_map_bulk(DocName, C, B, Kst, R) ++ Acc
         end,
   case stream_keys(Conn, Bucket, Get, []) of
     {ok, Docs} -> {ok, Docs, State};
@@ -158,11 +175,14 @@ find_by(DocName,
         Conditions,
         Limit,
         Offset,
-        #state{conn = Conn, bucket = Bucket, index = Index} = State) ->
+        #state{conn = Conn,
+               bucket = Bucket,
+               index = Index,
+               r_args = R} = State) ->
   IdField = sumo_internal:id_field_name(DocName),
   case lists:keyfind(IdField, 1, Conditions) of
     {_K, Key} ->
-      case fetch_map(Conn, Bucket, iolist_to_binary(Key)) of
+      case fetch_map(Conn, Bucket, iolist_to_binary(Key), R) of
         {ok, RMap} ->
           Val = rmap_to_doc(DocName, RMap),
           {ok, [Val], State};
@@ -205,12 +225,12 @@ doc_id(Doc) ->
   sumo_internal:get_field(IdField, Doc).
 
 %% @private
-new_doc(Doc, #state{conn = Conn, bucket = Bucket}) ->
+new_doc(Doc, #state{conn = Conn, bucket = Bucket, w_args = W}) ->
   DocName = sumo_internal:doc_name(Doc),
   IdField = sumo_internal:id_field_name(DocName),
   Id = case sumo_internal:get_field(IdField, Doc) of
          undefined ->
-           case update_map(Conn, Bucket, undefined, doc_to_rmap(Doc)) of
+           case update_map(Conn, Bucket, undefined, doc_to_rmap(Doc), W) of
              {ok, RiakMapId} -> RiakMapId;
              {error, Error}  -> throw(Error);
              _               -> throw(unexpected)
@@ -281,13 +301,13 @@ normalize_doc_fields(Src) ->
     [{return, binary}, global]).
 
 %% @private
-fetch_map(Conn, Bucket, Key) ->
-  riakc_pb_socket:fetch_type(Conn, Bucket, Key).
+fetch_map(Conn, Bucket, Key, Opts) ->
+  riakc_pb_socket:fetch_type(Conn, Bucket, Key, Opts).
 
 %% @private
-fetch_map_bulk(DocName, Conn, Bucket, Keys) ->
+fetch_map_bulk(DocName, Conn, Bucket, Keys, Opts) ->
   Fun = fun(K, Acc) ->
-          case fetch_map(Conn, Bucket, K) of
+          case fetch_map(Conn, Bucket, K, Opts) of
             {ok, M} -> [rmap_to_doc(DocName, M) | Acc];
             _       -> Acc
           end
@@ -299,8 +319,8 @@ delete_map(Conn, Bucket, Key) ->
   riakc_pb_socket:delete(Conn, Bucket, Key).
 
 %% @private
-update_map(Conn, Bucket, Key, Map) ->
-  riakc_pb_socket:update_type(Conn, Bucket, Key, riakc_map:to_op(Map)).
+update_map(Conn, Bucket, Key, Map, Opts) ->
+  riakc_pb_socket:update_type(Conn, Bucket, Key, riakc_map:to_op(Map), Opts).
 
 %% @private
 search(Conn, Index, Query, 0, 0) ->

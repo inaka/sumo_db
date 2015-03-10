@@ -29,31 +29,25 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Public API.
--export(
-  [ get_connection/1,
-    get_state/1
-  ]).
+-export([get_connection/1]).
 
 %%% Exports for sumo_backend
--export(
-  [ start_link/2
-  ]).
+-export([start_link/2]).
 
 %%% Exports for gen_server
--export(
-  [ init/1
-  , handle_call/3
-  , handle_cast/2
-  , handle_info/2
-  , terminate/2
-  , code_change/3
-  ]).
+-export([ init/1
+        , handle_call/3
+        , handle_cast/2
+        , handle_info/2
+        , terminate/2
+        , code_change/3
+        ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--record(state, {conn :: pid(), bucket :: binary(), index :: binary()}).
+-record(state, {conn :: pid()}).
 -type state() :: #state{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -68,10 +62,6 @@ start_link(Name, Options) ->
 get_connection(Name) ->
   gen_server:call(Name, get_connection).
 
--spec get_state(atom() | pid()) -> state().
-get_state(Name) ->
-  gen_server:call(Name, get_state).
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% gen_server stuff.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -82,23 +72,14 @@ init(Options) ->
   Host = proplists:get_value(host, Options, "127.0.0.1"),
   Port = proplists:get_value(port, Options, 8087),
   Opts = riak_opts(Options),
-  %% Get DB parameters
-  BucketType = iolist_to_binary(
-    proplists:get_value(bucket_type, Options)),
-  Bucket = iolist_to_binary(
-    proplists:get_value(bucket, Options, <<"sumo_test">>)),
-  Index = iolist_to_binary(
-    proplists:get_value(index, Options, <<"sumo_test_index">>)),
   %% Place Riak connection
   {ok, Conn} = riakc_pb_socket:start_link(Host, Port, Opts),
   %% Initial state
-  {ok, #state{conn = Conn, bucket = {BucketType, Bucket}, index = Index}}.
+  {ok, #state{conn = Conn}}.
 
 -spec handle_call(term(), term(), state()) -> {reply, term(), state()}.
 handle_call(get_connection, _From, State = #state{conn = Conn}) ->
-  {reply, Conn, State};
-handle_call(get_state, _From, State) ->
-  {reply, State, State}.
+  {reply, Conn, State}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Unused Callbacks

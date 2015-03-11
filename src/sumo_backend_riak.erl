@@ -29,7 +29,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Public API.
--export([get_connection/1]).
+-export([get_connection/1, checkin_conn/2, checkout_conn/1]).
 
 %%% Exports for sumo_backend
 -export([start_link/2]).
@@ -47,7 +47,13 @@
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--record(state, {conn :: pid()}).
+-type r_host() :: iolist() | string().
+-type r_port() :: non_neg_integer().
+-type r_opts() :: [term()].
+-type r_pool() :: [pid()].
+
+-record(state, {conn_args      :: {r_host(), r_port(), r_opts()},
+                conn_pool = [] :: r_pool()}).
 -type state() :: #state{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -62,6 +68,14 @@ start_link(Name, Options) ->
 get_connection(Name) ->
   gen_server:call(Name, get_connection).
 
+-spec checkin_conn(atom() | pid(), pid()) -> atom().
+checkin_conn(Name, Conn) ->
+  gen_server:call(Name, {checkin_conn, Conn}).
+
+-spec checkout_conn(atom() | pid()) -> atom().
+checkout_conn(Name) ->
+  gen_server:call(Name, checkout_conn).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% gen_server stuff.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -71,15 +85,63 @@ init(Options) ->
   %% Get connection parameters
   Host = proplists:get_value(host, Options, "127.0.0.1"),
   Port = proplists:get_value(port, Options, 8087),
+  PoolSize = proplists:get_value(poolsize, Options, 10),
   Opts = riak_opts(Options),
-  %% Place Riak connection
-  {ok, Conn} = riakc_pb_socket:start_link(Host, Port, Opts),
+  %% Create Riak connection pool
+  F = fun(_E, Acc) ->
+        {ok, Conn} = riakc_pb_socket:start_link(Host, Port, Opts),
+        [Conn | Acc]
+      end,
+  ConnPool = lists:foldl(F, [], lists:seq(1, PoolSize)),
   %% Initial state
-  {ok, #state{conn = Conn}}.
+  {ok, #state{conn_args = {Host, Port, Opts}, conn_pool = ConnPool}}.
 
+%% @todo: These are workarounds, a real connection pool needs to be added.
+%% Workaround 1: when the store calls 'get_connection', a new Riak connection
+%% is returned - one to one model (between connection and store).
+%% Workaround 2: a simple list (LIFO) was added to hold a set of connections
+%% that are created in the 'init' function (see code above). When the store
+%% needs a connection, must call 'checkout_conn' to get the Pid, and when
+%% it finish, must call 'checkin_conn'. These operations have some problems,
+%% for instance, the don't consider an overflow, so the amount of new
+%% connection are not watched, so in case of high concurrency, exist the
+%% risk of have so many connection hitting the DB and causing contention.
 -spec handle_call(term(), term(), state()) -> {reply, term(), state()}.
-handle_call(get_connection, _From, State = #state{conn = Conn}) ->
-  {reply, Conn, State}.
+handle_call(get_connection,
+            _From,
+            State = #state{conn_args = {Host, Port, Opts}}) ->
+  {ok, Conn} = riakc_pb_socket:start_link(Host, Port, Opts),
+  {reply, Conn, State};
+handle_call({checkin_conn, Conn},
+            _From,
+            State = #state{conn_args = {Host, Port, Opts},
+                           conn_pool = ConnPool}) ->
+  NewConn = case is_process_alive(Conn) of
+              true ->
+                Conn;
+              false ->
+                {ok, Conn0} = riakc_pb_socket:start_link(Host, Port, Opts),
+                Conn0
+            end,
+  {reply, ok, State#state{conn_pool = [NewConn | ConnPool]}};
+handle_call(checkout_conn,
+            _From,
+            State = #state{conn_args = {Host, Port, Opts}, conn_pool = []}) ->
+  {ok, Conn} = riakc_pb_socket:start_link(Host, Port, Opts),
+  {reply, Conn, State#state{conn_pool = [Conn]}};
+handle_call(checkout_conn,
+            _From,
+            State = #state{conn_args = {Host, Port, Opts},
+                           conn_pool = ConnPool}) ->
+  [Conn | _T] = ConnPool,
+  NewConn = case is_process_alive(Conn) of
+              true ->
+                Conn;
+              false ->
+                {ok, Conn0} = riakc_pb_socket:start_link(Host, Port, Opts),
+                Conn0
+            end,
+  {reply, NewConn, State#state{conn_pool = (ConnPool -- [Conn])}}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Unused Callbacks

@@ -35,3 +35,6 @@ test-shell: build-ct-suites app
 
 erldocs:
 	erldocs . -o docs
+
+changelog:
+	github_changelog_generator --token ${TOKEN}

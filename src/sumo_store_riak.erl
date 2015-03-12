@@ -237,12 +237,12 @@ doc_id(Doc) ->
   sumo_internal:get_field(IdField, Doc).
 
 %% @private
-new_doc(Doc, #state{conn = Conn, bucket = Bucket, write_quorum = W}) ->
+new_doc(Doc, #state{conn = Conn, bucket = Bucket, write_quorum = Wq}) ->
   DocName = sumo_internal:doc_name(Doc),
   IdField = sumo_internal:id_field_name(DocName),
   Id = case sumo_internal:get_field(IdField, Doc) of
          undefined ->
-           case update_map(Conn, Bucket, undefined, doc_to_rmap(Doc), W) of
+           case update_map(Conn, Bucket, undefined, doc_to_rmap(Doc), Wq) of
              {ok, RiakMapId} -> RiakMapId;
              {error, Error}  -> throw(Error);
              _               -> throw(unexpected)

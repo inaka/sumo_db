@@ -124,7 +124,7 @@ First, let's create and activate a bucket type simply called maps that is set up
 to store Riak maps:
 
     $ riak-admin bucket-type create maps '{"props":{"datatype":"map"}}'
-    $ riak-admin bucket-type activate mapsdmin bucket-type activate maps
+    $ riak-admin bucket-type activate maps
 
 Now, let's create a search index called `sumo_test_index` using the default
 schema:

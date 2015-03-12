@@ -51,14 +51,21 @@
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% Riak quorum parameters.
+%% @see <a href="http://docs.basho.com/riak/latest/dev/using/basics"/>
 -type r_param() :: r | pr | notfound_ok.
 -type w_param() :: w | pw | dw | returnbody.
 
--record(state, {backend, conn   :: pid(),
-                bucket :: binary(),
-                index  :: binary(),
-                r_args :: [{r_param(), integer() | (true | false)}],
-                w_args :: [{w_param(), integer() | (true | false)}]}).
+%% conn: is the Pid of the gen_server that holds the connection with Riak
+%% bucket: Riak bucket (per store)
+%% index: Riak index to be used by Riak Search
+%% read_quorum: Riak read quorum parameters.
+%% write_quorum: Riak write quorum parameters.
+-record(state, {conn         :: pid(),
+                bucket       :: binary(),
+                index        :: binary(),
+                read_quorum  :: [{r_param(), integer() | (true | false)}],
+                write_quorum :: [{w_param(), integer() | (true | false)}]}).
 -type state() :: #state{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -73,33 +80,32 @@ init(Opts) ->
   % which creates and initializes the storage backend.
   Backend = proplists:get_value(storage_backend, Opts),
   Conn = sumo_backend_riak:get_connection(Backend),
-  BucketType = iolist_to_binary(proplists:get_value(bucket_type, Opts)),
-  Bucket = iolist_to_binary(proplists:get_value(bucket, Opts, <<"sumo">>)),
-  Index = iolist_to_binary(proplists:get_value(index, Opts, <<"sumo_idx">>)),
-  R = proplists:get_value(r_args, Opts, []),
-  W = proplists:get_value(w_args, Opts, []),
-  State = #state{backend = Backend, conn = Conn,
+  BucketType = iolist_to_binary(
+    proplists:get_value(bucket_type, Opts, <<"maps">>)),
+  Bucket = iolist_to_binary(
+    proplists:get_value(bucket, Opts, <<"sumo">>)),
+  Index = iolist_to_binary(
+    proplists:get_value(index, Opts, <<"sumo_index">>)),
+  Rq = proplists:get_value(read_quorum, Opts, []),
+  Wq = proplists:get_value(write_quorum, Opts, []),
+  State = #state{conn = Conn,
                  bucket = {BucketType, Bucket},
                  index = Index,
-                 r_args = R,
-                 w_args = W},
+                 read_quorum = Rq,
+                 write_quorum = Wq},
   {ok, State}.
 
 -spec persist(
   sumo_internal:doc(), state()
 ) -> sumo_store:result(sumo_internal:doc(), state()).
-persist(Doc, #state{backend = Backend, bucket = Bucket, w_args = W} = State) ->
-  Conn = sumo_backend_riak:checkout_conn(Backend),
-  try
-    {Id, NewDoc} = new_doc(Doc, Conn, State),
-    case update_map(Conn, Bucket, Id, doc_to_rmap(NewDoc), W) of
-      {error, Error} ->
-        {error, Error, State};
-      _ ->
-        {ok, NewDoc, State}
-    end
-  after
-    ok = sumo_backend_riak:checkin_conn(Backend, Conn)
+persist(Doc,
+        #state{conn = Conn, bucket = Bucket, write_quorum = Wq} = State) ->
+  {Id, NewDoc} = new_doc(Doc, State),
+  case update_map(Conn, Bucket, Id, doc_to_rmap(NewDoc), Wq) of
+    {error, Error} ->
+      {error, Error, State};
+    _ ->
+      {ok, NewDoc, State}
   end.
 
 -spec delete_by(
@@ -107,66 +113,51 @@ persist(Doc, #state{backend = Backend, bucket = Bucket, w_args = W} = State) ->
 ) -> sumo_store:result(sumo_store:affected_rows(), state()).
 delete_by(DocName,
           Conditions,
-          #state{backend = Backend, bucket = Bucket, index = Index} = State) ->
-  Conn = sumo_backend_riak:checkout_conn(Backend),
-  try
-    IdField = sumo_internal:id_field_name(DocName),
-    case lists:keyfind(IdField, 1, Conditions) of
-      {_K, Key} ->
-        case delete_map(Conn, Bucket, iolist_to_binary(Key)) of
-          ok ->
-            {ok, 1, State};
-          {error, Error} ->
-            {error, Error, State}
-        end;
-      _ ->
-        Query = build_query(Conditions),
-        case search_docs_by(DocName, Conn, Index, Query, 0, 0) of
-          {ok, {Total, Res}}  ->
-            delete_docs(Conn, Bucket, Res),
-            {ok, Total, State};
-          {error, Error} ->
-            {error, Error, State}
-        end
-    end
-  after
-    ok = sumo_backend_riak:checkin_conn(Backend, Conn)
+          #state{conn = Conn, bucket = Bucket, index = Index} = State) ->
+  IdField = sumo_internal:id_field_name(DocName),
+  case lists:keyfind(IdField, 1, Conditions) of
+    {_K, Key} ->
+      case delete_map(Conn, Bucket, iolist_to_binary(Key)) of
+        ok ->
+          {ok, 1, State};
+        {error, Error} ->
+          {error, Error, State}
+      end;
+    _ ->
+      Query = build_query(Conditions),
+      case search_docs_by(DocName, Conn, Index, Query, 0, 0) of
+        {ok, {Total, Res}}  ->
+          delete_docs(Conn, Bucket, Res),
+          {ok, Total, State};
+        {error, Error} ->
+          {error, Error, State}
+      end
   end.
 
 -spec delete_all(
   sumo:schema_name(), state()
 ) -> sumo_store:result(sumo_store:affected_rows(), state()).
-delete_all(_DocName, #state{backend = Backend, bucket = Bucket} = State) ->
-  Conn = sumo_backend_riak:checkout_conn(Backend),
-  try
-    Del = fun({C, B, Kst}, Acc) ->
-            lists:foreach(fun(K) -> delete_map(C, B, K) end, Kst),
-            Acc + length(Kst)
-          end,
-    case stream_keys(Conn, Bucket, Del, 0) of
-      {ok, Count} -> {ok, Count, State};
-      {_, Count}  -> {error, Count, State}
-    end
-  after
-    ok = sumo_backend_riak:checkin_conn(Backend, Conn)
+delete_all(_DocName, #state{conn = Conn, bucket = Bucket} = State) ->
+  Del = fun({C, B, Kst}, Acc) ->
+          lists:foreach(fun(K) -> delete_map(C, B, K) end, Kst),
+          Acc + length(Kst)
+        end,
+  case stream_keys(Conn, Bucket, Del, 0) of
+    {ok, Count} -> {ok, Count, State};
+    {_, Count}  -> {error, Count, State}
   end.
 
 -spec find_all(
   sumo:schema_name(), state()
 ) -> sumo_store:result([sumo_internal:doc()], state()).
 find_all(DocName,
-         #state{backend = Backend, bucket = Bucket, r_args = R} = State) ->
-  Conn = sumo_backend_riak:checkout_conn(Backend),
-  try
-    Get = fun({C, B, Kst}, Acc) ->
-            fetch_map_bulk(DocName, C, B, Kst, R) ++ Acc
-          end,
-    case stream_keys(Conn, Bucket, Get, []) of
-      {ok, Docs} -> {ok, Docs, State};
-      {_, Docs}  -> {error, Docs, State}
-    end
-  after
-    ok = sumo_backend_riak:checkin_conn(Backend, Conn)
+         #state{conn = Conn, bucket = Bucket, read_quorum = Rq} = State) ->
+  Get = fun({C, B, Kst}, Acc) ->
+          fetch_map_bulk(DocName, C, B, Kst, Rq) ++ Acc
+        end,
+  case stream_keys(Conn, Bucket, Get, []) of
+    {ok, Docs} -> {ok, Docs, State};
+    {_, Docs}  -> {error, Docs, State}
   end.
 
 -spec find_all(
@@ -196,31 +187,26 @@ find_by(DocName,
         Conditions,
         Limit,
         Offset,
-        #state{backend = Backend,
+        #state{conn = Conn,
                bucket = Bucket,
                index = Index,
-               r_args = R} = State) ->
-  Conn = sumo_backend_riak:checkout_conn(Backend),
-  try
-    IdField = sumo_internal:id_field_name(DocName),
-    case lists:keyfind(IdField, 1, Conditions) of
-      {_K, Key} ->
-        case fetch_map(Conn, Bucket, iolist_to_binary(Key), R) of
-          {ok, RMap} ->
-            Val = rmap_to_doc(DocName, RMap),
-            {ok, [Val], State};
-          {error, Error} ->
-            {error, Error, State}
-        end;
-      _ ->
-        Query = build_query(Conditions),
-        case search_docs_by(DocName, Conn, Index, Query, Limit, Offset) of
-          {ok, {_, Res}} -> {ok, Res, State};
-          {error, Error} -> {error, Error, State}
-        end
-    end
-  after
-    ok = sumo_backend_riak:checkin_conn(Backend, Conn)
+               read_quorum = Rq} = State) ->
+  IdField = sumo_internal:id_field_name(DocName),
+  case lists:keyfind(IdField, 1, Conditions) of
+    {_K, Key} ->
+      case fetch_map(Conn, Bucket, iolist_to_binary(Key), Rq) of
+        {ok, RMap} ->
+          Val = rmap_to_doc(DocName, RMap),
+          {ok, [Val], State};
+        {error, Error} ->
+          {error, Error, State}
+      end;
+    _ ->
+      Query = build_query(Conditions),
+      case search_docs_by(DocName, Conn, Index, Query, Limit, Offset) of
+        {ok, {_, Res}} -> {ok, Res, State};
+        {error, Error} -> {error, Error, State}
+      end
   end.
 
 -spec find_by(
@@ -251,7 +237,7 @@ doc_id(Doc) ->
   sumo_internal:get_field(IdField, Doc).
 
 %% @private
-new_doc(Doc, Conn, #state{bucket = Bucket, w_args = W}) ->
+new_doc(Doc, #state{conn = Conn, bucket = Bucket, write_quorum = W}) ->
   DocName = sumo_internal:doc_name(Doc),
   IdField = sumo_internal:id_field_name(DocName),
   Id = case sumo_internal:get_field(IdField, Doc) of

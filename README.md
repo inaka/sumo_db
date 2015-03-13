@@ -142,6 +142,12 @@ Now we can start working with **Riak** from `sumo_db`.
 
 > **Note:** For more information check this link [Riak Data Types and Search](http://docs.basho.com/riak/latest/dev/search/search-data-types/#Maps-Example).
 
+## SQL Extras
+
+Aaron Spiegel has written some extra utilities for the SQL backend, which may be found at:
+
+[https://github.com/spiegela/sumo_db-sql-extras](https://github.com/spiegela/sumo_db-sql-extras)
+
 ## Change Log
 
 All notable changes to this project will be documented in the

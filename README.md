@@ -144,7 +144,7 @@ Now we can start working with **Riak** from `sumo_db`.
 
 ## SQL Extras
 
-@spiegela has written some extra utilities for the SQL backend, which may be found at:
+Aaron Spiegel has written some extra utilities for the SQL backend, which may be found at:
 
 [https://github.com/spiegela/sumo_db-sql-extras](https://github.com/spiegela/sumo_db-sql-extras)
 

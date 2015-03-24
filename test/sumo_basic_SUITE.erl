@@ -43,6 +43,7 @@ init_per_suite(Config) ->
   application:ensure_all_started(epgsql),
   application:ensure_all_started(emongo),
   application:ensure_all_started(tirerl),
+  application:ensure_all_started(mnesia),
 
   application:ensure_all_started(sumo_db),
 
@@ -140,6 +141,7 @@ run_all_stores(Fun) ->
              sumo_test_people_mongo,
              sumo_test_people_elasticsearch,
              sumo_test_people_pgsql,
+             sumo_test_people_mnesia,
              sumo_test_people_riak],
   lists:foreach(Fun, Modules).
 

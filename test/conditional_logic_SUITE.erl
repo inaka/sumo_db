@@ -9,7 +9,8 @@
 -export([
          mysql_conditional_logic/1,
          mongo_conditional_logic/1,
-         pgsql_conditional_logic/1
+         pgsql_conditional_logic/1,
+         mnesia_conditional_logic/1
         ]).
 
 -export([
@@ -58,6 +59,7 @@ init_per_suite(Config) ->
   application:ensure_all_started(emongo),
   application:ensure_all_started(emysql),
   application:ensure_all_started(epgsql),
+  application:ensure_all_started(mnesia),
   application:ensure_all_started(sumo_db),
 
   Fun =
@@ -74,7 +76,8 @@ init_per_suite(Config) ->
 
   lists:foreach(Fun, [sumo_test_people_mysql,
                       sumo_test_people_mongo,
-                      sumo_test_people_pgsql]),
+                      sumo_test_people_pgsql,
+                      sumo_test_people_mnesia]),
 
   Config.
 
@@ -96,6 +99,10 @@ mongo_conditional_logic(_Config) ->
 
 pgsql_conditional_logic(_Config) ->
   Fun = fun(F) -> conditional_logic_SUITE:F(sumo_test_people_pgsql) end,
+  lists:foreach(Fun, ?LOGIC_FUNS).
+
+mnesia_conditional_logic(_Config) ->
+  Fun = fun(F) -> conditional_logic_SUITE:F(sumo_test_people_mnesia) end,
   lists:foreach(Fun, ?LOGIC_FUNS).
 
 

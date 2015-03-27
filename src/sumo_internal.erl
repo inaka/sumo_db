@@ -31,7 +31,8 @@
 -export([new_schema/2, new_field/3]).
 
 %%% API for schema fields manipulation.
--export([get_field/2, set_field/3, id_field_name/1, get_schema/1, field_is/2]).
+-export([get_field/2, set_field/3, id_field_name/1, get_schema/1, field_is/2,
+         id_field_type/1]).
 -export([field_name/1, field_type/1, field_attrs/1]).
 
 %%% API for store handling.
@@ -149,6 +150,11 @@ set_field(FieldName, Value, _Doc = #{fields := Fields, name := Name}) ->
 -spec id_field_name(sumo:schema_name()) -> sumo:field_name().
 id_field_name(DocName) ->
   field_name(get_id_field(get_schema(DocName))).
+
+%% @doc Returns type of field marked as ID for the given schema or doc name.
+-spec id_field_type(sumo:schema_name()) -> sumo:field_type().
+id_field_type(DocName) ->
+  field_type(get_id_field(get_schema(DocName))).
 
 %% @doc Returns field marked as ID for the given schema or doc name.
 get_id_field(_Schema = #{fields := Fields}) ->

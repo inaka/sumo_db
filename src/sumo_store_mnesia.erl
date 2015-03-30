@@ -31,7 +31,7 @@
 -export([init/1]).
 -export([create_schema/2]).
 -export([persist/2]).
--export([delete/3, delete_by/3, delete_all/2]).
+-export([delete_by/3, delete_all/2]).
 -export([find_all/2, find_all/5, find_by/3, find_by/5, find_by/6]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -75,26 +75,6 @@ persist(Doc, State) ->
     {atomic, _Result, State} ->
       NewDoc = sumo_internal:set_field(IdField, NewId, Doc),
       {ok, NewDoc, State}
-  end.
-
--spec delete(sumo:schema_name(), sumo:field_value(), state()) ->
-                sumo_store:result(boolean(), state()).
-delete(DocName, Id, State) ->
-  FullId = {DocName, Id},
-  Transaction =
-    fun() ->
-      case mnesia:read(FullId) of
-        [] -> false;
-        _ ->
-          mnesia:delete(FullId),
-          true
-      end
-    end,
-  case mnesia:transaction(Transaction) of
-    {aborted, Reason} ->
-      {error, Reason, State};
-    {atomic, Result} ->
-      {ok, Result, State}
   end.
 
 -spec delete_by(sumo:schema_name(), sumo:conditions(), state()) ->

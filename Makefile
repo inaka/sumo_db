@@ -28,8 +28,10 @@ ERLC_OPTS += +warn_export_vars +warn_exported_vars +warn_missing_spec +warn_unty
 # Commont Test Config
 
 TEST_ERLC_OPTS += +'{parse_transform, lager_transform}'
-CT_SUITES = sumo_basic sumo_find sumo_config conditional_logic
-CT_OPTS = -s emysql -s sumo_db -erl_args -config test/test.config
+CT_OPTS = -cover test/sumo.coverspec -vvv -erl_args -config test/test.config
+
+CONFIG ?= test/test.config
+SHELL_OPTS = -name ${PROJECT}@`hostname` -config ${CONFIG} -s sync
 
 test-shell: build-ct-suites app
 	erl -pa ebin -pa deps/*/ebin -pa test -s lager -s sync -config test/test.config
@@ -39,3 +41,11 @@ erldocs:
 
 changelog:
 	github_changelog_generator --token ${TOKEN}
+
+quicktests: app build-ct-suites
+	@if [ -d "test" ] ; \
+	then \
+		mkdir -p logs/ ; \
+		$(CT_RUN) -suite $(addsuffix _SUITE,$(CT_SUITES)) $(CT_OPTS) ; \
+	fi
+	$(gen_verbose) rm -f test/*.beam

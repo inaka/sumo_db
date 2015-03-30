@@ -39,14 +39,7 @@ all() ->
 
 -spec init_per_suite(config()) -> config().
 init_per_suite(Config) ->
-  application:ensure_all_started(emysql),
-  application:ensure_all_started(epgsql),
-  application:ensure_all_started(emongo),
-  application:ensure_all_started(tirerl),
-  application:ensure_all_started(mnesia),
-
-  application:ensure_all_started(sumo_db),
-
+  sumo_test_utils:start_apps(),
   Config.
 
 init_per_testcase(_, Config) ->
@@ -137,13 +130,7 @@ delete_module(Module) ->
 
 -spec run_all_stores(fun()) -> ok.
 run_all_stores(Fun) ->
-  Modules = [sumo_test_people_mysql,
-             sumo_test_people_mongo,
-             sumo_test_people_elasticsearch,
-             sumo_test_people_pgsql,
-             sumo_test_people_mnesia,
-             sumo_test_people_riak],
-  lists:foreach(Fun, Modules).
+  lists:foreach(Fun, sumo_test_utils:all_people()).
 
 -spec to_str(any()) -> string().
 to_str(X) when is_list(X) ->

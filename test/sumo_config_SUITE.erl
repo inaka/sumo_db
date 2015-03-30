@@ -33,10 +33,7 @@ all() ->
 
 -spec init_per_suite(config()) -> config().
 init_per_suite(Config) ->
-  application:ensure_all_started(emysql),
-  application:ensure_all_started(emongo),
-  application:ensure_all_started(sumo_db),
-
+  sumo_test_utils:start_apps(),
   Config.
 
 -spec end_per_suite(config()) -> config().

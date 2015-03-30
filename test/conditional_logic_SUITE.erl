@@ -7,13 +7,6 @@
         ]).
 
 -export([
-         mysql_conditional_logic/1,
-         mongo_conditional_logic/1,
-         pgsql_conditional_logic/1,
-         mnesia_conditional_logic/1
-        ]).
-
--export([
          backward_compatibility/1,
          or_conditional/1,
          and_conditional/1,
@@ -26,21 +19,8 @@
 -define(EXCLUDED_FUNS,
         [
          module_info,
-         all,
-         test,
          init_per_suite,
          end_per_suite
-        ]).
-
--define(LOGIC_FUNS,
-        [
-         backward_compatibility,
-         or_conditional,
-         and_conditional,
-         not_null_conditional,
-         null_conditional,
-         operators,
-         deeply_nested
         ]).
 
 -type config() :: [{atom(), term()}].
@@ -52,15 +32,11 @@
 -spec all() -> [atom()].
 all() ->
   Exports = ?MODULE:module_info(exports),
-  [F || {F, _} <- Exports, not lists:member(F, ?EXCLUDED_FUNS ++ ?LOGIC_FUNS)].
+  [F || {F, 1} <- Exports, not lists:member(F, ?EXCLUDED_FUNS)].
 
 -spec init_per_suite(config()) -> config().
 init_per_suite(Config) ->
-  application:ensure_all_started(emongo),
-  application:ensure_all_started(emysql),
-  application:ensure_all_started(epgsql),
-  application:ensure_all_started(mnesia),
-  application:ensure_all_started(sumo_db),
+  sumo_test_utils:start_apps(),
 
   Fun =
     fun (Module) ->
@@ -74,10 +50,7 @@ init_per_suite(Config) ->
         sumo:persist(Module, Module:new("Alan", "Turing", 102, "Computer St."))
     end,
 
-  lists:foreach(Fun, [sumo_test_people_mysql,
-                      sumo_test_people_mongo,
-                      sumo_test_people_pgsql,
-                      sumo_test_people_mnesia]),
+  lists:foreach(Fun, sumo_test_utils:people_with_conditional_logic()),
 
   Config.
 
@@ -86,38 +59,26 @@ end_per_suite(Config) ->
   Config.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Exported Tests Functions
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-mysql_conditional_logic(_Config) ->
-  Fun = fun(F) -> conditional_logic_SUITE:F(sumo_test_people_mysql) end,
-  lists:foreach(Fun, ?LOGIC_FUNS).
-
-mongo_conditional_logic(_Config) ->
-  Fun = fun(F) -> conditional_logic_SUITE:F(sumo_test_people_mongo) end,
-  lists:foreach(Fun, ?LOGIC_FUNS).
-
-pgsql_conditional_logic(_Config) ->
-  Fun = fun(F) -> conditional_logic_SUITE:F(sumo_test_people_pgsql) end,
-  lists:foreach(Fun, ?LOGIC_FUNS).
-
-mnesia_conditional_logic(_Config) ->
-  Fun = fun(F) -> conditional_logic_SUITE:F(sumo_test_people_mnesia) end,
-  lists:foreach(Fun, ?LOGIC_FUNS).
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Tests cases
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+backward_compatibility(_Config) ->
+  lists:foreach(
+    fun do_backward_compatibility/1,
+    sumo_test_utils:people_with_conditional_logic()).
 
-backward_compatibility(Module) ->
+do_backward_compatibility(Module) ->
   [_, _, _, _, _] = sumo:find_all(Module),
 
   [_, _, _] = sumo:find_by(Module, [{last_name, "Doe"}]),
 
   [_] = sumo:find_by(Module, [{name, "Jane"}, {last_name, "Doe"}]).
 
-or_conditional(Module) ->
+or_conditional(_Config) ->
+  lists:foreach(
+    fun do_or_conditional/1,
+    sumo_test_utils:people_with_conditional_logic()).
+
+do_or_conditional(Module) ->
   [_, _, _] = sumo:find_by(Module,
                            {'or', [{name, "John"},
                                    {name, "Joe"},
@@ -135,7 +96,12 @@ or_conditional(Module) ->
                         ]
                        ).
 
-and_conditional(Module) ->
+and_conditional(_Config) ->
+  lists:foreach(
+    fun do_and_conditional/1,
+    sumo_test_utils:people_with_conditional_logic()).
+
+do_and_conditional(Module) ->
   [] = sumo:find_by(Module,
                     {'and', [{name, "John"},
                              {name, "Joe"},
@@ -154,18 +120,33 @@ and_conditional(Module) ->
                         }
                        ).
 
-not_null_conditional(Module) ->
+not_null_conditional(_Config) ->
+  lists:foreach(
+    fun do_not_null_conditional/1,
+    sumo_test_utils:people_with_conditional_logic()).
+
+do_not_null_conditional(Module) ->
   [_, _, _] = sumo:find_by(Module, {age, 'not_null'}),
 
   [_] = sumo:find_by(Module, {address, 'not_null'}).
 
 
-null_conditional(Module) ->
+null_conditional(_Config) ->
+  lists:foreach(
+    fun do_null_conditional/1,
+    sumo_test_utils:people_with_conditional_logic()).
+
+do_null_conditional(Module) ->
   [_, _] = sumo:find_by(Module, {age, 'null'}),
 
   [_, _, _, _] = sumo:find_by(Module, {address, 'null'}).
 
-operators(Module) ->
+operators(_Config) ->
+  lists:foreach(
+    fun do_operators/1,
+    sumo_test_utils:people_with_conditional_logic()).
+
+do_operators(Module) ->
   [_, _] = sumo:find_by(Module,
                         {'and', [{age, 'not_null'},
                                  {age, '<', 100}
@@ -215,17 +196,27 @@ operators(Module) ->
                                 ]
                         }),
 
-  [_, _, _, _] = sumo:find_by(Module, {name, 'like', "J%"}),
+  case lists:member(Module, sumo_test_utils:people_with_like()) of
+    true ->
+      [_, _, _, _] = sumo:find_by(Module, {name, 'like', "J%"}),
 
-  [_, _] = sumo:find_by(Module, {'and', [{name, 'like', "Ja%"}]}),
+      [_, _] = sumo:find_by(Module, {'and', [{name, 'like', "Ja%"}]}),
 
-  [_] = sumo:find_by(Module, {name, 'like', "A%"}),
+      [_] = sumo:find_by(Module, {name, 'like', "A%"}),
 
-  [_, _] = sumo:find_by(Module, {name, 'like', "%n"}).
+      [_, _] = sumo:find_by(Module, {name, 'like', "%n"});
+    false ->
+      ok
+  end.
 
-deeply_nested(Module) ->
+deeply_nested(_Config) ->
+  lists:foreach(
+    fun do_deeply_nested/1,
+    sumo_test_utils:people_with_conditional_logic()).
+
+do_deeply_nested(Module) ->
   Conditions = {'or', [{'and', [{age, '>', 100},
-                                {address, 'like', "%Ave%"}]},
+                                {address, '==', "something"}]},
                        {age, 'null'},
                        {last_name, "Turing"}
                       ]

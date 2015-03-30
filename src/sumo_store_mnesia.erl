@@ -64,15 +64,15 @@ persist(Doc, State) ->
     end,
 
   Fields = sumo_internal:doc_fields(Doc),
-  NPFields = maps:remove(IdField, Fields), % Non-primary fields.
-  NPFieldNames = maps:keys(NPFields),
-  NPValues = [maps:get(K, Fields) || K <- NPFieldNames],
+  Schema = sumo_internal:get_schema(DocName),
+  [IdField | NPFields] = schema_field_names(Schema),
+  NPValues = [maps:get(K, Fields, undefined) || K <- NPFields],
   MnesiaRecord = list_to_tuple([DocName, NewId | NPValues]),
 
   case mnesia:transaction(fun() -> mnesia:write(MnesiaRecord) end) of
     {aborted, Reason} ->
       {error, Reason, State};
-    {atomic, _Result, State} ->
+    {atomic, ok} ->
       NewDoc = sumo_internal:set_field(IdField, NewId, Doc),
       {ok, NewDoc, State}
   end.
@@ -143,16 +143,22 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
 find_by(DocName, Conditions, [], Limit, Offset, State) ->
   MatchSpec = build_match_spec(DocName, Conditions),
   Transaction =
-    fun() ->
-      ManyItems = mnesia:select(DocName, MatchSpec, Offset + Limit, read),
-      lists:sublist(ManyItems, Offset, Limit)
+    case Limit of
+      0 ->
+        fun() -> mnesia:select(DocName, MatchSpec) end;
+      Limit ->
+        fun() ->
+          {ManyItems, _Cont} =
+            mnesia:select(DocName, MatchSpec, Offset + Limit, read),
+          lists:sublist(ManyItems, Offset + 1, Limit)
+        end
     end,
   case mnesia:transaction(Transaction) of
     {aborted, Reason} ->
       {error, Reason, State};
     {atomic, Results} ->
       Schema = sumo_internal:get_schema(DocName),
-      Fields = place_id_first(sumo_internal:schema_fields(Schema)),
+      Fields = schema_field_names(Schema),
       Docs = [result_to_doc(Result, Fields) || Result <- Results],
       {ok, Docs, State}
   end;
@@ -172,7 +178,7 @@ result_to_doc(Result, Fields) ->
 -spec create_schema(sumo:schema(), state()) -> sumo_store:result(state()).
 create_schema(Schema, #{default_options := DefaultOptions} = State) ->
   Name = sumo_internal:schema_name(Schema),
-  Fields = place_id_first(sumo_internal:schema_fields(Schema)),
+  Fields = schema_fields(Schema),
   Attributes = [sumo_internal:field_name(Field) || Field <- Fields],
   Indexes =
     [   sumo_internal:field_name(Field)
@@ -188,6 +194,7 @@ create_schema(Schema, #{default_options := DefaultOptions} = State) ->
 
   case mnesia:create_table(Name, Options) of
     {atomic, ok} -> {ok, State};
+    {aborted, {already_exists, Name}} -> {ok, State};
     {aborted, Reason} -> {error, Reason, State}
   end.
 
@@ -195,6 +202,7 @@ create_schema(Schema, #{default_options := DefaultOptions} = State) ->
 %% Private API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 parse(Options) -> parse(Options, []).
+parse([], Acc) -> Acc;
 parse([{disc_copies, here} | Options], Acc) ->
   parse(Options, [{disc_copies, [node()]} | Acc]);
 parse([{disc_copies, Nodes} | Options], Acc) ->
@@ -216,15 +224,6 @@ parse([{storage_properties, Props} | Options], Acc) ->
 parse([_IgnoredOption | Options], Acc) ->
   parse(Options, Acc).
 
-place_id_first(Fields) ->
-  place_id_first(Fields, []).
-place_id_first([], Acc) -> lists:reverse(Acc);
-place_id_first([Field|Fields], Acc) ->
-  case lists:member(id, sumo_internal:field_attrs(Field)) of
-    true -> [Field|lists:reverse(Acc)] ++ Fields;
-    false -> place_id_first(Fields, [Field|Acc])
-  end.
-
 new_id(DocName, FieldType) ->
   NewId = new_id(FieldType),
   case mnesia:dirty_read(DocName, NewId) of
@@ -240,13 +239,15 @@ new_id(float) -> <<Id:128>> = uuid:get_v4(), Id * 1.0;
 new_id(FieldType) -> throw({unimplemented, FieldType}).
 
 %% @ref http://www.erlang.org/doc/apps/erts/match_spec.html
+build_match_spec(DocName, Condition) when not is_list(Condition) ->
+  build_match_spec(DocName, [Condition]);
 build_match_spec(DocName, Conditions) ->
   Schema = sumo_internal:get_schema(DocName),
-  Fields = place_id_first(sumo_internal:schema_fields(Schema)),
+  Fields = schema_field_names(Schema),
   FieldsMap =
     maps:from_list(
       [field_tuple(I, Fields) || I <- lists:seq(1, length(Fields))]),
-  MatchHead = list_to_tuple([DocName | maps:values(FieldsMap)]),
+  MatchHead = list_to_tuple([DocName | lists:sort(maps:values(FieldsMap))]),
   Guard =
     [condition_to_guard(Condition, FieldsMap) || Condition <- Conditions] ,
   Result = '$_',
@@ -263,20 +264,21 @@ condition_to_guard({'and', [Expr1]}, FieldsMap) ->
 condition_to_guard({'and', [Expr1 | Exprs]}, FieldsMap) ->
   { 'andalso'
   , condition_to_guard(Expr1, FieldsMap)
-  , condition_to_guard(Exprs, FieldsMap)
+  , condition_to_guard({'and', Exprs}, FieldsMap)
   };
 condition_to_guard({'or', [Expr1]}, FieldsMap) ->
   condition_to_guard(Expr1, FieldsMap);
 condition_to_guard({'or', [Expr1 | Exprs]}, FieldsMap) ->
   { 'orelse'
   , condition_to_guard(Expr1, FieldsMap)
-  , condition_to_guard(Exprs, FieldsMap)
+  , condition_to_guard({'or', Exprs}, FieldsMap)
   };
 condition_to_guard({'not', Expr}, FieldsMap) ->
   {'not', condition_to_guard(Expr, FieldsMap)};
 condition_to_guard({Name1, Op, Name2}, FieldsMap) when is_atom(Name2) ->
   check_operator(Op),
-  {Op, maps:get(Name1, FieldsMap), maps:get(Name2, FieldsMap)};
+  %NOTE: Name2 can be a field name or a value, that's why the following happens
+  {Op, maps:get(Name1, FieldsMap), maps:get(Name2, FieldsMap, Name2)};
 condition_to_guard({Name1, Op, Value}, FieldsMap) ->
   check_operator(Op),
   {Op, maps:get(Name1, FieldsMap), Value};
@@ -289,3 +291,18 @@ condition_to_guard({Name, Value}, FieldsMap) ->
 
 check_operator(like) -> throw({unsupported_operator, like});
 check_operator(Op) -> sumo_internal:check_operator(Op).
+
+schema_field_names(Schema) ->
+  [sumo_internal:field_name(Field) || Field <- schema_fields(Schema)].
+
+schema_fields(Schema) ->
+  place_id_first(sumo_internal:schema_fields(Schema)).
+
+place_id_first(Fields) ->
+  place_id_first(Fields, []).
+place_id_first([], Acc) -> lists:reverse(Acc);
+place_id_first([Field|Fields], Acc) ->
+  case lists:member(id, sumo_internal:field_attrs(Field)) of
+    true -> [Field|lists:reverse(Acc)] ++ Fields;
+    false -> place_id_first(Fields, [Field|Acc])
+  end.

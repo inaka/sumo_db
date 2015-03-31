@@ -14,6 +14,7 @@ dep_uuid = git git://github.com/okeuday/uuid.git v1.4.0
 TEST_DEPS = mixer
 dep_mixer = git git://github.com/inaka/mixer.git 0.1.2
 
+PLT_APPS := mnesia
 DIALYZER_DIRS := ebin/
 DIALYZER_OPTS := --verbose --statistics -Werror_handling \
                  -Wrace_conditions #-Wunmatched_returns

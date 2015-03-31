@@ -1,5 +1,15 @@
 # Change Log
 
+## [Unreleased](https://github.com/inaka/sumo_db/tree/HEAD)
+
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.1...HEAD)
+
+**Merged pull requests:**
+
+- Igaray.126.sumo db sql extras reference [\#127](https://github.com/inaka/sumo_db/pull/127) ([igaray](https://github.com/igaray))
+
+- Automate CHANGELOG.md [\#125](https://github.com/inaka/sumo_db/pull/125) ([elbrujohalcon](https://github.com/elbrujohalcon))
+
 ## [0.3.1](https://github.com/inaka/sumo_db/tree/0.3.1) (2015-03-12)
 
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.0...0.3.1)

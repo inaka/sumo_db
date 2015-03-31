@@ -198,6 +198,8 @@ find_by(DocName,
         {ok, RMap} ->
           Val = rmap_to_doc(DocName, RMap),
           {ok, [Val], State};
+        {error, {notfound, _}} ->
+          {ok, [], State};
         {error, Error} ->
           {error, Error, State}
       end;

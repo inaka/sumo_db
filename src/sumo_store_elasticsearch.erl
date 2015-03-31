@@ -36,7 +36,6 @@
          find_by/6,
          find_all/2,
          find_all/5,
-         delete/3,
          delete_by/3,
          delete_all/2
         ]).
@@ -99,16 +98,6 @@ persist(Doc, #{index := Index, pool_name := PoolName} = State) ->
         end,
 
     {ok, Doc1, State}.
-
--spec delete(sumo:schema_name(), sumo:field_value(), state()) ->
-  sumo_store:result(sumo_store:affected_rows(), state()).
-delete(DocName, Id,  #{index := Index, pool_name := PoolName} = State) ->
-    Type = atom_to_binary(DocName, utf8),
-    Result = case tirerl:delete_doc(PoolName, Index, Type, Id) of
-                 {ok, _} -> 1;
-                 _ -> 0
-             end,
-    {ok, Result, State}.
 
 -spec delete_by(sumo:schema_name(), sumo:conditions(), state()) ->
   sumo_store:result(sumo_store:affected_rows(), state()).

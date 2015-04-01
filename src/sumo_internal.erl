@@ -64,24 +64,6 @@
 
 %% Conditional Logic
 
--type operator() :: '<' | '>' | '=' | '<=' | '>=' | '!=' | 'like'.
--type field_name() :: atom().
--type value() :: binary() | string() | number() | 'null' | 'not_null'.
-
--type expression() ::
-    [expression()]
-    | {'and', [expression()]}
-    | {'or', [expression()]}
-    | {'not', expression()}
-    | terminal().
-
--type terminal() ::
-    {field_name(), operator(), field_name()}
-    | {field_name(), operator(), value()}
-    | {field_name(), value()}.
-
--export_type([expression/0]).
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Code starts here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -212,7 +194,7 @@ new_field(Name, Type, Attributes) ->
     attrs => Attributes}.
 
 %% @doc Checks the operator is known, throws otherwise.
--spec check_operator(operator()) -> ok.
+-spec check_operator(sumo:operator()) -> ok.
 check_operator('<') -> ok;
 check_operator('=<') -> ok;
 check_operator('>') -> ok;

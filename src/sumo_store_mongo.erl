@@ -229,7 +229,7 @@ create_index(_Attr) ->
 %% Private API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec build_query(sumo_internal:expression()) -> iodata().
+-spec build_query(sumo:conditions()) -> iodata().
 build_query(Exprs) when is_list(Exprs) ->
   lists:flatmap(fun build_query/1, Exprs);
 build_query({'and', Exprs}) ->

@@ -20,32 +20,24 @@ start_apps() ->
 
 -spec all_people() -> [atom()].
 all_people() ->
-  [ sumo_test_people_mysql
-  , sumo_test_people_mongo
-  , sumo_test_people_elasticsearch
-  , sumo_test_people_pgsql
-  , sumo_test_people_mnesia
-  , sumo_test_people_riak
-  ].
+  [Doc || {Doc, _Store} <- application:get_env(sumo_db, docs, [])].
 
 -spec people_with_conditional_logic() -> [atom()].
 people_with_conditional_logic() ->
-  [ sumo_test_people_mysql
-  , sumo_test_people_mongo
-  , sumo_test_people_pgsql
-  , sumo_test_people_mnesia
-  ].
+  all_people() -- [sumo_test_people_elasticsearch, sumo_test_people_riak].
 
 -spec people_with_sort() -> [atom()].
 people_with_sort() ->
-  [ sumo_test_people_mysql
-  , sumo_test_people_mongo
-  , sumo_test_people_pgsql
-  ].
+  all_people() --
+    [ sumo_test_people_elasticsearch
+    , sumo_test_people_riak
+    , sumo_test_people_mnesia
+    ].
 
 -spec people_with_like() -> [atom()].
 people_with_like() ->
-  [ sumo_test_people_mysql
-  , sumo_test_people_mongo
-  , sumo_test_people_pgsql
-  ].
+  all_people() --
+    [ sumo_test_people_elasticsearch
+    , sumo_test_people_riak
+    , sumo_test_people_mnesia
+    ].

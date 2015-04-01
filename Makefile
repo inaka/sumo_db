@@ -8,7 +8,7 @@ dep_emongo = git https://github.com/inaka/emongo.git v0.2.1
 dep_tirerl = git https://github.com/inaka/tirerl 0.1.0
 dep_epgsql = git https://github.com/epgsql/epgsql 2.0.0
 dep_wpool = git https://github.com/inaka/worker_pool.git 1.0.2
-dep_riakc = git https://github.com/basho/riak-erlang-client.git 2.0.1
+dep_riakc = git https://github.com/inaka/riak-erlang-client.git 2.1.1-dialyzed
 dep_uuid = git git://github.com/okeuday/uuid.git v1.4.0
 
 TEST_DEPS = mixer

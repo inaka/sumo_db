@@ -22,6 +22,7 @@
 -license("Apache License 2.0").
 
 -behavior(sumo_store).
+%-ignore_xref([{uuid, get_v4, 0}, {uuid, uuid_to_string, 2}]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
@@ -101,8 +102,8 @@ delete_all(DocName, State) ->
   case mnesia:clear_table(DocName) of
     {atomic, ok} ->
       {ok, Count, State};
-    {error, Error} ->
-      {error, Error, State}
+    {aborted, Reason} ->
+      {error, Reason, State}
   end.
 
 -spec find_all(sumo:schema_name(), state()) ->

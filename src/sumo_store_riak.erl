@@ -62,7 +62,7 @@
 %% read_quorum: Riak read quorum parameters.
 %% write_quorum: Riak write quorum parameters.
 -record(state, {conn         :: pid(),
-                bucket       :: binary(),
+                bucket       :: {binary(), binary()},
                 index        :: binary(),
                 read_quorum  :: [{r_param(), integer() | (true | false)}],
                 write_quorum :: [{w_param(), integer() | (true | false)}]}).
@@ -409,8 +409,6 @@ to_atom(Data) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% @private
-build_query({q_str, Q}) when is_binary(Q) ->
-  Q;
 build_query([]) ->
   <<"*:*">>;
 build_query(PL) when is_list(PL) ->

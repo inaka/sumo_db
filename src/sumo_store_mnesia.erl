@@ -166,16 +166,6 @@ find_by(DocName, Conditions, [], Limit, Offset, State) ->
 find_by(_DocName, _Conditions, _SortFields, _Limit, _Offset, State) ->
   {error, not_supported, State}.
 
-result_to_doc(Result, Fields) ->
-  [DocName | Values] = tuple_to_list(Result),
-  NewDoc = sumo_internal:new_doc(DocName),
-  Pairs = lists:zip(Fields, Values),
-  FoldFun =
-    fun({Name, Value}, Doc) ->
-      sumo_internal:set_field(Name, Value, Doc)
-    end,
-  lists:foldl(FoldFun, NewDoc, Pairs).
-
 -spec create_schema(sumo:schema(), state()) -> sumo_store:result(state()).
 create_schema(Schema, #{default_options := DefaultOptions} = State) ->
   Name = sumo_internal:schema_name(Schema),
@@ -307,3 +297,13 @@ place_id_first([Field|Fields], Acc) ->
     true -> [Field|lists:reverse(Acc)] ++ Fields;
     false -> place_id_first(Fields, [Field|Acc])
   end.
+
+result_to_doc(Result, Fields) ->
+  [DocName | Values] = tuple_to_list(Result),
+  NewDoc = sumo_internal:new_doc(DocName),
+  Pairs = lists:zip(Fields, Values),
+  FoldFun =
+    fun({Name, Value}, Doc) ->
+      sumo_internal:set_field(Name, Value, Doc)
+    end,
+  lists:foldl(FoldFun, NewDoc, Pairs).

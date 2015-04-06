@@ -33,7 +33,7 @@
 -export([init/1]).
 -export([create_schema/2]).
 -export([persist/2]).
--export([delete/3, delete_by/3, delete_all/2]).
+-export([delete_by/3, delete_all/2]).
 -export([find_all/2, find_all/5, find_by/3, find_by/5, find_by/6]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -124,20 +124,6 @@ persist(Doc,  #{conn := Conn} = State) ->
       {ok, NewDoc, State};
     {ok, _Count} ->
       {ok, Doc, State};
-    {error, Error} ->
-      {error, Error, State}
-  end.
-
--spec delete(sumo:schema_name(), sumo:field_value(), state()) ->
-                sumo_store:result(sumo_store:affected_rows(), state()).
-delete(DocName, Id, #{conn := Conn} = State) ->
-  Sql= ["DELETE FROM ", escape(atom_to_list(DocName)),
-        " WHERE ", escape(atom_to_list(sumo_internal:id_field_name(DocName))),
-        "= $1 LIMIT 1"] ,
-
-  case pgsql:equery(Conn, stringify(Sql), [Id]) of
-    {ok, Count} ->
-      {ok, Count > 0, State};
     {error, Error} ->
       {error, Error, State}
   end.

@@ -7,19 +7,15 @@
         ]).
 
 -export([
-         find_sort_mysql/1,
-         find_sort_mongo/1
+         find_by_sort/1,
+         find_all_sort/1
         ]).
 
 -define(EXCLUDED_FUNS,
         [
          module_info,
-         all,
-         test,
          init_per_suite,
-         end_per_suite,
-         find_by_sort,
-         find_all_sort
+         end_per_suite
         ]).
 
 -type config() :: [{atom(), term()}].
@@ -31,15 +27,13 @@
 -spec all() -> [atom()].
 all() ->
   Exports = ?MODULE:module_info(exports),
-  [F || {F, _} <- Exports, not lists:member(F, ?EXCLUDED_FUNS)].
+  [F || {F, 1} <- Exports, not lists:member(F, ?EXCLUDED_FUNS)].
 
 -spec init_per_suite(config()) -> config().
 init_per_suite(Config) ->
-  application:ensure_all_started(emysql),
-  application:ensure_all_started(emongo),
-  application:ensure_all_started(sumo_db),
+  sumo_test_utils:start_apps(),
 
-    Fun =
+  Fun =
     fun (Module) ->
         sumo:create_schema(Module),
         sumo:delete_all(Module),
@@ -52,7 +46,7 @@ init_per_suite(Config) ->
         sumo:persist(Module, Module:new("F", "E", 1))
     end,
 
-  lists:foreach(Fun, [sumo_test_people_mysql, sumo_test_people_mongo]),
+  lists:foreach(Fun, sumo_test_utils:people_with_sort()),
 
   Config.
 
@@ -61,22 +55,15 @@ end_per_suite(Config) ->
   Config.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Exported Tests Functions
+%%% Test cases
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-find_sort_mysql(_Config) ->
-  find_by_sort(sumo_test_people_mysql),
-  find_all_sort(sumo_test_people_mysql).
+find_by_sort(_Config) ->
+  lists:foreach(
+    fun do_find_by_sort/1,
+    sumo_test_utils:people_with_sort()).
 
-find_sort_mongo(_Config) ->
-  find_by_sort(sumo_test_people_mongo),
-  find_all_sort(sumo_test_people_mongo).
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Internal functions
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-find_by_sort(Module) ->
+do_find_by_sort(Module) ->
   [First, Second | _] = sumo:find_by(Module, [{age, '>', 2}], age, 0, 0),
 
   "B" = to_str(Module:name(First)),
@@ -94,7 +81,12 @@ find_by_sort(Module) ->
   [_, _, _] =
     sumo:find_by(Module, [{age, '>', 2}, {age, '=<', 5}], 0, 0).
 
-find_all_sort(Module) ->
+find_all_sort(_Config) ->
+  lists:foreach(
+    fun do_find_all_sort/1,
+    sumo_test_utils:people_with_sort()).
+
+do_find_all_sort(Module) ->
   [First, Second | _] = sumo:find_all(Module, age, 0, 0),
   "F" = to_str(Module:name(First)),
   "E" = to_str(Module:name(Second)),

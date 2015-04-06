@@ -152,8 +152,8 @@ form_select_query(SelectFields, Conditions, ExtraWhere) ->
   % SelectedFields, Where clause, and Where values
   {Select, Where, Values}.
 
--spec values_conditions(sumo_internal:expression()) ->
-  {[any()], sumo_internal:expression()}.
+-spec values_conditions(sumo:conditions()) ->
+  {[any()], sumo:conditions()}.
 values_conditions(Expr) ->
   {Values, CleanExprs, _} = values_conditions(Expr, {[], [], 1}),
   {lists:reverse(Values), lists:reverse(CleanExprs)}.
@@ -195,15 +195,15 @@ values_conditions([], Acc) ->
 values_conditions(Expr, _) ->
   throw({unsupported_expression, Expr}).
 
--spec where_clause(sumo_internal:expression()) -> iodata().
+-spec where_clause(sumo:conditions()) -> iodata().
 where_clause(Exprs) ->
   where_clause(Exprs, fun escape/1, fun slot_question/1).
 
--spec where_clause(sumo_internal:expression(), fun()) -> iodata().
+-spec where_clause(sumo:conditions(), fun()) -> iodata().
 where_clause(Exprs, EscapeFun) ->
   where_clause(Exprs, EscapeFun, fun slot_question/1).
 
--spec where_clause(sumo_internal:expression(), fun(), fun()) -> iodata().
+-spec where_clause(sumo:conditions(), fun(), fun()) -> iodata().
 where_clause([], _EscapeFun, _SlotFun) ->
   [];
 where_clause(Exprs, EscapeFun, SlotFun) when is_list(Exprs) ->

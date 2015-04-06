@@ -30,7 +30,7 @@
 %%% Public API.
 -export([
   init/1, create_schema/2, persist/2, find_by/3, find_by/5, find_by/6,
-  find_all/2,  find_all/5, delete/3, delete_by/3, delete_all/2
+  find_all/2,  find_all/5, delete_by/3, delete_all/2
 ]).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -73,15 +73,6 @@ persist(Doc, #state{pool=Pool}=State) ->
     maps:to_list(Fields), true
   ),
   {ok, NewDoc, State}.
-
--spec delete(sumo:schema_name(), sumo:field_value(), state()) ->
-  sumo_store:result(sumo_store:affected_rows(), state()).
-delete(DocName, Id, #state{pool=Pool}=State) ->
-  IdField = sumo_internal:id_field_name(DocName),
-  ok = emongo:delete(
-    Pool, atom_to_list(DocName), [{atom_to_list(IdField), Id}]
-  ),
-  {ok, 1, State}.
 
 -spec delete_by(sumo:schema_name(), sumo:conditions(), state()) ->
   sumo_store:result(sumo_store:affected_rows(), state()).
@@ -238,7 +229,7 @@ create_index(_Attr) ->
 %% Private API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec build_query(sumo_internal:expression()) -> iodata().
+-spec build_query(sumo:conditions()) -> iodata().
 build_query(Exprs) when is_list(Exprs) ->
   lists:flatmap(fun build_query/1, Exprs);
 build_query({'and', Exprs}) ->

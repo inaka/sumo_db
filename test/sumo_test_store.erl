@@ -12,7 +12,6 @@
 -export(
    [ init/1
    , create_schema/2
-   , delete/3
    , delete_all/2
    , delete_by/3
    , execute/2
@@ -40,8 +39,6 @@
 -spec init(term()) -> {ok, state()}.
 -spec persist(sumo_internal:doc(), state()) ->
                  sumo_store:result(sumo_internal:doc(), state()).
--spec delete(sumo:schema_name(), term(), state()) ->
-                sumo_store:result(sumo_store:affected_rows(), state()).
 -spec delete_by(sumo:schema_name(), sumo:conditions(), state()) ->
                    sumo_store:result(sumo_store:affected_rows(), state()).
 -spec delete_all(sumo:schema_name(), state()) ->
@@ -58,9 +55,6 @@ init(Options) ->
 
 create_schema(Schema, State) ->
   sumo_store_mysql:create_schema(Schema, State).
-
-delete(DocName, Id, State) ->
-  sumo_store_mysql:delete(DocName, Id, State).
 
 delete_all(DocName, State) ->
   sumo_store_mysql:delete_all(DocName, State).

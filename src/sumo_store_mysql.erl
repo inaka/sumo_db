@@ -34,7 +34,7 @@
 -export([init/1]).
 -export([create_schema/2]).
 -export([persist/2]).
--export([delete/3, delete_by/3, delete_all/2]).
+-export([delete_by/3, delete_all/2]).
 -export([prepare/3, execute/2, execute/3]).
 -export([just_execute/2, just_execute/3, get_docs/3, get_docs/4]).
 -export([find_all/2, find_all/5, find_by/3, find_by/5, find_by/6]).
@@ -143,19 +143,6 @@ persist(Doc, State) ->
       {ok, sumo_internal:set_field(IdField, LastId, Doc), State};
     Error ->
       evaluate_execute_result(Error, State)
-  end.
-
--spec delete(sumo:schema_name(), sumo:field_value(), state()) ->
-  sumo_store:result(sumo_store:affected_rows(), state()).
-delete(DocName, Id, State) ->
-  StatementName = prepare(DocName, delete, fun() -> [
-    "DELETE FROM ", escape(DocName),
-    " WHERE ", escape(sumo_internal:id_field_name(DocName)),
-    "=? LIMIT 1"
-  ] end),
-  case execute(StatementName, [Id], State) of
-    #ok_packet{affected_rows = NumRows} -> {ok, NumRows > 0, State};
-    Error -> evaluate_execute_result(Error, State)
   end.
 
 -spec delete_by(sumo:schema_name(), sumo:conditions(), state()) ->

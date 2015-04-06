@@ -1,10 +1,14 @@
 # Change Log
 
-## [Unreleased](https://github.com/inaka/sumo_db/tree/HEAD)
+## [0.3.2](https://github.com/inaka/sumo_db/tree/0.3.2) (2015-04-06)
 
-[Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.1...HEAD)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.1...0.3.2)
 
 **Merged pull requests:**
+
+- \#130 Fix find\_by ID function in sumo\_store\_riak to return empty list whe... [\#131](https://github.com/inaka/sumo_db/pull/131) ([cabol](https://github.com/cabol))
+
+- Mnesia support [\#129](https://github.com/inaka/sumo_db/pull/129) ([elbrujohalcon](https://github.com/elbrujohalcon))
 
 - Igaray.126.sumo db sql extras reference [\#127](https://github.com/inaka/sumo_db/pull/127) ([igaray](https://github.com/igaray))
 

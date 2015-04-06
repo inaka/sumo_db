@@ -96,7 +96,7 @@ delete_by(DocName, Conditions, State) ->
   end.
 
 -spec delete_all(sumo:schema_name(), state()) ->
-                    sumo_store:result(sumo_store:affected_rows(), state()).
+  sumo_store:result(sumo_store:affected_rows(), state()).
 delete_all(DocName, State) ->
   Count = mnesia:table_info(DocName, size),
   case mnesia:clear_table(DocName) of

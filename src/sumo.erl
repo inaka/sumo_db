@@ -172,7 +172,7 @@ find_by(DocName, Conditions, SortFields0, Limit, Offset) ->
 persist(DocName, State) ->
   IdField = sumo_internal:id_field_name(DocName),
   DocMap = DocName:sumo_sleep(State),
-  EventName = case maps:get(IdField, DocMap) of
+  EventName = case maps:get(IdField, DocMap, undefined) of
                 undefined -> created;
                 _ -> updated
               end,

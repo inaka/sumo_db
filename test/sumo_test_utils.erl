@@ -15,6 +15,7 @@ start_apps() ->
   application:ensure_all_started(epgsql),
   application:ensure_all_started(emongo),
   application:ensure_all_started(tirerl),
+  mnesia:create_schema([node()]),
   application:ensure_all_started(mnesia),
   application:ensure_all_started(sumo_db).
 

@@ -1,5 +1,15 @@
 # Change Log
 
+## [Unreleased](https://github.com/inaka/sumo_db/tree/HEAD)
+
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.2...HEAD)
+
+**Merged pull requests:**
+
+- Calling sumo:persist with a doc with no id field fails [\#133](https://github.com/inaka/sumo_db/pull/133) ([elbrujohalcon](https://github.com/elbrujohalcon))
+
+- Updated changelog [\#132](https://github.com/inaka/sumo_db/pull/132) ([elbrujohalcon](https://github.com/elbrujohalcon))
+
 ## [0.3.2](https://github.com/inaka/sumo_db/tree/0.3.2) (2015-04-06)
 
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.1...0.3.2)

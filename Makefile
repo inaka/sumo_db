@@ -1,5 +1,7 @@
 PROJECT = sumo_db
 
+CONFIG ?= test/test.config
+
 DEPS = lager emysql emongo tirerl epgsql wpool riakc uuid
 
 dep_lager = git https://github.com/basho/lager.git 2.1.1
@@ -30,13 +32,12 @@ COMPILE_FIRST += sumo_backend sumo_doc sumo_store
 # Commont Test Config
 
 TEST_ERLC_OPTS += +'{parse_transform, lager_transform}'
-CT_OPTS = -cover test/sumo.coverspec -vvv -erl_args -config test/test.config
+CT_OPTS = -cover test/sumo.coverspec -vvv -erl_args -config ${CONFIG}
 
-CONFIG ?= test/test.config
 SHELL_OPTS = -name ${PROJECT}@`hostname` -config ${CONFIG} -s sync
 
 test-shell: build-ct-suites app
-	erl -pa ebin -pa deps/*/ebin -pa test -s lager -s sync -config test/test.config
+	erl -pa ebin -pa deps/*/ebin -pa test -s lager -s sync -config ${CONFIG}
 
 erldocs:
 	erldocs . -o docs

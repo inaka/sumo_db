@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.3.4](https://github.com/inaka/sumo_db/tree/0.3.4) (2015-04-07)
+
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.3...0.3.4)
+
+**Merged pull requests:**
+
+- Add uuid as a required application [\#135](https://github.com/inaka/sumo_db/pull/135) ([elbrujohalcon](https://github.com/elbrujohalcon))
+
 ## [0.3.3](https://github.com/inaka/sumo_db/tree/0.3.3) (2015-04-07)
 
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.2...0.3.3)

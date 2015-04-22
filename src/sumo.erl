@@ -20,7 +20,7 @@
 
 %%% code added to check elvis
 ct:pal("trying to test elvis-server in production trow this repo example and this long line ~p ~p",[V1,V2]),
-V1="var1",V2="var2",
+V1="TOTALLY NEW",V2="TEST",
 
 -module(sumo).
 -author("Marcelo Gornstein <marcelog@gmail.com>").

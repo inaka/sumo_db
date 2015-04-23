@@ -63,6 +63,8 @@
 -type index()      :: binary().
 -type options()    :: [proplists:property()].
 
+-export_type([connection/0, index/0, options/0]).
+
 %% conn: is the Pid of the gen_server that holds the connection with Riak
 %% bucket: Riak bucket (per store)
 %% index: Riak index to be used by Riak Search

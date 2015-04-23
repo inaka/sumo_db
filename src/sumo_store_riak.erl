@@ -36,6 +36,8 @@
 
 -behavior(sumo_store).
 
+-include_lib("riakc/include/riakc.hrl").
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -47,25 +49,32 @@
 -export([delete_by/3, delete_all/2]).
 -export([find_all/2, find_all/5, find_by/3, find_by/5, find_by/6]).
 
+%% Utilities
+-export([doc_to_rmap/1, map_to_rmap/1, rmap_to_doc/2, rmap_to_map/1]).
+-export([fetch_map/4, fetch_docs/5, delete_map/4, update_map/5]).
+-export([search/5, build_query/1]).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Types.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Riak quorum parameters.
-%% @see <a href="http://docs.basho.com/riak/latest/dev/using/basics"/>
--type r_param() :: r | pr | notfound_ok.
--type w_param() :: w | pw | dw | returnbody.
+%% Riak base parameters
+-type connection() :: pid().
+-type index()      :: binary().
+-type options()    :: [proplists:property()].
 
 %% conn: is the Pid of the gen_server that holds the connection with Riak
 %% bucket: Riak bucket (per store)
 %% index: Riak index to be used by Riak Search
 %% read_quorum: Riak read quorum parameters.
 %% write_quorum: Riak write quorum parameters.
--record(state, {conn         :: pid(),
-                bucket       :: {binary(), binary()},
-                index        :: binary(),
-                read_quorum  :: [{r_param(), integer() | (true | false)}],
-                write_quorum :: [{w_param(), integer() | (true | false)}]}).
+%% @see <a href="http://docs.basho.com/riak/latest/dev/using/basics"/>
+-record(state, {conn     :: connection(),
+                bucket   :: bucket(),
+                index    :: index(),
+                get_opts :: get_options(),
+                put_opts :: put_options(),
+                del_opts :: delete_options()}).
 -type state() :: #state{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -86,22 +95,24 @@ init(Opts) ->
     proplists:get_value(bucket, Opts, <<"sumo">>)),
   Index = iolist_to_binary(
     proplists:get_value(index, Opts, <<"sumo_index">>)),
-  Rq = proplists:get_value(read_quorum, Opts, []),
-  Wq = proplists:get_value(write_quorum, Opts, []),
+  GetOpts = proplists:get_value(get_options, Opts, []),
+  PutOpts = proplists:get_value(put_options, Opts, []),
+  DelOpts = proplists:get_value(delete_options, Opts, []),
   State = #state{conn = Conn,
                  bucket = {BucketType, Bucket},
                  index = Index,
-                 read_quorum = Rq,
-                 write_quorum = Wq},
+                 get_opts = GetOpts,
+                 put_opts = PutOpts,
+                 del_opts = DelOpts},
   {ok, State}.
 
 -spec persist(
   sumo_internal:doc(), state()
 ) -> sumo_store:result(sumo_internal:doc(), state()).
 persist(Doc,
-        #state{conn = Conn, bucket = Bucket, write_quorum = Wq} = State) ->
+        #state{conn = Conn, bucket = Bucket, put_opts = Opts} = State) ->
   {Id, NewDoc} = new_doc(Doc, State),
-  case update_map(Conn, Bucket, Id, doc_to_rmap(NewDoc), Wq) of
+  case update_map(Conn, Bucket, Id, doc_to_rmap(NewDoc), Opts) of
     {error, Error} ->
       {error, Error, State};
     _ ->
@@ -113,11 +124,14 @@ persist(Doc,
 ) -> sumo_store:result(sumo_store:affected_rows(), state()).
 delete_by(DocName,
           Conditions,
-          #state{conn = Conn, bucket = Bucket, index = Index} = State) ->
+          #state{conn = Conn,
+                 bucket = Bucket,
+                 index = Index,
+                 del_opts = Opts} = State) ->
   IdField = sumo_internal:id_field_name(DocName),
   case lists:keyfind(IdField, 1, Conditions) of
     {_K, Key} ->
-      case delete_map(Conn, Bucket, iolist_to_binary(Key)) of
+      case delete_map(Conn, Bucket, iolist_to_binary(Key), Opts) of
         ok ->
           {ok, 1, State};
         {error, Error} ->
@@ -127,7 +141,7 @@ delete_by(DocName,
       Query = build_query(Conditions),
       case search_docs_by(DocName, Conn, Index, Query, 0, 0) of
         {ok, {Total, Res}}  ->
-          delete_docs(Conn, Bucket, Res),
+          delete_docs(Conn, Bucket, Res, Opts),
           {ok, Total, State};
         {error, Error} ->
           {error, Error, State}
@@ -137,9 +151,10 @@ delete_by(DocName,
 -spec delete_all(
   sumo:schema_name(), state()
 ) -> sumo_store:result(sumo_store:affected_rows(), state()).
-delete_all(_DocName, #state{conn = Conn, bucket = Bucket} = State) ->
-  Del = fun({C, B, Kst}, Acc) ->
-          lists:foreach(fun(K) -> delete_map(C, B, K) end, Kst),
+delete_all(_DocName,
+           #state{conn = Conn, bucket = Bucket, del_opts = Opts} = State) ->
+  Del = fun(Kst, Acc) ->
+          lists:foreach(fun(K) -> delete_map(Conn, Bucket, K, Opts) end, Kst),
           Acc + length(Kst)
         end,
   case stream_keys(Conn, Bucket, Del, 0) of
@@ -151,9 +166,9 @@ delete_all(_DocName, #state{conn = Conn, bucket = Bucket} = State) ->
   sumo:schema_name(), state()
 ) -> sumo_store:result([sumo_internal:doc()], state()).
 find_all(DocName,
-         #state{conn = Conn, bucket = Bucket, read_quorum = Rq} = State) ->
-  Get = fun({C, B, Kst}, Acc) ->
-          fetch_map_bulk(DocName, C, B, Kst, Rq) ++ Acc
+         #state{conn = Conn, bucket = Bucket, get_opts = Opts} = State) ->
+  Get = fun(Kst, Acc) ->
+          fetch_docs(DocName, Conn, Bucket, Kst, Opts) ++ Acc
         end,
   case stream_keys(Conn, Bucket, Get, []) of
     {ok, Docs} -> {ok, Docs, State};
@@ -190,11 +205,11 @@ find_by(DocName,
         #state{conn = Conn,
                bucket = Bucket,
                index = Index,
-               read_quorum = Rq} = State) ->
+               get_opts = Opts} = State) ->
   IdField = sumo_internal:id_field_name(DocName),
   case lists:keyfind(IdField, 1, Conditions) of
     {_K, Key} ->
-      case fetch_map(Conn, Bucket, iolist_to_binary(Key), Rq) of
+      case fetch_map(Conn, Bucket, iolist_to_binary(Key), Opts) of
         {ok, RMap} ->
           Val = rmap_to_doc(DocName, RMap),
           {ok, [Val], State};
@@ -229,6 +244,82 @@ create_schema(_Schema, State) ->
   {ok, State}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Utilities API.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+-spec doc_to_rmap(sumo_internal:doc()) -> riakc_map:crdt_map().
+doc_to_rmap(Doc) ->
+  Fields = sumo_internal:doc_fields(Doc),
+  map_to_rmap(Fields).
+
+-spec map_to_rmap(map()) -> riakc_map:crdt_map().
+map_to_rmap(Map) ->
+  lists:foldl(fun rmap_update/2, riakc_map:new(), maps:to_list(Map)).
+
+-spec rmap_to_doc(
+  sumo:schema_name(), riakc_map:crdt_map()
+) -> sumo_internal:doc().
+rmap_to_doc(DocName, RMap) ->
+  sumo_internal:new_doc(DocName, rmap_to_map(RMap)).
+
+-spec rmap_to_map(riakc_map:crdt_map()) -> map().
+rmap_to_map(RMap) ->
+  F = fun({{K, map}, V}, Acc) ->
+        maps:put(to_atom(K), rmap_to_map({map, V, [], [], undefined}), Acc);
+      ({{K, _}, V}, Acc) ->
+        maps:put(to_atom(K), V, Acc)
+      end,
+  lists:foldl(F, #{}, riakc_map:value(RMap)).
+
+-spec fetch_map(
+  connection(), bucket(), key(), options()
+) -> {ok, riakc_datatype:datatype()} | {error, term()}.
+fetch_map(Conn, Bucket, Key, Opts) ->
+  riakc_pb_socket:fetch_type(Conn, Bucket, Key, Opts).
+
+-spec fetch_docs(
+  sumo:schema_name(), connection(), bucket(), [key()], options()
+) -> [sumo_internal:doc()].
+fetch_docs(DocName, Conn, Bucket, Keys, Opts) ->
+  Fun = fun(K, Acc) ->
+          case fetch_map(Conn, Bucket, K, Opts) of
+            {ok, M} -> [rmap_to_doc(DocName, M) | Acc];
+            _       -> Acc
+          end
+        end,
+  lists:foldl(Fun, [], Keys).
+
+-spec delete_map(
+  connection(), bucket(), key(), options()
+) -> ok | {error, term()}.
+delete_map(Conn, Bucket, Key, Opts) ->
+  riakc_pb_socket:delete(Conn, Bucket, Key, Opts).
+
+-spec update_map(
+  connection(), bucket(), key(), riakc_map:crdt_map(), options()
+) ->
+  ok | {ok, Key::binary()} | {ok, riakc_datatype:datatype()} |
+  {ok, Key::binary(), riakc_datatype:datatype()} | {error, term()}.
+update_map(Conn, Bucket, Key, Map, Opts) ->
+  riakc_pb_socket:update_type(Conn, Bucket, Key, riakc_map:to_op(Map), Opts).
+
+-spec search(
+  connection(), index(), binary(), non_neg_integer(), non_neg_integer()
+) -> {ok, search_result()} | {error, term()}.
+search(Conn, Index, Query, 0, 0) ->
+  riakc_pb_socket:search(Conn, Index, Query);
+search(Conn, Index, Query, Limit, Offset) ->
+  riakc_pb_socket:search(Conn, Index, Query, [{start, Offset}, {rows, Limit}]).
+
+-spec build_query(sumo:conditions()) -> binary().
+build_query([]) ->
+  <<"*:*">>;
+build_query(PL) when is_list(PL) ->
+  build_query1(PL, <<"">>);
+build_query(_) ->
+  <<"*:*">>.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Private API.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -239,12 +330,12 @@ doc_id(Doc) ->
   sumo_internal:get_field(IdField, Doc).
 
 %% @private
-new_doc(Doc, #state{conn = Conn, bucket = Bucket, write_quorum = Wq}) ->
+new_doc(Doc, #state{conn = Conn, bucket = Bucket, put_opts = Opts}) ->
   DocName = sumo_internal:doc_name(Doc),
   IdField = sumo_internal:id_field_name(DocName),
   Id = case sumo_internal:get_field(IdField, Doc) of
          undefined ->
-           case update_map(Conn, Bucket, undefined, doc_to_rmap(Doc), Wq) of
+           case update_map(Conn, Bucket, undefined, doc_to_rmap(Doc), Opts) of
              {ok, RiakMapId} -> RiakMapId;
              {error, Error}  -> throw(Error);
              _               -> throw(unexpected)
@@ -255,15 +346,14 @@ new_doc(Doc, #state{conn = Conn, bucket = Bucket, write_quorum = Wq}) ->
   {Id, sumo_internal:set_field(IdField, Id, Doc)}.
 
 %% @private
-%% Support multi-level structures.
-doc_to_rmap(Doc) ->
-  Fields = sumo_internal:doc_fields(Doc),
-  map_to_rmap(Fields).
-
-%% @private
-%% Support multi-level structures.
-map_to_rmap(Map) ->
-  lists:foldl(fun rmap_update/2, riakc_map:new(), maps:to_list(Map)).
+list_to_rset(_, [], Acc) ->
+  Acc;
+list_to_rset(K, [H | T], Acc) ->
+  M = riakc_map:update(
+    {to_bin(K), set},
+    fun(S) -> riakc_set:add_element(to_bin(H), S) end,
+    Acc),
+  list_to_rset(K, T, M).
 
 %% @private
 rmap_update({K, V}, RMap) when is_map(V) ->
@@ -277,28 +367,13 @@ rmap_update({K, V}, RMap) when is_list(V) ->
         fun(R) -> riakc_register:set(to_bin(V), R) end,
         RMap);
     false ->
-      riakc_map:update({to_bin(K), set}, fun(_S) -> V end, RMap)
+      list_to_rset(K, V, RMap)
   end;
 rmap_update({K, V}, RMap) ->
   riakc_map:update(
     {to_bin(K), register},
     fun(R) -> riakc_register:set(to_bin(V), R) end,
     RMap).
-
-%% @private
-%% Support multi-level structures.
-rmap_to_doc(DocName, RMap) ->
-  sumo_internal:new_doc(DocName, rmap_to_map(RMap)).
-
-%% @private
-%% Support multi-level structures.
-rmap_to_map(RMap) ->
-  F = fun({{K, map}, V}, Acc) ->
-        maps:put(to_atom(K), rmap_to_map(V), Acc);
-      ({{K, _}, V}, Acc) ->
-        maps:put(to_atom(K), V, Acc)
-      end,
-  lists:foldl(F, #{}, riakc_map:value(RMap)).
 
 %% @private
 kv_to_doc(DocName, KV) ->
@@ -315,44 +390,16 @@ normalize_doc_fields(Src) ->
     [{return, binary}, global]).
 
 %% @private
-fetch_map(Conn, Bucket, Key, Opts) ->
-  riakc_pb_socket:fetch_type(Conn, Bucket, Key, Opts).
-
-%% @private
-fetch_map_bulk(DocName, Conn, Bucket, Keys, Opts) ->
-  Fun = fun(K, Acc) ->
-          case fetch_map(Conn, Bucket, K, Opts) of
-            {ok, M} -> [rmap_to_doc(DocName, M) | Acc];
-            _       -> Acc
-          end
-        end,
-  lists:foldl(Fun, [], Keys).
-
-%% @private
-delete_map(Conn, Bucket, Key) ->
-  riakc_pb_socket:delete(Conn, Bucket, Key).
-
-%% @private
-update_map(Conn, Bucket, Key, Map, Opts) ->
-  riakc_pb_socket:update_type(Conn, Bucket, Key, riakc_map:to_op(Map), Opts).
-
-%% @private
-search(Conn, Index, Query, 0, 0) ->
-  riakc_pb_socket:search(Conn, Index, Query);
-search(Conn, Index, Query, Limit, Offset) ->
-  riakc_pb_socket:search(Conn, Index, Query, [{start, Offset}, {rows, Limit}]).
-
-%% @private
 stream_keys(Conn, Bucket, F, Acc) ->
   {ok, Ref} = riakc_pb_socket:get_index_eq(
     Conn, Bucket, <<"$bucket">>, <<"">>, [{stream, true}]),
-  receive_stream(Ref, Conn, Bucket, F, Acc).
+  receive_stream(Ref, F, Acc).
 
 %% @private
-receive_stream(Ref, Conn, Bucket, F, Acc) ->
+receive_stream(Ref, F, Acc) ->
   receive
     {Ref, {_, Stream, _}} ->
-      receive_stream(Ref, Conn, Bucket, F, F({Conn, Bucket, Stream}, Acc));
+      receive_stream(Ref, F, F(Stream, Acc));
     {Ref, {done, _}} ->
       {ok, Acc};
     _ ->
@@ -362,10 +409,6 @@ receive_stream(Ref, Conn, Bucket, F, Acc) ->
   end.
 
 %% @private
-%% @todo Add multi-level support.
-%%       Instead of transform search result to doc, get just the key and
-%%       fetch the value (`fetch_map`), then apply `rmap_to_doc` on that
-%%       value, since this function supports multi-level.
 search_docs_by(DocName, Conn, Index, Query, Limit, Offset) ->
   case search(Conn, Index, Query, Limit, Offset) of
     {ok, {search_results, Results, _, Total}} ->
@@ -377,10 +420,10 @@ search_docs_by(DocName, Conn, Index, Query, Limit, Offset) ->
   end.
 
 %% @private
-delete_docs(Conn, Bucket, Docs) ->
+delete_docs(Conn, Bucket, Docs, Opts) ->
   F = fun(D) ->
         K = doc_id(D),
-        delete_map(Conn, Bucket, K)
+        delete_map(Conn, Bucket, K, Opts)
       end,
   lists:foreach(F, Docs).
 
@@ -409,14 +452,6 @@ to_atom(Data) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Private API - Query Builder.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%% @private
-build_query([]) ->
-  <<"*:*">>;
-build_query(PL) when is_list(PL) ->
-  build_query1(PL, <<"">>);
-build_query(_) ->
-  <<"*:*">>.
 
 %% @private
 build_query1([], Acc) ->

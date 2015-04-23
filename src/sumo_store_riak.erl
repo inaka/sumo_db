@@ -296,7 +296,7 @@ delete_map(Conn, Bucket, Key, Opts) ->
   riakc_pb_socket:delete(Conn, Bucket, Key, Opts).
 
 -spec update_map(
-  connection(), bucket(), key(), riakc_map:crdt_map(), options()
+  connection(), bucket(), key() | undefined, riakc_map:crdt_map(), options()
 ) ->
   ok | {ok, Key::binary()} | {ok, riakc_datatype:datatype()} |
   {ok, Key::binary(), riakc_datatype:datatype()} | {error, term()}.

@@ -82,16 +82,7 @@ init_store(Module) ->
   sumo:persist(Module, Module:new(<<"F">>, <<"E">>, 1)),
 
   %% Sync Timeout.
-  %% 1. Necessary to get elasticsearch in particular to index its stuff.
-  %% 2. Necessary to Riak.
-  %% Riak clusters will retain deleted objects for some period of time
-  %% (3 seconds by default), and the MapReduce framework does not conceal
-  %% these from submitted jobs.
-  %% @see <a href="http://docs.basho.com/riak/latest/dev/advanced/mapreduce"/>
-  case Module of
-    sumo_test_people_riak -> timer:sleep(5000);
-    _                     -> timer:sleep(1000)
-  end.
+  sync_timeout(Module).
 
 find_all_module(Module) ->
   6 = length(sumo:find_all(Module)).
@@ -119,6 +110,14 @@ delete_all_module(Module) ->
   [] = sumo:find_all(Module).
 
 delete_module(Module) ->
+  %% delete_by
+  2 = sumo:delete_by(Module, [{last_name, <<"D">>}]),
+  sync_timeout(Module),
+  Results = sumo:find_by(Module, [{last_name, <<"D">>}]),
+
+  0 = length(Results),
+
+  %% delete
   [First | _ ] = All = sumo:find_all(Module),
   Id = Module:id(First),
   sumo:delete(Module, Id),
@@ -137,3 +136,17 @@ to_str(X) when is_list(X) ->
   X;
 to_str(X) when is_binary(X) ->
   binary_to_list(X).
+
+-spec sync_timeout(module()) -> ok.
+sync_timeout(Module) ->
+  %% Sync Timeout.
+  %% 1. Necessary to get elasticsearch in particular to index its stuff.
+  %% 2. Necessary to Riak.
+  %% Riak clusters will retain deleted objects for some period of time
+  %% (3 seconds by default), and the MapReduce framework does not conceal
+  %% these from submitted jobs.
+  %% @see <a href="http://docs.basho.com/riak/latest/dev/advanced/mapreduce"/>
+  case Module of
+    sumo_test_people_riak -> timer:sleep(5000);
+    _                     -> timer:sleep(1000)
+  end.

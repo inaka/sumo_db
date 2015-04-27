@@ -1,5 +1,31 @@
 # Change Log
 
+## [0.3.6](https://github.com/inaka/sumo_db/tree/0.3.6) (2015-04-27)
+
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.5...0.3.6)
+
+**Closed issues:**
+
+- Fix 'find\_by' function on Riak store to return an empty list '\[\]' when it's invoked by ID. [\#130](https://github.com/inaka/sumo_db/issues/130)
+
+**Merged pull requests:**
+
+- Fixed VSN. [\#143](https://github.com/inaka/sumo_db/pull/143) ([cabol](https://github.com/cabol))
+
+- Update LICENSE [\#142](https://github.com/inaka/sumo_db/pull/142) ([andresinaka](https://github.com/andresinaka))
+
+- Reusable private functions were exported. Fixed sumo\_store\_riak \(enhance... [\#141](https://github.com/inaka/sumo_db/pull/141) ([cabol](https://github.com/cabol))
+
+- Euen.test elvis [\#139](https://github.com/inaka/sumo_db/pull/139) ([Euen](https://github.com/Euen))
+
+## [0.3.5](https://github.com/inaka/sumo_db/tree/0.3.5) (2015-04-09)
+
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.4...0.3.5)
+
+**Merged pull requests:**
+
+- rebar build without ssh keys fails due to outdated dep libs [\#137](https://github.com/inaka/sumo_db/pull/137) ([Vorticity-Flux](https://github.com/Vorticity-Flux))
+
 ## [0.3.4](https://github.com/inaka/sumo_db/tree/0.3.4) (2015-04-07)
 
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.3...0.3.4)

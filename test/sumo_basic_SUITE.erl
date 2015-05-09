@@ -8,6 +8,7 @@
         ]).
 
 -export([
+         find/1,
          find_all/1,
          find_by/1,
          delete_all/1,
@@ -54,6 +55,9 @@ end_per_suite(Config) ->
 %%% Exported Tests Functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+find(_Config) ->
+  run_all_stores(fun find_module/1).
+
 find_all(_Config) ->
   run_all_stores(fun find_all_module/1).
 
@@ -83,6 +87,12 @@ init_store(Module) ->
 
   %% Sync Timeout.
   sync_timeout(Module).
+
+find_module(Module) ->
+  [First, Second | _] = sumo:find_all(Module),
+  First = sumo:find(Module, Module:id(First)),
+  Second = sumo:find(Module, Module:id(Second)),
+  notfound = sumo:find(Module, 0).
 
 find_all_module(Module) ->
   6 = length(sumo:find_all(Module)).

@@ -143,19 +143,20 @@ find_by(DocName, Conditions, Limit, Offset, State) ->
   sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName, Conditions, [], Limit, Offset, State) ->
   MatchSpec = build_match_spec(DocName, Conditions),
+  Transaction0 = fun() -> mnesia:select(DocName, MatchSpec) end,
+  TransactionL =
+    fun() ->
+      case mnesia:select(DocName, MatchSpec, Offset + Limit, read) of
+        {ManyItems, _Cont} ->
+          lists:sublist(ManyItems, Offset + 1, Limit);
+        '$end_of_table' ->
+          []
+      end
+    end,
   Transaction =
     case Limit of
-      0 ->
-        fun() -> mnesia:select(DocName, MatchSpec) end;
-      Limit ->
-        fun() ->
-          case mnesia:select(DocName, MatchSpec, Offset + Limit, read) of
-            {ManyItems, _Cont} ->
-              lists:sublist(ManyItems, Offset + 1, Limit);
-            '$end_of_table' ->
-              []
-          end
-        end
+      0 -> Transaction0;
+      Limit -> TransactionL
     end,
   case mnesia:transaction(Transaction) of
     {aborted, Reason} ->

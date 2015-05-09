@@ -149,9 +149,12 @@ find_by(DocName, Conditions, [], Limit, Offset, State) ->
         fun() -> mnesia:select(DocName, MatchSpec) end;
       Limit ->
         fun() ->
-          {ManyItems, _Cont} =
-            mnesia:select(DocName, MatchSpec, Offset + Limit, read),
-          lists:sublist(ManyItems, Offset + 1, Limit)
+          case mnesia:select(DocName, MatchSpec, Offset + Limit, read) of
+            {ManyItems, _Cont} ->
+              lists:sublist(ManyItems, Offset + 1, Limit);
+            '$end_of_table' ->
+              []
+          end
         end
     end,
   case mnesia:transaction(Transaction) of

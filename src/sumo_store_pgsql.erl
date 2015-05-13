@@ -95,14 +95,16 @@ persist(Doc,  #{conn := Conn} = State) ->
                         Slot = [FieldName, " = $", integer_to_list(N), " "],
                         {N + 1, [Slot | Slots]}
                     end,
+
         {_, UpdateSlots} = lists:foldl(UpdateFun, {1, []}, NPColumnNames),
+        UpdateSlotsCSV = string:join(UpdateSlots, ", "),
 
         NPCount = length(NPFieldNames),
         IdSlot = ["$", integer_to_list(NPCount + 1)],
 
         UpdateSql = ["UPDATE ", TableName,
                      " SET ",
-                     UpdateSlots,
+                     UpdateSlotsCSV,
                      " WHERE ",
                      escape(IdField), " = ", IdSlot],
 

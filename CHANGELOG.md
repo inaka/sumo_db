@@ -1,5 +1,39 @@
 # Change Log
 
+## [0.3.7](https://github.com/inaka/sumo_db/tree/HEAD)
+
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.6...HEAD)
+
+**Fixed bugs:**
+
+- UPDATE statement for PostgreSQL is missing commas [\#150](https://github.com/inaka/sumo_db/issues/150)
+
+**Closed issues:**
+
+- Update rebar.config file  [\#157](https://github.com/inaka/sumo_db/issues/157)
+
+- Update Gun dependency to 0.1.9 [\#155](https://github.com/inaka/sumo_db/issues/155)
+
+- Please update tirerl [\#154](https://github.com/inaka/sumo_db/issues/154)
+
+- Fix 'sumo\_riak\_store' to export utility functions which are currently private [\#140](https://github.com/inaka/sumo_db/issues/140)
+
+**Merged pull requests:**
+
+- \[Fix \#157\] Update tirerl 0.1.6 version in makefile and rebar.config file [\#158](https://github.com/inaka/sumo_db/pull/158) ([davecaos](https://github.com/davecaos))
+
+- \[Fix \#154\] Update Tirerl dependnecy to 0.1.5 [\#156](https://github.com/inaka/sumo_db/pull/156) ([davecaos](https://github.com/davecaos))
+
+- \[Fixes \#150\] Added commas :boom: [\#151](https://github.com/inaka/sumo_db/pull/151) ([jfacorro](https://github.com/jfacorro))
+
+- Upgrade tirerl to 0.1.4 [\#149](https://github.com/inaka/sumo_db/pull/149) ([elbrujohalcon](https://github.com/elbrujohalcon))
+
+- Fix worker\_pool dep [\#148](https://github.com/inaka/sumo_db/pull/148) ([essen](https://github.com/essen))
+
+- Error using sumo:find to retrieve an inexistent element [\#147](https://github.com/inaka/sumo_db/pull/147) ([elbrujohalcon](https://github.com/elbrujohalcon))
+
+- \[\#ISSUE\] Updated Changelog. [\#144](https://github.com/inaka/sumo_db/pull/144) ([cabol](https://github.com/cabol))
+
 ## [0.3.6](https://github.com/inaka/sumo_db/tree/0.3.6) (2015-04-27)
 
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.5...0.3.6)

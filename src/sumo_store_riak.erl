@@ -133,7 +133,7 @@ delete_by(DocName,
   IdField = sumo_internal:id_field_name(DocName),
   case lists:keyfind(IdField, 1, Conditions) of
     {_K, Key} ->
-      case delete_map(Conn, Bucket, iolist_to_binary(Key), Opts) of
+      case delete_map(Conn, Bucket, to_bin(Key), Opts) of
         ok ->
           {ok, 1, State};
         {error, Error} ->
@@ -200,18 +200,15 @@ find_by(DocName, Conditions, State) ->
   non_neg_integer(),
   state()
 ) -> sumo_store:result([sumo_internal:doc()], state()).
-find_by(DocName,
-        Conditions,
-        Limit,
-        Offset,
+find_by(DocName, Conditions, Limit, Offset,
         #state{conn = Conn,
                bucket = Bucket,
                index = Index,
-               get_opts = Opts} = State) ->
+               get_opts = Opts} = State) when is_list(Conditions) ->
   IdField = sumo_internal:id_field_name(DocName),
   case lists:keyfind(IdField, 1, Conditions) of
     {_K, Key} ->
-      case fetch_map(Conn, Bucket, iolist_to_binary(Key), Opts) of
+      case fetch_map(Conn, Bucket, to_bin(Key), Opts) of
         {ok, RMap} ->
           Val = rmap_to_doc(DocName, RMap),
           {ok, [Val], State};
@@ -226,6 +223,13 @@ find_by(DocName,
         {ok, {_, Res}} -> {ok, Res, State};
         {error, Error} -> {error, Error, State}
       end
+  end;
+find_by(DocName, Conditions, Limit, Offset,
+        #state{conn = Conn, index = Index} = State) ->
+  Query = build_query(Conditions),
+  case search_docs_by(DocName, Conn, Index, Query, Limit, Offset) of
+    {ok, {_, Res}} -> {ok, Res, State};
+    {error, Error} -> {error, Error, State}
   end.
 
 -spec find_by(
@@ -314,12 +318,8 @@ search(Conn, Index, Query, Limit, Offset) ->
   riakc_pb_socket:search(Conn, Index, Query, [{start, Offset}, {rows, Limit}]).
 
 -spec build_query(sumo:conditions()) -> binary().
-build_query([]) ->
-  <<"*:*">>;
-build_query(PL) when is_list(PL) ->
-  build_query1(PL, <<"">>);
-build_query(_) ->
-  <<"*:*">>.
+build_query(Conditions) ->
+  build_query1(Conditions).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Private API.
@@ -456,39 +456,74 @@ to_atom(Data) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% @private
-build_query1([], Acc) ->
-  Acc;
-build_query1([{_, [{_, _} | _T0]} = KV | T], <<"">>) ->
-  build_query1(T,
-    <<(<<"(">>)/binary, (build_query2(KV))/binary, (<<")">>)/binary>>);
-build_query1([{_, [{_, _} | _T0]} = KV | T], Acc) ->
-  build_query1(T,
-    <<Acc/binary, (<<" AND (">>)/binary,
-      (build_query2(KV))/binary, (<<")">>)/binary>>);
-build_query1([{K, V} | T], <<"">>) ->
-  build_query1(T, <<(query_eq(K, V))/binary>>);
-build_query1([{K, V} | T], Acc) ->
-  build_query1(T,
-    <<Acc/binary, (<<" AND ">>)/binary, (query_eq(K, V))/binary>>).
-
-%% @private
-build_query2({K, [{_, _} | _T] = V}) ->
-  F = fun({K_, V_}, Acc) ->
-        Eq = <<(atom_to_binary(K_, utf8))/binary,
-        (<<"_register:">>)/binary,
-        (to_bin(V_))/binary>>,
-        case Acc of
-          <<"">> ->
-            Eq;
-          _ ->
-            <<Acc/binary, (<<" ">>)/binary, (to_bin(K))/binary,
-            (<<" ">>)/binary, Eq/binary>>
-        end
-      end,
-  lists:foldl(F, <<"">>, V).
+build_query1([]) ->
+  <<"*:*">>;
+build_query1(Exprs) when is_list(Exprs) ->
+  Clauses = [build_query1(Expr) || Expr <- Exprs],
+  binary:list_to_bin(["(", interpose(" AND ", Clauses), ")"]);
+build_query1({'and', Exprs}) ->
+  build_query1(Exprs);
+build_query1({'or', Exprs}) ->
+  Clauses = [build_query1(Expr) || Expr <- Exprs],
+  binary:list_to_bin(["(", interpose(" OR ", Clauses), ")"]);
+build_query1({'not', Expr}) ->
+  binary:list_to_bin(["(NOT ", build_query1(Expr), ")"]);
+build_query1({Name, Op, Value}) when Op =:= '<'; Op =:= '<=' ->
+  NewVal = binary:list_to_bin(["[* TO ", escape(Value), "]"]),
+  query_eq(Name, NewVal);
+build_query1({Name, Op, Value}) when Op =:= '>'; Op =:= '>=' ->
+  NewVal = binary:list_to_bin(["[", escape(Value), " TO *]"]),
+  query_eq(Name, NewVal);
+build_query1({Name, '==', Value}) ->
+  build_query1({Name, Value});
+build_query1({Name, '/=', Value}) ->
+  build_query1({negative_field(Name), Value});
+build_query1({Name, 'null'}) ->
+  query_eq(negative_field(Name), <<"[* TO *]">>);
+build_query1({Name, 'not_null'}) ->
+  query_eq(Name, <<"[* TO *]">>);
+build_query1({Name, Value}) ->
+  query_eq(Name, quote(escape(Value))).
 
 %% @private
 query_eq(K, V) ->
-  <<(atom_to_binary(K, utf8))/binary,
-    (<<"_register:">>)/binary,
-    (to_bin(V))/binary>>.
+  binary:list_to_bin([build_key(K), V]).
+
+%% @private
+build_key(K) ->
+  build_key(binary:split(to_bin(K), <<".">>, [global]), <<"">>).
+
+%% @private
+build_key([K], <<"">>) ->
+  binary:list_to_bin([K, "_register:"]);
+build_key([K], Acc) ->
+  binary:list_to_bin([Acc, ".", K, "_register:"]);
+build_key([K | T], <<"">>) ->
+  build_key(T, binary:list_to_bin([K, "_map"]));
+build_key([K | T], Acc) ->
+  build_key(T, binary:list_to_bin([Acc, ".", K, "_map"])).
+
+%% @private
+interpose(Sep, List) ->
+  interpose(Sep, List, []).
+
+%% @private
+interpose(_Sep, [], Result) ->
+  lists:reverse(Result);
+interpose(Sep, [Item | []], Result) ->
+  interpose(Sep, [], [Item | Result]);
+interpose(Sep, [Item | Rest], Result) ->
+  interpose(Sep, Rest, [Sep, Item | Result]).
+
+%% @private
+negative_field(Name) ->
+  binary:list_to_bin([<<"-">>, to_bin(Name)]).
+
+%% @private
+quote(Value) ->
+  [$\", re:replace(to_bin(Value), "[\\\"\\\\]", "\\\\&", [global]), $\"].
+
+%% @private
+escape(Value) ->
+  Escape = "[\\+\\-\\&\\|\\!\\(\\)\\{\\}\\[\\]\\^\\\"\\~\\*\\?\\:\\\\]",
+  re:replace(to_bin(Value), Escape, "\\\\&", [global, {return, binary}]).

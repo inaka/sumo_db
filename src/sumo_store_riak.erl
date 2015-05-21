@@ -124,12 +124,11 @@ persist(Doc,
 -spec delete_by(
   sumo:schema_name(), sumo:conditions(), state()
 ) -> sumo_store:result(sumo_store:affected_rows(), state()).
-delete_by(DocName,
-          Conditions,
+delete_by(DocName, Conditions,
           #state{conn = Conn,
                  bucket = Bucket,
                  index = Index,
-                 del_opts = Opts} = State) ->
+                 del_opts = Opts} = State) when is_list(Conditions) ->
   IdField = sumo_internal:id_field_name(DocName),
   case lists:keyfind(IdField, 1, Conditions) of
     {_K, Key} ->
@@ -148,6 +147,19 @@ delete_by(DocName,
         {error, Error} ->
           {error, Error, State}
       end
+  end;
+delete_by(DocName, Conditions,
+          #state{conn = Conn,
+                 bucket = Bucket,
+                 index = Index,
+                 del_opts = Opts} = State) ->
+  Query = build_query(Conditions),
+  case search_docs_by(DocName, Conn, Index, Query, 0, 0) of
+    {ok, {Total, Res}}  ->
+      delete_docs(Conn, Bucket, Res, Opts),
+      {ok, Total, State};
+    {error, Error} ->
+      {error, Error, State}
   end.
 
 -spec delete_all(

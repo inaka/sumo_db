@@ -186,7 +186,7 @@ do_operators(Module) ->
 
   [_, _] = sumo:find_by(Module,
                         {'and', [{age, 'not_null'},
-                                 {age, '<=', 30}
+                                 {age, '=<', 30}
                                 ]
                         }),
 

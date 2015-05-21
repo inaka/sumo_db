@@ -483,7 +483,7 @@ build_query1({'not', Expr}, EscapeFun, QuoteFun) ->
 build_query1({Name, '<', Value}, EscapeFun, _QuoteFun) ->
   NewVal = binary:list_to_bin(["{* TO ", EscapeFun(Value), "}"]),
   query_eq(Name, NewVal);
-build_query1({Name, '<=', Value}, EscapeFun, _QuoteFun) ->
+build_query1({Name, '=<', Value}, EscapeFun, _QuoteFun) ->
   NewVal = binary:list_to_bin(["[* TO ", EscapeFun(Value), "]"]),
   query_eq(Name, NewVal);
 build_query1({Name, '>', Value}, EscapeFun, _QuoteFun) ->

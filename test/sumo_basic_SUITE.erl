@@ -103,8 +103,6 @@ find_by_module(Module) ->
   SortFun = fun(A, B) -> Module:name(A) < Module:name(B) end,
   [First, Second | _] = lists:sort(SortFun, Results),
 
-  true = is_integer(Module:age(First)),
-
   "B" = to_str(Module:name(First)),
   "D" = to_str(Module:name(Second)),
 

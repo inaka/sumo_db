@@ -319,7 +319,7 @@ search(Conn, Index, Query, Limit, Offset) ->
 
 -spec build_query(sumo:conditions()) -> binary().
 build_query(Conditions) ->
-  build_query1(Conditions).
+  build_query1(Conditions, fun escape/1, fun quote/1).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Private API.
@@ -431,9 +431,9 @@ delete_docs(Conn, Bucket, Docs, Opts) ->
 
 %% @private
 to_bin(Data) when is_integer(Data) ->
-  integer_to_binary(Data);
+  <<Data:128/integer>>;
 to_bin(Data) when is_float(Data) ->
-  float_to_binary(Data);
+  <<Data/float>>;
 to_bin(Data) when is_atom(Data) ->
   atom_to_binary(Data, utf8);
 to_bin(Data) when is_list(Data) ->
@@ -456,34 +456,50 @@ to_atom(Data) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% @private
-build_query1([]) ->
+build_query1([], _EscapeFun, _QuoteFun) ->
   <<"*:*">>;
-build_query1(Exprs) when is_list(Exprs) ->
-  Clauses = [build_query1(Expr) || Expr <- Exprs],
+build_query1(Exprs, EscapeFun, QuoteFun) when is_list(Exprs) ->
+  Clauses = [build_query1(Expr, EscapeFun, QuoteFun) || Expr <- Exprs],
   binary:list_to_bin(["(", interpose(" AND ", Clauses), ")"]);
-build_query1({'and', Exprs}) ->
-  build_query1(Exprs);
-build_query1({'or', Exprs}) ->
-  Clauses = [build_query1(Expr) || Expr <- Exprs],
+build_query1({'and', Exprs}, EscapeFun, QuoteFun) ->
+  build_query1(Exprs, EscapeFun, QuoteFun);
+build_query1({'or', Exprs}, EscapeFun, QuoteFun) ->
+  Clauses = [build_query1(Expr, EscapeFun, QuoteFun) || Expr <- Exprs],
   binary:list_to_bin(["(", interpose(" OR ", Clauses), ")"]);
-build_query1({'not', Expr}) ->
-  binary:list_to_bin(["(NOT ", build_query1(Expr), ")"]);
-build_query1({Name, Op, Value}) when Op =:= '<'; Op =:= '<=' ->
-  NewVal = binary:list_to_bin(["[* TO ", escape(Value), "]"]),
+build_query1({'not', Expr}, EscapeFun, QuoteFun) ->
+  binary:list_to_bin(["(NOT ", build_query1(Expr, EscapeFun, QuoteFun), ")"]);
+build_query1({Name, '<', Value}, EscapeFun, _QuoteFun) ->
+  NewVal = binary:list_to_bin(["{* TO ", EscapeFun(Value), "}"]),
   query_eq(Name, NewVal);
-build_query1({Name, Op, Value}) when Op =:= '>'; Op =:= '>=' ->
-  NewVal = binary:list_to_bin(["[", escape(Value), " TO *]"]),
+build_query1({Name, '<=', Value}, EscapeFun, _QuoteFun) ->
+  NewVal = binary:list_to_bin(["[* TO ", EscapeFun(Value), "]"]),
   query_eq(Name, NewVal);
-build_query1({Name, '==', Value}) ->
-  build_query1({Name, Value});
-build_query1({Name, '/=', Value}) ->
-  build_query1({negative_field(Name), Value});
-build_query1({Name, 'null'}) ->
-  query_eq(negative_field(Name), <<"[* TO *]">>);
-build_query1({Name, 'not_null'}) ->
-  query_eq(Name, <<"[* TO *]">>);
-build_query1({Name, Value}) ->
-  query_eq(Name, quote(escape(Value))).
+build_query1({Name, '>', Value}, EscapeFun, _QuoteFun) ->
+  NewVal = binary:list_to_bin(["{", EscapeFun(Value), " TO *}"]),
+  query_eq(Name, NewVal);
+build_query1({Name, '>=', Value}, EscapeFun, _QuoteFun) ->
+  NewVal = binary:list_to_bin(["[", EscapeFun(Value), " TO *]"]),
+  query_eq(Name, NewVal);
+build_query1({Name, '==', Value}, EscapeFun, QuoteFun) ->
+  build_query1({Name, Value}, EscapeFun, QuoteFun);
+build_query1({Name, '/=', Value}, EscapeFun, QuoteFun) ->
+  build_query1({negative_field(Name), Value}, EscapeFun, QuoteFun);
+build_query1({Name, 'like', Value}, _EscapeFun, _QuoteFun) ->
+  NewVal = like_to_wildcard_search(Value),
+  Bypass = fun(X) -> X end,
+  build_query1({Name, NewVal}, Bypass, Bypass);
+build_query1({Name, 'null'}, _EscapeFun, _QuoteFun) ->
+  %% null: (Field:undefined OR (NOT Field:[* TO *]))
+  Val = {'or', [{Name, <<"undefined">>}, {'not', {Name, <<"[* TO *]">>}}]},
+  Bypass = fun(X) -> X end,
+  build_query1(Val, Bypass, Bypass);
+build_query1({Name, 'not_null'}, _EscapeFun, _QuoteFun) ->
+  %% not_null: (Field:[* TO *] AND -Field:undefined)
+  Val = {'and', [{Name, <<"[* TO *]">>}, {Name, '/=', <<"undefined">>}]},
+  Bypass = fun(X) -> X end,
+  build_query1(Val, Bypass, Bypass);
+build_query1({Name, Value}, EscapeFun, QuoteFun) ->
+  query_eq(Name, QuoteFun(EscapeFun(Value))).
 
 %% @private
 query_eq(K, V) ->
@@ -527,3 +543,11 @@ quote(Value) ->
 escape(Value) ->
   Escape = "[\\+\\-\\&\\|\\!\\(\\)\\{\\}\\[\\]\\^\\\"\\~\\*\\?\\:\\\\]",
   re:replace(to_bin(Value), Escape, "\\\\&", [global, {return, binary}]).
+
+%% @private
+whitespace(Value) ->
+  re:replace(Value, "[\\\s\\\\]", "\\\\&", [global, {return, binary}]).
+
+%% @private
+like_to_wildcard_search(Like) ->
+  whitespace(binary:replace(to_bin(Like), <<"%">>, <<"*">>, [global])).

@@ -47,7 +47,12 @@ init_per_suite(Config) ->
         sumo:persist(Module, Module:new("John", "Doe", 30)),
         sumo:persist(Module, Module:new("Jane Jr.", "Doe", 5)),
         sumo:persist(Module, Module:new("Joe", "Armstrong")),
-        sumo:persist(Module, Module:new("Alan", "Turing", 102, "Computer St."))
+        sumo:persist(Module, Module:new("Alan", "Turing", 102, "Computer St.")),
+
+        case Module of
+          sumo_test_people_riak -> timer:sleep(5000);
+          _                     -> ok
+        end
     end,
 
   lists:foreach(Fun, sumo_test_utils:people_with_conditional_logic()),
@@ -61,6 +66,7 @@ end_per_suite(Config) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Tests cases
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 backward_compatibility(_Config) ->
   lists:foreach(
     fun do_backward_compatibility/1,
@@ -180,7 +186,7 @@ do_operators(Module) ->
 
   [_, _] = sumo:find_by(Module,
                         {'and', [{age, 'not_null'},
-                                 {age, '=<', 30}
+                                 {age, '<=', 30}
                                 ]
                         }),
 

@@ -427,7 +427,7 @@ search_docs_by(DocName, Conn, Index, Query, Limit, Offset) ->
   case search(Conn, Index, Query, Limit, Offset) of
     {ok, {search_results, Results, _, Total}} ->
       F = fun({_, KV}, Acc) -> [kv_to_doc(DocName, KV) | Acc] end,
-      NewRes = lists:foldl(F, [], Results),
+      NewRes = lists:reverse(lists:foldl(F, [], Results)),
       {ok, {Total, NewRes}};
     {error, Error} ->
       {error, Error}

@@ -365,7 +365,7 @@ list_to_rset(_, [], Acc) ->
 list_to_rset(K, [H | T], Acc) ->
   M = riakc_map:update(
     {to_bin(K), set},
-    fun(S) -> riakc_set:add_element(to_bin(H), S) end,
+    fun(S) -> riakc_set:add_element(to_bin2(H), S) end,
     Acc),
   list_to_rset(K, T, M).
 
@@ -378,7 +378,7 @@ rmap_update({K, V}, RMap) when is_list(V) ->
     true ->
       riakc_map:update(
         {to_bin(K), register},
-        fun(R) -> riakc_register:set(to_bin(V), R) end,
+        fun(R) -> riakc_register:set(to_bin2(V), R) end,
         RMap);
     false ->
       list_to_rset(K, V, RMap)
@@ -386,7 +386,7 @@ rmap_update({K, V}, RMap) when is_list(V) ->
 rmap_update({K, V}, RMap) ->
   riakc_map:update(
     {to_bin(K), register},
-    fun(R) -> riakc_register:set(to_bin(V), R) end,
+    fun(R) -> riakc_register:set(to_bin2(V), R) end,
     RMap).
 
 %% @private
@@ -443,14 +443,26 @@ delete_docs(Conn, Bucket, Docs, Opts) ->
 
 %% @private
 to_bin(Data) when is_integer(Data) ->
-  <<Data:128/integer>>;
+  integer_to_binary(Data);
 to_bin(Data) when is_float(Data) ->
-  <<Data/float>>;
+  float_to_binary(Data);
 to_bin(Data) when is_atom(Data) ->
   atom_to_binary(Data, utf8);
 to_bin(Data) when is_list(Data) ->
   iolist_to_binary(Data);
 to_bin(Data) ->
+  Data.
+
+%% @private
+to_bin2(Data) when is_integer(Data) ->
+  <<Data:128/integer>>;
+to_bin2(Data) when is_float(Data) ->
+  <<Data/float>>;
+to_bin2(Data) when is_atom(Data) ->
+  atom_to_binary(Data, utf8);
+to_bin2(Data) when is_list(Data) ->
+  iolist_to_binary(Data);
+to_bin2(Data) ->
   Data.
 
 %% @private
@@ -554,7 +566,7 @@ quote(Value) ->
 %% @private
 escape(Value) ->
   Escape = "[\\+\\-\\&\\|\\!\\(\\)\\{\\}\\[\\]\\^\\\"\\~\\*\\?\\:\\\\]",
-  re:replace(to_bin(Value), Escape, "\\\\&", [global, {return, binary}]).
+  re:replace(to_bin2(Value), Escape, "\\\\&", [global, {return, binary}]).
 
 %% @private
 whitespace(Value) ->

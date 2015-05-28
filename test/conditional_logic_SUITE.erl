@@ -49,10 +49,7 @@ init_per_suite(Config) ->
         sumo:persist(Module, Module:new("Joe", "Armstrong")),
         sumo:persist(Module, Module:new("Alan", "Turing", 102, "Computer St.")),
 
-        case Module of
-          sumo_test_people_riak -> timer:sleep(5000);
-          _                     -> ok
-        end
+        sumo_test_utils:sleep_if_required(Module)
     end,
 
   lists:foreach(Fun, sumo_test_utils:people_with_conditional_logic()),

@@ -8,6 +8,7 @@
   , people_with_conditional_logic/0
   , people_with_like/0
   , people_with_numeric_sort/0
+  , sleep_if_required/1
   ]).
 
 -spec start_apps() -> ok.
@@ -46,3 +47,10 @@ people_with_like() ->
 -spec people_with_numeric_sort() -> [atom()].
 people_with_numeric_sort() ->
   people_with_conditional_logic() -- [sumo_test_people_riak].
+
+-spec sleep_if_required(atom()) -> ok.
+sleep_if_required(Module) ->
+  case Module of
+    sumo_test_people_riak -> timer:sleep(5000);
+    _                     -> ok
+  end.

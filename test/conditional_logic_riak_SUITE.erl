@@ -43,11 +43,16 @@ init_per_suite(Config) ->
   sumo:create_schema(Module),
   sumo:delete_all(Module),
 
-  sumo:persist(Module, Module:new("Jane", "Doe")),
-  sumo:persist(Module, Module:new("John", "Doe", 30, "2015-01-01")),
-  sumo:persist(Module, Module:new("Jane Jr.", "Doe", 5, "2015-01-05")),
-  sumo:persist(Module, Module:new("Joe", "Armstrong")),
-  sumo:persist(Module, Module:new("Alan", "Turing", 102, "2015-01-10")),
+  sumo:persist(
+    Module, sumo_test_people_riak:new("Jane", "Doe")),
+  sumo:persist(
+    Module, sumo_test_people_riak:new("John", "Doe", 30, "2015-01-01")),
+  sumo:persist(
+    Module, sumo_test_people_riak:new("Jane Jr.", "Doe", 5, "2015-01-05")),
+  sumo:persist(
+    Module, sumo_test_people_riak:new("Joe", "Armstrong")),
+  sumo:persist(
+    Module, sumo_test_people_riak:new("Alan", "Turing", 102, "2015-01-10")),
 
   timer:sleep(5000),
 

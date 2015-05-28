@@ -150,7 +150,7 @@ do_null_conditional(Module) ->
 operators(_Config) ->
   lists:foreach(
     fun do_operators/1,
-    sumo_test_utils:people_with_conditional_logic()).
+    sumo_test_utils:people_with_numeric_sort()).
 
 do_operators(Module) ->
   [_, _] = sumo:find_by(Module,

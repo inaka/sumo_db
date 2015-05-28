@@ -7,6 +7,7 @@
   , people_with_sort/0
   , people_with_conditional_logic/0
   , people_with_like/0
+  , people_with_numeric_sort/0
   ]).
 
 -spec start_apps() -> ok.
@@ -25,7 +26,7 @@ all_people() ->
 
 -spec people_with_conditional_logic() -> [atom()].
 people_with_conditional_logic() ->
-  all_people() -- [sumo_test_people_elasticsearch, sumo_test_people_riak].
+  all_people() -- [sumo_test_people_elasticsearch].
 
 -spec people_with_sort() -> [atom()].
 people_with_sort() ->
@@ -41,3 +42,7 @@ people_with_like() ->
     [ sumo_test_people_elasticsearch
     , sumo_test_people_mnesia
     ].
+
+-spec people_with_numeric_sort() -> [atom()].
+people_with_numeric_sort() ->
+  people_with_conditional_logic() -- [sumo_test_people_riak].

@@ -47,7 +47,7 @@
         integer | string | binary | text | float | date | datetime.
 -type field_name()  :: atom().
 -type field_value() :: term().
--type operator() :: '<' | '>' | '==' | '<=' | '>=' | '/=' | 'like'.
+-type operator() :: '<' | '>' | '==' | '=<' | '>=' | '/=' | 'like'.
 -type doc()         :: #{field_name() => field_value()}.
 -type conditions()  :: condition() | [condition()].
 -type condition()   :: {'and', [condition()]}

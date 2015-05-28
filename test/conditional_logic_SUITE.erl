@@ -47,7 +47,9 @@ init_per_suite(Config) ->
         sumo:persist(Module, Module:new("John", "Doe", 30)),
         sumo:persist(Module, Module:new("Jane Jr.", "Doe", 5)),
         sumo:persist(Module, Module:new("Joe", "Armstrong")),
-        sumo:persist(Module, Module:new("Alan", "Turing", 102, "Computer St."))
+        sumo:persist(Module, Module:new("Alan", "Turing", 102, "Computer St.")),
+
+        sumo_test_utils:sleep_if_required(Module)
     end,
 
   lists:foreach(Fun, sumo_test_utils:people_with_conditional_logic()),
@@ -61,6 +63,7 @@ end_per_suite(Config) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Tests cases
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 backward_compatibility(_Config) ->
   lists:foreach(
     fun do_backward_compatibility/1,
@@ -144,7 +147,7 @@ do_null_conditional(Module) ->
 operators(_Config) ->
   lists:foreach(
     fun do_operators/1,
-    sumo_test_utils:people_with_conditional_logic()).
+    sumo_test_utils:people_with_numeric_sort()).
 
 do_operators(Module) ->
   [_, _] = sumo:find_by(Module,

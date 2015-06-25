@@ -1,10 +1,34 @@
 # Change Log
 
-## [0.3.9](https://github.com/inaka/sumo_db/tree/HEAD)
+## [0.3.10](https://github.com/inaka/sumo_db/tree/0.3.10) (2015-06-25)
 
-[Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.8...HEAD)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.9...0.3.10)
+
+**Fixed bugs:**
+
+- Return a different/new connection from pgsql backend   [\#170](https://github.com/inaka/sumo_db/issues/170)
+
+**Closed issues:**
+
+- Update tirerl [\#166](https://github.com/inaka/sumo_db/issues/166)
+
+- Create a pool of connections in the pgsql backend [\#123](https://github.com/inaka/sumo_db/issues/123)
 
 **Merged pull requests:**
+
+- \[Closes \#170\] Return new connection per call to sumo\_backend\_pgsql:get\_connection [\#173](https://github.com/inaka/sumo_db/pull/173) ([jfacorro](https://github.com/jfacorro))
+
+## [0.3.9](https://github.com/inaka/sumo_db/tree/0.3.9) (2015-06-15)
+
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.8...0.3.9)
+
+**Closed issues:**
+
+- Version Bump to 0.3.9 [\#168](https://github.com/inaka/sumo_db/issues/168)
+
+**Merged pull requests:**
+
+- \[\#168\] Version Bump to 0.3.9 [\#169](https://github.com/inaka/sumo_db/pull/169) ([davecaos](https://github.com/davecaos))
 
 - \[\#166\] Update Tirerl dependecy to 0.1.7 [\#167](https://github.com/inaka/sumo_db/pull/167) ([davecaos](https://github.com/davecaos))
 

@@ -76,12 +76,15 @@ init(Options) ->
   Opts = [{port,     proplists:get_value(port,     Options, 5432)},
           {database, proplists:get_value(database, Options)}],
 
-  {ok, Conn} = pgsql:connect(Host, Username, Password, Opts),
-
-  {ok, #{conn => Conn}}.
+  {ok, #{host => Host, user => Username, pass => Password, opts => Opts}}.
 
 -spec handle_call(term(), term(), state()) -> {reply, term(), state()}.
-handle_call(get_connection, _From, State = #{conn := Conn}) ->
+handle_call(get_connection, _From, State) ->
+  #{ host := Host
+   , user := Username
+   , pass := Password
+   , opts := Opts} = State,
+  {ok, Conn} = pgsql:connect(Host, Username, Password, Opts),
   {reply, Conn, State}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

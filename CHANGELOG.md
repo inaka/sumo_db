@@ -1,5 +1,13 @@
 # Change Log
 
+## [0.3.11](https://github.com/inaka/sumo_db/tree/HEAD)
+
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.10...HEAD)
+
+**Merged pull requests:**
+
+- \#177 - Fixed issue in sumo\_store\_riak query builder, properly escape/… [\#178](https://github.com/inaka/sumo_db/pull/178) ([cabol](https://github.com/cabol))
+
 ## [0.3.10](https://github.com/inaka/sumo_db/tree/0.3.10) (2015-06-25)
 
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.9...0.3.10)
@@ -10,11 +18,15 @@
 
 **Closed issues:**
 
+- Version Bump to 0.3.10 [\#174](https://github.com/inaka/sumo_db/issues/174)
+
 - Update tirerl [\#166](https://github.com/inaka/sumo_db/issues/166)
 
 - Create a pool of connections in the pgsql backend [\#123](https://github.com/inaka/sumo_db/issues/123)
 
 **Merged pull requests:**
+
+- \[Closes \#174\] Version bump to 0.3.10 [\#175](https://github.com/inaka/sumo_db/pull/175) ([jfacorro](https://github.com/jfacorro))
 
 - \[Closes \#170\] Return new connection per call to sumo\_backend\_pgsql:get\_connection [\#173](https://github.com/inaka/sumo_db/pull/173) ([jfacorro](https://github.com/jfacorro))
 

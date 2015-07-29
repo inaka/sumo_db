@@ -510,8 +510,8 @@ build_query1({Name, 'not_null'}, _EscapeFun, _QuoteFun) ->
   Val = {'and', [{Name, <<"[* TO *]">>}, {Name, '/=', <<"undefined">>}]},
   Bypass = fun(X) -> X end,
   build_query1(Val, Bypass, Bypass);
-build_query1({Name, Value}, EscapeFun, QuoteFun) ->
-  query_eq(Name, QuoteFun(EscapeFun(Value))).
+build_query1({Name, Value}, _EscapeFun, QuoteFun) ->
+  query_eq(Name, QuoteFun(Value)).
 
 %% @private
 query_eq(K, V) ->

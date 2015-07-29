@@ -84,6 +84,7 @@ init_store(Module) ->
   sumo:persist(Module, Module:new(<<"D">>, <<"D">>, 4)),
   sumo:persist(Module, Module:new(<<"E">>, <<"A">>, 2)),
   sumo:persist(Module, Module:new(<<"F">>, <<"E">>, 1)),
+  sumo:persist(Module, Module:new(<<"Model T-2000">>, <<"undefined">>, 7)),
 
   %% Sync Timeout.
   sync_timeout(Module).
@@ -95,7 +96,7 @@ find_module(Module) ->
   notfound = sumo:find(Module, 0).
 
 find_all_module(Module) ->
-  6 = length(sumo:find_all(Module)).
+  7 = length(sumo:find_all(Module)).
 
 find_by_module(Module) ->
   Results = sumo:find_by(Module, [{last_name, <<"D">>}]),
@@ -111,7 +112,12 @@ find_by_module(Module) ->
   First1 = First,
   %% Check pagination
   Results1 = sumo:find_by(Module, [], 3, 1),
-  3 = length(Results1).
+  3 = length(Results1),
+
+  %% This test is #177 github issue related
+  7 = length(sumo:find_by(Module, [])),
+  Robot = sumo:find_by(Module, [{name, <<"Model T-2000">>}]),
+  1 = length(Robot).
 
 delete_all_module(Module) ->
   sumo:delete_all(Module),

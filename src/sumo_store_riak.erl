@@ -203,45 +203,73 @@ find_all(DocName, _SortFields, Limit, Offset, State) ->
 -spec find_by(sumo:schema_name(), sumo:conditions(), state()) ->
   sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName, Conditions, State) ->
-  find_by(DocName, Conditions, 0, 0, State).
+  find_by(DocName, Conditions, undefined, undefined, State).
 
 -spec find_by(
   sumo:schema_name(),
   sumo:conditions(),
-  non_neg_integer(),
-  non_neg_integer(),
+  undefined | non_neg_integer(),
+  undefined | non_neg_integer(),
   state()
 ) -> sumo_store:result([sumo_internal:doc()], state()).
-find_by(DocName, Conditions, Limit, Offset,
-        #state{conn = Conn,
-               bucket = Bucket,
-               index = Index,
-               get_opts = Opts} = State) when is_list(Conditions) ->
+find_by(DocName, Conditions, Limit, Offset, State) when is_list(Conditions) ->
   IdField = sumo_internal:id_field_name(DocName),
   case lists:keyfind(IdField, 1, Conditions) of
     {_K, Key} ->
-      case fetch_map(Conn, Bucket, to_bin(Key), Opts) of
-        {ok, RMap} ->
-          Val = rmap_to_doc(DocName, RMap),
-          {ok, [Val], State};
-        {error, {notfound, _}} ->
-          {ok, [], State};
-        {error, Error} ->
-          {error, Error, State}
-      end;
+      find_by_id_field(DocName, Key, State);
     _ ->
-      Query = build_query(Conditions),
-      case search_docs_by(DocName, Conn, Index, Query, Limit, Offset) of
-        {ok, {_, Res}} -> {ok, Res, State};
-        {error, Error} -> {error, Error, State}
-      end
+      find_by_query(DocName, Conditions, Limit, Offset, State)
   end;
-find_by(DocName, Conditions, Limit, Offset,
-        #state{conn = Conn, index = Index} = State) ->
+find_by(DocName, Conditions, Limit, Offset, State) ->
+  find_by_query(DocName, Conditions, Limit, Offset, State).
+
+find_by_id_field(DocName, Key, State) ->
+  #state{conn = Conn, bucket = Bucket, get_opts = Opts} = State,
+  case fetch_map(Conn, Bucket, to_bin(Key), Opts) of
+    {ok, RMap} ->
+      Val = rmap_to_doc(DocName, RMap),
+      {ok, [Val], State};
+    {error, {notfound, _}} ->
+      {ok, [], State};
+    {error, Error} ->
+      {error, Error, State}
+  end.
+
+find_by_query(DocName, Conditions, undefined, undefined, State) ->
+  #state{conn = Conn, index = Index} = State,
+  Query = build_query(Conditions),
+  find_all_by_query(DocName, Conn, Index, Query, State);
+
+find_by_query(DocName, Conditions, Limit, Offset, State) ->
+  #state{conn = Conn, index = Index} = State,
   Query = build_query(Conditions),
   case search_docs_by(DocName, Conn, Index, Query, Limit, Offset) of
     {ok, {_, Res}} -> {ok, Res, State};
     {error, Error} -> {error, Error, State}
+  end.
+
+find_all_by_query(DocName, Conn, Index, Query, State) ->
+  FirstQuery =
+    case search_docs_by(DocName, Conn, Index, Query, 0, 0) of
+      {ok, {Total, Res}} ->
+        {ok, length(Res), Total, Res};
+      Error1 ->
+        Error1
+    end,
+  case FirstQuery of
+    {ok, ResultCount, Total1, InitialResults} when ResultCount < Total1 ->
+      Offset = ResultCount,
+      Limit  = Total1 - ResultCount,
+      case search_docs_by(DocName, Conn, Index, Query, Limit, Offset) of
+        {ok, {Total1, RemainingResults}} ->
+          {ok, lists:append(InitialResults, RemainingResults), State};
+        {error, Error2} ->
+          {error, Error2, State}
+      end;
+    {ok, _ResultCount, _Total, Results} ->
+      {ok, Results, State};
+    {error, Error} ->
+      {error, Error, State}
   end.
 
 -spec find_by(

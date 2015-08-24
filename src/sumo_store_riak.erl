@@ -113,7 +113,7 @@ init(Opts) ->
 ) -> sumo_store:result(sumo_internal:doc(), state()).
 persist(Doc,
         #state{conn = Conn, bucket = Bucket, put_opts = Opts} = State) ->
-  {Id, NewDoc} = new_doc(Doc, State),
+  {Id, NewDoc} = new_doc(sleep(Doc), State),
   case update_map(Conn, Bucket, Id, doc_to_rmap(NewDoc), Opts) of
     {error, Error} ->
       {error, Error, State};
@@ -223,6 +223,7 @@ find_by(DocName, Conditions, Limit, Offset, State) when is_list(Conditions) ->
 find_by(DocName, Conditions, Limit, Offset, State) ->
   find_by_query(DocName, Conditions, Limit, Offset, State).
 
+%% @private
 find_by_id_field(DocName, Key, State) ->
   #state{conn = Conn, bucket = Bucket, get_opts = Opts} = State,
   case fetch_map(Conn, Bucket, to_bin(Key), Opts) of
@@ -235,11 +236,13 @@ find_by_id_field(DocName, Key, State) ->
       {error, Error, State}
   end.
 
+%% @private
 find_by_query(DocName, Conditions, undefined, undefined, State) ->
   #state{conn = Conn, index = Index} = State,
   Query = build_query(Conditions),
   find_all_by_query(DocName, Conn, Index, Query, State);
 
+%% @private
 find_by_query(DocName, Conditions, Limit, Offset, State) ->
   #state{conn = Conn, index = Index} = State,
   Query = build_query(Conditions),
@@ -248,6 +251,7 @@ find_by_query(DocName, Conditions, Limit, Offset, State) ->
     {error, Error} -> {error, Error, State}
   end.
 
+%% @private
 find_all_by_query(DocName, Conn, Index, Query, State) ->
   FirstQuery =
     case search_docs_by(DocName, Conn, Index, Query, 0, 0) of
@@ -306,7 +310,7 @@ map_to_rmap(Map) ->
   sumo:schema_name(), riakc_map:crdt_map()
 ) -> sumo_internal:doc().
 rmap_to_doc(DocName, RMap) ->
-  sumo_internal:new_doc(DocName, rmap_to_map(RMap)).
+  wakeup(sumo_internal:new_doc(DocName, rmap_to_map(RMap))).
 
 -spec rmap_to_map(riakc_map:crdt_map()) -> map().
 rmap_to_map(RMap) ->
@@ -366,6 +370,69 @@ build_query(Conditions) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% @private
+sleep(Doc) ->
+  DTFields = datetime_fields(Doc),
+  Encode =
+    fun({FieldName, FieldValue}, Acc) ->
+      case {FieldName, is_datetime(FieldValue)} of
+        {datetime, true} ->
+          sumo_internal:set_field(FieldName, iso8601:format(FieldValue), Acc);
+        {date, true} ->
+          DateTime = {FieldValue, {0, 0, 0}},
+          sumo_internal:set_field(FieldName, iso8601:format(DateTime), Acc);
+        _ ->
+          Acc
+      end
+    end,
+  lists:foldl(Encode, Doc, DTFields).
+
+%% @private
+wakeup(Doc) ->
+  DTFields = datetime_fields(Doc),
+  Decode =
+    fun({FieldName, FieldValue}, Acc) ->
+      case FieldName of
+        datetime when FieldValue /= <<"undefined">> ->
+          sumo_internal:set_field(FieldName, iso8601:parse(FieldValue), Acc);
+        date when FieldValue /= <<"undefined">> ->
+          {Date, _} = iso8601:parse(FieldValue),
+          sumo_internal:set_field(FieldName, Date, Acc);
+        _ ->
+          Acc
+      end
+    end,
+  lists:foldl(Decode, Doc, DTFields).
+
+%% @private
+datetime_fields(Doc) ->
+  DocName = sumo_internal:doc_name(Doc),
+  Schema = sumo_internal:get_schema(DocName),
+  SchemaFields = sumo_internal:schema_fields(Schema),
+  Filter =
+    fun(Field, Acc) ->
+      case sumo_internal:field_type(Field) of
+        T when T =:= datetime; T =:= date ->
+          FieldName = sumo_internal:field_name(Field),
+          FieldValue = sumo_internal:get_field(FieldName, Doc),
+          [{FieldName, FieldValue} | Acc];
+        _ ->
+          Acc
+      end
+    end,
+  lists:foldl(Filter, [], SchemaFields).
+
+%% @private
+is_datetime(DT) ->
+  case DT of
+    {{_, _, _} = Date, {_, _, _}} ->
+      calendar:valid_date(Date);
+    {_, _, _} ->
+      calendar:valid_date(DT);
+    _ ->
+      false
+  end.
+
+%% @private
 doc_id(Doc) ->
   DocName = sumo_internal:doc_name(Doc),
   IdField = sumo_internal:id_field_name(DocName),
@@ -423,7 +490,7 @@ kv_to_doc(DocName, KV) ->
         NK = normalize_doc_fields(K),
         sumo_internal:set_field(to_atom(NK), V, Acc)
       end,
-  lists:foldl(F, sumo_internal:new_doc(DocName), KV).
+  wakeup(lists:foldl(F, sumo_internal:new_doc(DocName), KV)).
 
 %% @private
 normalize_doc_fields(Src) ->

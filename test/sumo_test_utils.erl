@@ -9,6 +9,7 @@
   , people_with_like/0
   , people_with_numeric_sort/0
   , sleep_if_required/1
+  , people_with_proper_dates/0
   ]).
 
 -spec start_apps() -> ok.
@@ -54,3 +55,7 @@ sleep_if_required(Module) ->
     sumo_test_people_riak -> timer:sleep(5000);
     _                     -> ok
   end.
+
+-spec people_with_proper_dates() -> [atom()].
+people_with_proper_dates() ->
+  all_people() -- [sumo_test_people_postgres].

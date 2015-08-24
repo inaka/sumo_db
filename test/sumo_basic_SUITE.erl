@@ -13,7 +13,7 @@
          find_by/1,
          delete_all/1,
          delete/1,
-         check_datetime_fields/1
+         check_proper_dates/1
         ]).
 
 -define(EXCLUDED_FUNS,
@@ -71,10 +71,10 @@ delete_all(_Config) ->
 delete(_Config) ->
   run_all_stores(fun delete_module/1).
 
-check_datetime_fields(_Config) ->
+check_proper_dates(_Config) ->
   lists:foreach(
-    fun do_check_datetime_fields/1,
-    [sumo_test_people_riak]).
+    fun check_proper_dates_module/1,
+    sumo_test_utils:people_with_proper_dates()).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Internal functions
@@ -145,19 +145,19 @@ delete_module(Module) ->
 
   1 = length(All) - length(NewAll).
 
-do_check_datetime_fields(Module) ->
+check_proper_dates_module(Module) ->
   [P0] = sumo:find_by(Module, [{name, <<"A">>}]),
   P1 = sumo:find(Module, Module:id(P0)),
   [P2 | _] = sumo:find_all(Module),
 
   {Date, _} = calendar:universal_time(),
 
-  Date = Module:date(P0),
-  {Date, {_, _, _}} = Module:datetime(P0),
-  Date = Module:date(P1),
-  {Date, {_, _, _}} = Module:datetime(P1),
-  Date = Module:date(P2),
-  {Date, {_, _, _}} = Module:datetime(P2).
+  Date = Module:birthdate(P0),
+  {Date, {_, _, _}} = Module:created_at(P0),
+  Date = Module:birthdate(P1),
+  {Date, {_, _, _}} = Module:created_at(P1),
+  Date = Module:birthdate(P2),
+  {Date, {_, _, _}} = Module:created_at(P2).
 
 %%% Helper
 

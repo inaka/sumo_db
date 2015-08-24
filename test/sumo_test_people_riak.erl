@@ -12,17 +12,17 @@
         , name/1
         , id/1
         , age/1
-        , date/1
-        , datetime/1
+        , birthdate/1
+        , created_at/1
         ]).
 
--record(person, {id        :: integer(),
-                 name      :: string(),
-                 last_name :: string(),
-                 age       :: integer(),
-                 address   :: string(),
-                 date      :: calendar:date(),
-                 datetime  :: calendar:datetime()}).
+-record(person, {id         :: integer(),
+                 name       :: string(),
+                 last_name  :: string(),
+                 age        :: integer(),
+                 address    :: string(),
+                 birthdate  :: calendar:date(),
+                 created_at :: calendar:datetime()}).
 
 -type person() :: #person{}.
 
@@ -33,36 +33,36 @@
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
   Fields =
-    [sumo:new_field(id,        string, [id, {length, 255}, not_null]),
-     sumo:new_field(name,      string, [{length, 255}, not_null]),
-     sumo:new_field(last_name, string, [{length, 255}, not_null]),
-     sumo:new_field(age,       integer),
-     sumo:new_field(address,   string, [{length, 255}]),
-     sumo:new_field(date,      date),
-     sumo:new_field(datetime,  datetime)
+    [sumo:new_field(id,         string, [id, {length, 255}, not_null]),
+     sumo:new_field(name,       string, [{length, 255}, not_null]),
+     sumo:new_field(last_name,  string, [{length, 255}, not_null]),
+     sumo:new_field(age,        integer),
+     sumo:new_field(address,    string, [{length, 255}]),
+     sumo:new_field(birthdate,  date),
+     sumo:new_field(created_at, datetime)
     ],
   sumo:new_schema(?MODULE, Fields).
 
 -spec sumo_sleep(person()) -> sumo:doc().
 sumo_sleep(Person) ->
-  #{id        => Person#person.id,
-    name      => Person#person.name,
-    last_name => Person#person.last_name,
-    age       => Person#person.age,
-    address   => Person#person.address,
-    date      => Person#person.date,
-    datetime  => Person#person.datetime}.
+  #{id         => Person#person.id,
+    name       => Person#person.name,
+    last_name  => Person#person.last_name,
+    age        => Person#person.age,
+    address    => Person#person.address,
+    birthdate  => Person#person.birthdate,
+    created_at => Person#person.created_at}.
 
 -spec sumo_wakeup(sumo:doc()) -> person().
 sumo_wakeup(Person) ->
   #person{
-    id        = maps:get(id, Person),
-    name      = maps:get(name, Person),
-    last_name = maps:get(last_name, Person),
-    age       = maps:get(age, Person),
-    address   = maps:get(address, Person),
-    date      = maps:get(date, Person),
-    datetime  = maps:get(datetime, Person)
+    id         = maps:get(id, Person),
+    name       = maps:get(name, Person),
+    last_name  = maps:get(last_name, Person),
+    age        = maps:get(age, Person),
+    address    = maps:get(address, Person),
+    birthdate  = maps:get(birthdate, Person),
+    created_at = maps:get(created_at, Person)
   }.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -81,8 +81,8 @@ new(Name, LastName, Age, Address) ->
           last_name = LastName,
           age = Age,
           address = Address,
-          date = Date,
-          datetime = Datetime}.
+          birthdate = Date,
+          created_at = Datetime}.
 
 name(Person) ->
   Person#person.name.
@@ -93,8 +93,8 @@ id(Person) ->
 age(Person) ->
   Person#person.age.
 
-date(Person) ->
-  Person#person.date.
+birthdate(Person) ->
+  Person#person.birthdate.
 
-datetime(Person) ->
-  Person#person.datetime.
+created_at(Person) ->
+  Person#person.created_at.

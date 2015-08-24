@@ -373,8 +373,8 @@ build_query(Conditions) ->
 sleep(Doc) ->
   DTFields = datetime_fields(Doc),
   Encode =
-    fun({FieldName, FieldValue}, Acc) ->
-      case {FieldName, is_datetime(FieldValue)} of
+    fun({FieldName, FieldType, FieldValue}, Acc) ->
+      case {FieldType, is_datetime(FieldValue)} of
         {datetime, true} ->
           sumo_internal:set_field(FieldName, iso8601:format(FieldValue), Acc);
         {date, true} ->
@@ -390,8 +390,8 @@ sleep(Doc) ->
 wakeup(Doc) ->
   DTFields = datetime_fields(Doc),
   Decode =
-    fun({FieldName, FieldValue}, Acc) ->
-      case FieldName of
+    fun({FieldName, FieldType, FieldValue}, Acc) ->
+      case FieldType of
         datetime when FieldValue /= <<"undefined">> ->
           sumo_internal:set_field(FieldName, iso8601:parse(FieldValue), Acc);
         date when FieldValue /= <<"undefined">> ->
@@ -410,11 +410,12 @@ datetime_fields(Doc) ->
   SchemaFields = sumo_internal:schema_fields(Schema),
   Filter =
     fun(Field, Acc) ->
-      case sumo_internal:field_type(Field) of
+      FieldType = sumo_internal:field_type(Field),
+      case FieldType of
         T when T =:= datetime; T =:= date ->
           FieldName = sumo_internal:field_name(Field),
           FieldValue = sumo_internal:get_field(FieldName, Doc),
-          [{FieldName, FieldValue} | Acc];
+          [{FieldName, FieldType, FieldValue} | Acc];
         _ ->
           Acc
       end
@@ -422,15 +423,12 @@ datetime_fields(Doc) ->
   lists:foldl(Filter, [], SchemaFields).
 
 %% @private
-is_datetime(DT) ->
-  case DT of
-    {{_, _, _} = Date, {_, _, _}} ->
-      calendar:valid_date(Date);
-    {_, _, _} ->
-      calendar:valid_date(DT);
-    _ ->
-      false
-  end.
+is_datetime({{_, _, _} = Date, {_, _, _}}) ->
+  calendar:valid_date(Date);
+is_datetime({_, _, _} = Date) ->
+  calendar:valid_date(Date);
+is_datetime(_) ->
+  false.
 
 %% @private
 doc_id(Doc) ->

@@ -14,13 +14,13 @@
 
 -spec start_apps() -> ok.
 start_apps() ->
-  application:ensure_all_started(emysql),
-  application:ensure_all_started(epgsql),
-  application:ensure_all_started(emongo),
-  application:ensure_all_started(tirerl),
+  {ok, _} = application:ensure_all_started(emysql),
+  {ok, _} = application:ensure_all_started(epgsql),
+  {ok, _} = application:ensure_all_started(emongo),
+  {ok, _} = application:ensure_all_started(tirerl),
   mnesia:create_schema([node()]),
-  application:ensure_all_started(mnesia),
-  application:ensure_all_started(sumo_db).
+  {ok, _} = application:ensure_all_started(mnesia),
+  {ok, _} = application:ensure_all_started(sumo_db).
 
 -spec all_people() -> [atom()].
 all_people() ->

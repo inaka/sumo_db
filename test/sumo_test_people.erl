@@ -8,13 +8,15 @@
          sumo_sleep/1
         ]).
 
--export([new/2, new/3, new/4, name/1, id/1, age/1]).
+-export([new/2, new/3, new/4, name/1, id/1, age/1, birthdate/1, created_at/1]).
 
 -record(person, {id :: integer(),
                  name :: string(),
                  last_name :: string(),
                  age :: integer(),
-                 address :: string()}).
+                 address :: string(),
+                 birthdate  :: calendar:date(),
+                 created_at :: calendar:datetime()}).
 
 -type person() :: #person{}.
 
@@ -28,7 +30,9 @@ sumo_sleep(Person) ->
     name => Person#person.name,
     last_name => Person#person.last_name,
     age => Person#person.age,
-    address => Person#person.address}.
+    address => Person#person.address,
+    birthdate  => Person#person.birthdate,
+    created_at => Person#person.created_at}.
 
 -spec sumo_wakeup(sumo:doc()) -> person().
 sumo_wakeup(Person) ->
@@ -37,7 +41,9 @@ sumo_wakeup(Person) ->
     name = maps:get(name, Person),
     last_name = maps:get(last_name, Person),
     age = maps:get(age, Person),
-    address = maps:get(address, Person)
+    address = maps:get(address, Person),
+    birthdate  = maps:get(birthdate, Person),
+    created_at = maps:get(created_at, Person)
   }.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -54,10 +60,13 @@ new(Name, LastName, Age) ->
           age = Age}.
 
 new(Name, LastName, Age, Address) ->
+  Datetime = {Date, _} = calendar:universal_time(),
   #person{name = Name,
           last_name = LastName,
           age = Age,
-          address = Address}.
+          address = Address,
+          birthdate = Date,
+          created_at = Datetime}.
 
 name(Person) ->
   Person#person.name.
@@ -67,3 +76,9 @@ id(Person) ->
 
 age(Person) ->
   Person#person.age.
+
+birthdate(Person) ->
+  Person#person.birthdate.
+
+created_at(Person) ->
+  Person#person.created_at.

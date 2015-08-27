@@ -74,7 +74,7 @@ persist(Doc, #{index := Index, pool_name := PoolName} = State) ->
     IdField = sumo_internal:id_field_name(DocName),
     Id =  sumo_internal:get_field(IdField, Doc),
 
-    Fields = sumo_internal:doc_fields(Doc),
+    Fields = normalize_fields(sumo_internal:doc_fields(Doc)),
 
     Doc1 =
         case Id of
@@ -236,8 +236,23 @@ build_mapping(MappingType, Fields) ->
         fun
             (Field, Acc) ->
                 Name = sumo_internal:field_name(Field),
-                FieldType = sumo_internal:field_type(Field),
+                FieldType = normalize_type(sumo_internal:field_type(Field)),
                 maps:put(Name, #{type => FieldType}, Acc)
         end,
     Properties = lists:foldl(Fun, #{}, Fields),
     maps:from_list([{MappingType, #{properties => Properties}}]).
+
+normalize_type(date) -> binary;
+normalize_type(datetime) -> binary;
+normalize_type(Type) -> Type.
+
+normalize_fields(Doc) ->
+  FieldList = maps:to_list(Doc),
+  lists:foldl(
+    fun ({K, {_, _, _} = FieldValue}, AccDoc) ->
+          maps:put(K, iso8601:format({FieldValue, {0, 0, 0}}), AccDoc);
+        ({K, {{_, _, _}, {_, _, _}} = FieldValue}, AccDoc) ->
+          maps:put(K, iso8601:format(FieldValue), AccDoc);
+        ({K, _FieldValue}, AccDoc) ->
+          AccDoc
+    end, Doc, FieldList).

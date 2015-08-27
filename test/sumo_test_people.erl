@@ -50,23 +50,18 @@ sumo_wakeup(Person) ->
 %%% Exported
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-new(Name, LastName) ->
-  #person{name = Name,
-          last_name = LastName}.
+new(Name, LastName) -> new(Name, LastName, undefined).
 
-new(Name, LastName, Age) ->
-  #person{name = Name,
-          last_name = LastName,
-          age = Age}.
+new(Name, LastName, Age) -> new(Name, LastName, Age, undefined).
 
 new(Name, LastName, Age, Address) ->
   Datetime = {Date, _} = calendar:universal_time(),
   #person{name = Name,
-          last_name = LastName,
-          age = Age,
-          address = Address,
-          birthdate = Date,
-          created_at = Datetime}.
+          last_name   = LastName,
+          age         = Age,
+          address     = Address,
+          birthdate   = Date,
+          created_at  = Datetime}.
 
 name(Person) ->
   Person#person.name.

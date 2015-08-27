@@ -429,6 +429,10 @@ build_docs(DocName, #result_packet{rows = Rows, field_list = Fields}) ->
   [build_doc(sumo_internal:new_doc(DocName), FieldNames, Row) || Row <- Rows].
 
 build_doc(Doc, [], []) -> Doc;
+build_doc(Doc, [FieldName|FieldNames], [{date, Value}|Values]) ->
+  build_doc(sumo_internal:set_field(FieldName, Value, Doc), FieldNames, Values);
+build_doc(Doc, [FieldName|FieldNames], [{datetime, Value}|Values]) ->
+  build_doc(sumo_internal:set_field(FieldName, Value, Doc), FieldNames, Values);
 build_doc(Doc, [FieldName|FieldNames], [Value|Values]) ->
   build_doc(sumo_internal:set_field(FieldName, Value, Doc), FieldNames, Values).
 

@@ -72,7 +72,9 @@ delete(_Config) ->
   run_all_stores(fun delete_module/1).
 
 check_proper_dates(_Config) ->
-  run_all_stores(fun check_proper_dates_module/1).
+  lists:foreach(
+    fun check_proper_dates_module/1,
+    sumo_test_utils:people_with_proper_dates()).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Internal functions

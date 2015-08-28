@@ -58,4 +58,4 @@ sleep_if_required(Module) ->
 
 -spec people_with_proper_dates() -> [atom()].
 people_with_proper_dates() ->
-  all_people() -- [sumo_test_people_postgres].
+  all_people() -- [sumo_test_people_elasticsearch].

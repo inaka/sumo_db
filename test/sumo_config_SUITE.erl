@@ -28,8 +28,10 @@
 
 -spec all() -> [atom()].
 all() ->
-  Exports = ?MODULE:module_info(exports),
-  [F || {F, _} <- Exports, not lists:member(F, ?EXCLUDED_FUNS)].
+  case lists:member(sumo_test_people_mysql, sumo_test_utils:all_people()) of
+    true -> [check_overrun_handler];
+    false -> []
+  end.
 
 -spec init_per_suite(config()) -> config().
 init_per_suite(Config) ->

@@ -250,29 +250,29 @@ normalize_type(datetime) -> binary;
 normalize_type(Type) -> Type.
 
 normalize_fields(Doc) ->
-  FieldList = maps:to_list(Doc),
-  lists:foldl(
-    fun ({K, {_, _, _} = FieldValue}, AccDoc) ->
-          maps:put(K, iso8601:format({FieldValue, {0, 0, 0}}), AccDoc);
-        ({K, {{_, _, _}, {_, _, _}} = FieldValue}, AccDoc) ->
-          maps:put(K, iso8601:format(FieldValue), AccDoc);
-        ({_K, _FieldValue}, AccDoc) ->
-          AccDoc
-    end, Doc, FieldList).
+    FieldList = maps:to_list(Doc),
+    lists:foldl(
+        fun ({K, {_, _, _} = FieldValue}, AccDoc) ->
+                maps:put(K, iso8601:format({FieldValue, {0, 0, 0}}), AccDoc);
+            ({K, {{_, _, _}, {_, _, _}} = FieldValue}, AccDoc) ->
+                maps:put(K, iso8601:format(FieldValue), AccDoc);
+            ({_K, _FieldValue}, AccDoc) ->
+                AccDoc
+        end, Doc, FieldList).
 
 get_field_type(FieldName, Fields) ->
-  case [ sumo_internal:field_type(Field)
-        || Field <- Fields, sumo_internal:field_name(Field) == FieldName
-        ] of
-    [] -> undefined;
-    [FieldType | _] -> FieldType
-  end.
+    case [ sumo_internal:field_type(Field)
+          || Field <- Fields, sumo_internal:field_name(Field) == FieldName
+          ] of
+        [] -> undefined;
+        [FieldType | _] -> FieldType
+    end.
 
 denormalize_value(date, Value) ->
-  {Date, _} = iso8601:parse(Value),
-  Date;
+    {Date, _} = iso8601:parse(Value),
+    Date;
 denormalize_value(datetime, Value) ->
-  DateTime = iso8601:parse(Value),
-  DateTime;
+    DateTime = iso8601:parse(Value),
+    DateTime;
 denormalize_value(_Type, Value) ->
-  Value.
+    Value.

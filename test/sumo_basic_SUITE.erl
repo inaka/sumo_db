@@ -12,7 +12,8 @@
          find_all/1,
          find_by/1,
          delete_all/1,
-         delete/1
+         delete/1,
+         check_proper_dates/1
         ]).
 
 -define(EXCLUDED_FUNS,
@@ -69,6 +70,11 @@ delete_all(_Config) ->
 
 delete(_Config) ->
   run_all_stores(fun delete_module/1).
+
+check_proper_dates(_Config) ->
+  lists:foreach(
+    fun check_proper_dates_module/1,
+    sumo_test_utils:people_with_proper_dates()).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Internal functions
@@ -138,6 +144,20 @@ delete_module(Module) ->
   NewAll = sumo:find_all(Module),
 
   1 = length(All) - length(NewAll).
+
+check_proper_dates_module(Module) ->
+  [P0] = sumo:find_by(Module, [{name, <<"A">>}]),
+  P1 = sumo:find(Module, Module:id(P0)),
+  [P2 | _] = sumo:find_all(Module),
+
+  {Date, _} = calendar:universal_time(),
+
+  Date = Module:birthdate(P0),
+  {Date, {_, _, _}} = Module:created_at(P0),
+  Date = Module:birthdate(P1),
+  {Date, {_, _, _}} = Module:created_at(P1),
+  Date = Module:birthdate(P2),
+  {Date, {_, _, _}} = Module:created_at(P2).
 
 %%% Helper
 

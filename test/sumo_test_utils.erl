@@ -9,17 +9,18 @@
   , people_with_like/0
   , people_with_numeric_sort/0
   , sleep_if_required/1
+  , people_with_proper_dates/0
   ]).
 
 -spec start_apps() -> ok.
 start_apps() ->
-  application:ensure_all_started(emysql),
-  application:ensure_all_started(epgsql),
-  application:ensure_all_started(emongo),
-  application:ensure_all_started(tirerl),
+  {ok, _} = application:ensure_all_started(emysql),
+  {ok, _} = application:ensure_all_started(epgsql),
+  {ok, _} = application:ensure_all_started(emongo),
+  {ok, _} = application:ensure_all_started(tirerl),
   mnesia:create_schema([node()]),
-  application:ensure_all_started(mnesia),
-  application:ensure_all_started(sumo_db).
+  {ok, _} = application:ensure_all_started(mnesia),
+  {ok, _} = application:ensure_all_started(sumo_db).
 
 -spec all_people() -> [atom()].
 all_people() ->
@@ -54,3 +55,7 @@ sleep_if_required(Module) ->
     sumo_test_people_riak -> timer:sleep(5000);
     _                     -> ok
   end.
+
+-spec people_with_proper_dates() -> [atom()].
+people_with_proper_dates() ->
+  all_people() -- [sumo_test_people_elasticsearch].

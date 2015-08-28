@@ -2,16 +2,19 @@ PROJECT = sumo_db
 
 CONFIG ?= test/test.config
 
-DEPS = lager emysql emongo tirerl epgsql worker_pool riakc uuid
+DEPS = lager uuid emysql emongo tirerl epgsql worker_pool riakc iso8601
+SHELL_DEPS = sync
 
+dep_sync = git https://github.com/inaka/sync.git 0.1.3
 dep_lager = git https://github.com/basho/lager.git 2.1.1
-dep_emysql = git https://github.com/Eonblast/Emysql.git v0.4.1
+dep_emysql = git https://github.com/inaka/Emysql.git 0.4.2
 dep_emongo = git https://github.com/inaka/emongo.git v0.2.1
-dep_tirerl = git https://github.com/inaka/tirerl 0.1.7
+dep_tirerl = git https://github.com/inaka/tirerl 7ac7d57a24
 dep_epgsql = git https://github.com/epgsql/epgsql 2.0.0
-dep_worker_pool = git https://github.com/inaka/worker_pool.git 1.0.2
-dep_riakc = git https://github.com/inaka/riak-erlang-client.git 2.1.1-dialyzed
-dep_uuid = git git://github.com/okeuday/uuid.git v1.4.0
+dep_worker_pool = git https://github.com/inaka/worker_pool.git 1.0.3
+dep_riakc = git https://github.com/inaka/riak-erlang-client.git 2.1.1-R18
+dep_uuid = git https://github.com/okeuday/uuid.git 31f408f4ef
+dep_iso8601 = git https://github.com/zerotao/erlang_iso8601.git 0d14540
 
 TEST_DEPS = mixer
 dep_mixer = git git://github.com/inaka/mixer.git 0.1.2

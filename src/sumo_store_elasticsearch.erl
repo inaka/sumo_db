@@ -198,10 +198,13 @@ create_schema(Schema, #{index := Index, pool_name := PoolName} = State) ->
 map_to_doc(DocName, Item) ->
     Values = maps:get(<<"_source">>, Item),
     IdField = sumo_internal:id_field_name(DocName),
+    Schema = sumo_internal:get_schema(DocName),
+    Fields = sumo_internal:schema_fields(Schema),
 
     Fun = fun (Key, Doc) ->
               FieldName = binary_to_atom(Key, utf8),
-              Value = maps:get(Key, Values),
+              FieldType = get_field_type(FieldName, Fields),
+              Value = denormalize_value(FieldType, maps:get(Key, Values)),
               sumo_internal:set_field(FieldName, Value, Doc)
           end,
     Keys = maps:keys(Values),
@@ -247,12 +250,29 @@ normalize_type(datetime) -> binary;
 normalize_type(Type) -> Type.
 
 normalize_fields(Doc) ->
-  FieldList = maps:to_list(Doc),
-  lists:foldl(
-    fun ({K, {_, _, _} = FieldValue}, AccDoc) ->
-          maps:put(K, iso8601:format({FieldValue, {0, 0, 0}}), AccDoc);
-        ({K, {{_, _, _}, {_, _, _}} = FieldValue}, AccDoc) ->
-          maps:put(K, iso8601:format(FieldValue), AccDoc);
-        ({_K, _FieldValue}, AccDoc) ->
-          AccDoc
-    end, Doc, FieldList).
+    FieldList = maps:to_list(Doc),
+    lists:foldl(
+        fun ({K, {_, _, _} = FieldValue}, AccDoc) ->
+                maps:put(K, iso8601:format({FieldValue, {0, 0, 0}}), AccDoc);
+            ({K, {{_, _, _}, {_, _, _}} = FieldValue}, AccDoc) ->
+                maps:put(K, iso8601:format(FieldValue), AccDoc);
+            ({_K, _FieldValue}, AccDoc) ->
+                AccDoc
+        end, Doc, FieldList).
+
+get_field_type(FieldName, Fields) ->
+    case [ sumo_internal:field_type(Field)
+          || Field <- Fields, sumo_internal:field_name(Field) == FieldName
+          ] of
+        [] -> undefined;
+        [FieldType | _] -> FieldType
+    end.
+
+denormalize_value(date, Value) ->
+    {Date, _} = iso8601:parse(Value),
+    Date;
+denormalize_value(datetime, Value) ->
+    DateTime = iso8601:parse(Value),
+    DateTime;
+denormalize_value(_Type, Value) ->
+    Value.

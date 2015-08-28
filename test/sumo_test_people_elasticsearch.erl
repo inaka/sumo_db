@@ -31,8 +31,8 @@ sumo_schema() ->
      sumo:new_field(name,       string, [{length, 255}, not_null]),
      sumo:new_field(last_name,  string, [{length, 255}, not_null]),
      sumo:new_field(age,        integer),
-     sumo:new_field(address,    string, [{length, 255}]) %,
-     % sumo:new_field(birthdate,  date),
-     % sumo:new_field(created_at, datetime)
+     sumo:new_field(address,    string, [{length, 255}]),
+     sumo:new_field(birthdate,  date),
+     sumo:new_field(created_at, datetime)
     ],
   sumo:new_schema(?MODULE, Fields).

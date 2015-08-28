@@ -253,6 +253,6 @@ normalize_fields(Doc) ->
           maps:put(K, iso8601:format({FieldValue, {0, 0, 0}}), AccDoc);
         ({K, {{_, _, _}, {_, _, _}} = FieldValue}, AccDoc) ->
           maps:put(K, iso8601:format(FieldValue), AccDoc);
-        ({K, _FieldValue}, AccDoc) ->
+        ({_K, _FieldValue}, AccDoc) ->
           AccDoc
     end, Doc, FieldList).

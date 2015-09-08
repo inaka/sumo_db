@@ -65,12 +65,13 @@
 
 -export_type([connection/0, index/0, options/0]).
 
+%% @doc
 %% conn: is the Pid of the gen_server that holds the connection with Riak
 %% bucket: Riak bucket (per store)
 %% index: Riak index to be used by Riak Search
 %% read_quorum: Riak read quorum parameters.
 %% write_quorum: Riak write quorum parameters.
-%% @see <a href="http://docs.basho.com/riak/latest/dev/using/basics"/>
+%% <a href="http://docs.basho.com/riak/latest/dev/using/basics">Reference</a>.
 -record(state, {conn     :: connection(),
                 bucket   :: bucket(),
                 index    :: index(),

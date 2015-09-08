@@ -49,7 +49,7 @@ init(Options) ->
   % The storage backend key in the options specifies the name of the process
   % which creates and initializes the storage backend.
   Backend = proplists:get_value(storage_backend, Options),
-  Pool    = sumo_backend_mysql:get_pool(Backend),
+  Pool    = sumo_backend_mongo:get_pool(Backend),
   {ok, #state{pool=Pool}}.
 
 -spec persist(sumo_internal:doc(), state()) ->

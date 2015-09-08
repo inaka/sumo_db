@@ -233,7 +233,7 @@ new_id(integer) -> <<Id:128>> = uuid:get_v4(), Id;
 new_id(float) -> <<Id:128>> = uuid:get_v4(), Id * 1.0;
 new_id(FieldType) -> throw({unimplemented, FieldType}).
 
-%% @ref http://www.erlang.org/doc/apps/erts/match_spec.html
+%% @doc http://www.erlang.org/doc/apps/erts/match_spec.html
 build_match_spec(DocName, Condition) when not is_list(Condition) ->
   build_match_spec(DocName, [Condition]);
 build_match_spec(DocName, Conditions) ->

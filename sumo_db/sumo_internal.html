@@ -29,7 +29,8 @@
 <h1>sumo_internal</h1>
 <h2 class="modsummary">Main **internal** module for sumo.</h2>
 <div class="description">
-<p>Main **internal** module for sumo. Use this one from your own applications.</p>
+<p>Main **internal** module for sumo.        
+Use this one from your own applications.</p>
   
    <p>Copyright 2012 Inaka &lt;hello@inaka.net&gt;</p>
   
@@ -46,13 +47,8 @@ You may obtain a copy of the License at</p>
    limitations under the License.</div>
 <div id="types" class="category"><h4><a href="#types">Types</a></h4><hr />
     <div class="type"><h3 id="type-doc">doc()</h3></div>
-    <div class="type"><h3 id="type-expression">expression() = [<a href="#type-expression" class="seealso">expression()</a>]<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| {'and', [<a href="#type-expression" class="seealso">expression()</a>]}<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| {'or', [<a href="#type-expression" class="seealso">expression()</a>]}<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| {'not', <a href="#type-expression" class="seealso">expression()</a>}<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <a href="#type-terminal" class="seealso">terminal()</a></h3></div>
     <div class="type"><h3 id="type-field">field()</h3></div>
-    <div class="type"><h3 id="type-field_name">field_name() = atom()</h3></div>
-    <div class="type"><h3 id="type-operator">operator() = '&lt;' | '&gt;' | '=' | '&lt;=' | '&gt;=' | '!=' | like</h3></div>
-    <div class="type"><h3 id="type-schema">schema()</h3></div>
-    <div class="type"><h3 id="type-terminal">terminal() = {<a href="#type-field_name" class="seealso">field_name()</a>, <a href="#type-operator" class="seealso">operator()</a>, <a href="#type-field_name" class="seealso">field_name()</a>}<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| {<a href="#type-field_name" class="seealso">field_name()</a>, <a href="#type-operator" class="seealso">operator()</a>, <a href="#type-value" class="seealso">value()</a>}<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| {<a href="#type-field_name" class="seealso">field_name()</a>, <a href="#type-value" class="seealso">value()</a>}</h3></div>
-    <div class="type"><h3 id="type-value">value() = binary() | string() | number() | null | not_null</h3></div></div>
+    <div class="type"><h3 id="type-schema">schema()</h3></div></div>
 <div id="functions" class="category"><h4><a href="#functions">Functions</a></h4><hr />
 <div class="function">
 <h3 id="schema_name/1">schema_name(Schema::schema()) -&gt; schema_name() (see module sumo)</h3>
@@ -101,7 +97,7 @@ You may obtain a copy of the License at</p>
 <p>Wakes up the document</p>
 </div></div>
 <div class="function">
-<h3 id="get_repo/1">get_repo(DocName::schema_name() (see module sumo) | doc()) -&gt; atom()</h3>
+<h3 id="get_store/1">get_store(DocName::schema_name() (see module sumo) | doc()) -&gt; atom()</h3>
 
 
 <div class="description">
@@ -118,7 +114,7 @@ You may obtain a copy of the License at</p>
 <p>Returns the schema for a given DocName.</p>
 </div></div>
 <div class="function">
-<h3 id="get_field/1">get_field(Name::field_name() (see module sumo), Sumo_doc::doc()) -&gt; field_value() (see module sumo)</h3>
+<h3 id="get_field/1">get_field(Name::field_name() (see module sumo), Doc::doc()) -&gt; field_value() (see module sumo)</h3>
 
 
 <div class="description">
@@ -126,7 +122,7 @@ You may obtain a copy of the License at</p>
 <p>Returns the value of a field from a sumo_doc.</p>
 </div></div>
 <div class="function">
-<h3 id="set_field/1">set_field(FieldName::field_name() (see module sumo), Value::field_value() (see module sumo), Sumo_doc::doc()) -&gt; doc()</h3>
+<h3 id="set_field/1">set_field(FieldName::field_name() (see module sumo), Value::field_value() (see module sumo), Doc::doc()) -&gt; doc()</h3>
 
 
 <div class="description">
@@ -142,7 +138,15 @@ You may obtain a copy of the License at</p>
 <p>Returns name of field marked as ID for the given schema or doc name.</p>
 </div></div>
 <div class="function">
-<h3 id="field_name/1">field_name(Sumo_field::field()) -&gt; field_name() (see module sumo)</h3>
+<h3 id="id_field_type/1">id_field_type(DocName::schema_name() (see module sumo)) -&gt; field_type() (see module sumo)</h3>
+
+
+<div class="description">
+
+<p>Returns type of field marked as ID for the given schema or doc name.</p>
+</div></div>
+<div class="function">
+<h3 id="field_name/1">field_name(X1::field()) -&gt; field_name() (see module sumo)</h3>
 
 
 <div class="description">
@@ -150,7 +154,7 @@ You may obtain a copy of the License at</p>
 <p>Returns the name of the given field.</p>
 </div></div>
 <div class="function">
-<h3 id="field_type/1">field_type(Sumo_field::field()) -&gt; field_type() (see module sumo)</h3>
+<h3 id="field_type/1">field_type(X1::field()) -&gt; field_type() (see module sumo)</h3>
 
 
 <div class="description">
@@ -158,7 +162,7 @@ You may obtain a copy of the License at</p>
 <p>Returns the type of the given field.</p>
 </div></div>
 <div class="function">
-<h3 id="field_attrs/1">field_attrs(Sumo_field::field()) -&gt; field_attrs() (see module sumo)</h3>
+<h3 id="field_attrs/1">field_attrs(Field::field()) -&gt; field_attrs() (see module sumo)</h3>
 
 
 <div class="description">
@@ -166,7 +170,7 @@ You may obtain a copy of the License at</p>
 <p>Returns all attributes of the given field.</p>
 </div></div>
 <div class="function">
-<h3 id="field_is/1">field_is(What::atom(), Sumo_field::field()) -&gt; boolean()</h3>
+<h3 id="field_is/1">field_is(What::atom(), X2::field()) -&gt; boolean()</h3>
 
 
 <div class="description">
@@ -174,7 +178,15 @@ You may obtain a copy of the License at</p>
 <p>True if the field has a given attribute.</p>
 </div></div>
 <div class="function">
-<h3 id="new_doc/1">new_doc(Name::schema_name() (see module sumo), Fields::doc() (see module sumo)) -&gt; doc()</h3>
+<h3 id="new_doc/1">new_doc(Name::schema_name() (see module sumo)) -&gt; doc()</h3>
+
+
+<div class="description">
+
+<p>Returns a new doc.</p>
+</div></div>
+<div class="function">
+<h3 id="new_doc/1-1">new_doc(Name::schema_name() (see module sumo), Fields::doc() (see module sumo)) -&gt; doc()</h3>
 
 
 <div class="description">
@@ -198,13 +210,19 @@ You may obtain a copy of the License at</p>
 <p>Returns a new field of the given type and attributes.</p>
 </div></div>
 <div class="function">
-<h3 id="check_operator/1">check_operator(Op::operator()) -&gt; ok</h3>
+<h3 id="check_operator/1">check_operator(Op::operator() (see module sumo)) -&gt; ok</h3>
 
 
 <div class="description">
 
 <p>Checks the operator is known, throws otherwise.</p>
-</div></div></div>
+</div></div>
+<div class="function">
+<h3 id="report_overrun/1">report_overrun(Report::term()) -&gt; ok</h3>
+
+
+<div class="description">
+ </div></div></div>
 
 <authors>
 <aname> </aname>

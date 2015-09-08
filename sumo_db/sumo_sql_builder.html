@@ -45,7 +45,7 @@ You may obtain a copy of the License at</p>
    See the License for the specific language governing permissions and
    limitations under the License.</div>
 <div id="types" class="category"><h4><a href="#types">Types</a></h4><hr />
-    <div class="type"><h3 id="type-condition">condition() = {'and', [<a href="#type-condition" class="seealso">condition()</a>]}<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| {'or', [<a href="#type-condition" class="seealso">condition()</a>]}<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| {<a href="#type-field" class="seealso">field()</a>, term()}</h3></div>
+    <div class="type"><h3 id="type-condition">condition() = <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{'and', [<a href="#type-condition" class="seealso">condition()</a>]} |<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{'or', [<a href="#type-condition" class="seealso">condition()</a>]} |<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a href="#type-field" class="seealso">field()</a>, term()}</h3></div>
     <div class="type"><h3 id="type-field">field() = string() | atom()</h3></div></div>
 <div id="functions" class="category"><h4><a href="#functions">Functions</a></h4><hr />
 <div class="function">
@@ -65,7 +65,7 @@ You may obtain a copy of the License at</p>
 <p>Generic select function.</p>
 </div></div>
 <div class="function">
-<h3 id="i/1">i(TableName::string(), Proplist::doc() (see module sumo)) -&gt; {iolist(), [term()]}</h3>
+<h3 id="i/1">i(TableName::atom() | string(), Proplist::proplist() (see module proplists)) -&gt; {iodata(), [term()]}</h3>
 
 
 <div class="description">
@@ -73,7 +73,7 @@ You may obtain a copy of the License at</p>
 <p>INSERT.</p>
 </div></div>
 <div class="function">
-<h3 id="u/1">u(TableName::string(), UpdateFields::doc() (see module sumo), Conditions::condition()) -&gt; {iolist(), [term()], [term()]}</h3>
+<h3 id="u/1">u(TableName::atom() | string(), UpdateFields::proplist() (see module proplists), Conditions::condition()) -&gt; {iodata(), [term()], [term()]}</h3>
 
 
 <div class="description">
@@ -87,7 +87,61 @@ You may obtain a copy of the License at</p>
 <div class="description">
 
 <p>DELETE.</p>
-</div></div></div>
+</div></div>
+<div class="function">
+<h3 id="escape/1">escape(Field::field()) -&gt; string()</h3>
+
+
+<div class="description">
+ </div></div>
+<div class="function">
+<h3 id="values_conditions/1">values_conditions(Expr::conditions() (see module sumo)) -&gt; {[any()], conditions() (see module sumo)}</h3>
+
+
+<div class="description">
+ </div></div>
+<div class="function">
+<h3 id="where_clause/1">where_clause(Exprs::conditions() (see module sumo)) -&gt; iodata()</h3>
+
+
+<div class="description">
+ </div></div>
+<div class="function">
+<h3 id="where_clause/1-1">where_clause(Exprs::conditions() (see module sumo), EscapeFun::function()) -&gt; iodata()</h3>
+
+
+<div class="description">
+ </div></div>
+<div class="function">
+<h3 id="where_clause/1-2">where_clause(Exprs::conditions() (see module sumo), EscapeFun::function(), SlotFun::function()) -&gt; iodata()</h3>
+
+
+<div class="description">
+ </div></div>
+<div class="function">
+<h3 id="slot_question/2">slot_question(X1::{'?', integer()}) -&gt; string()</h3>
+
+
+<div class="description">
+ </div></div>
+<div class="function">
+<h3 id="slot_numbered/2">slot_numbered(X1::{'?', integer()}) -&gt; iodata()</h3>
+
+
+<div class="description">
+ </div></div>
+<div class="function">
+<h3 id="order_by_clause/1">order_by_clause(SortFields::[{atom(), sort_order() (see module sumo)}]) -&gt; iolist()</h3>
+
+
+<div class="description">
+ </div></div>
+<div class="function">
+<h3 id="order_by_clause/1-1">order_by_clause(SortFields::[{atom(), sort_order() (see module sumo)}], EscapeFun::function()) -&gt; iolist()</h3>
+
+
+<div class="description">
+ </div></div></div>
 
 <authors>
 <aname> </aname>

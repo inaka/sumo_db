@@ -45,16 +45,20 @@ You may obtain a copy of the License at</p>
    See the License for the specific language governing permissions and
    limitations under the License.</div>
 <div id="types" class="category"><h4><a href="#types">Types</a></h4><hr />
-    <div class="type"><h3 id="type-conditions">conditions() = [{<a href="#type-field_name" class="seealso">field_name()</a>, <a href="#type-field_value" class="seealso">field_value()</a>}]</h3></div>
-    <div class="type"><h3 id="type-doc">doc() = [{<a href="#type-field_name" class="seealso">field_name()</a>, <a href="#type-field_value" class="seealso">field_value()</a>}]</h3></div>
+    <div class="type"><h3 id="type-condition">condition() = <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{'and', [<a href="#type-condition" class="seealso">condition()</a>]} |<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{'or', [<a href="#type-condition" class="seealso">condition()</a>]} |<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{'not', <a href="#type-condition" class="seealso">condition()</a>} |<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a href="#type-field_name" class="seealso">field_name()</a>, <a href="#type-field_value" class="seealso">field_value()</a>} |<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a href="#type-field_name" class="seealso">field_name()</a>, <a href="#type-operator" class="seealso">operator()</a>, <a href="#type-field_value" class="seealso">field_value()</a>} |<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{<a href="#type-field_name" class="seealso">field_name()</a>, <a href="#type-operator" class="seealso">operator()</a>, <a href="#type-field_name" class="seealso">field_name()</a>}</h3></div>
+    <div class="type"><h3 id="type-conditions">conditions() = <a href="#type-condition" class="seealso">condition()</a> | [<a href="#type-condition" class="seealso">condition()</a>]</h3></div>
+    <div class="type"><h3 id="type-doc">doc() = #{<a href="#type-field_name" class="seealso">field_name()</a> => <a href="#type-field_value" class="seealso">field_value()</a>}</h3></div>
     <div class="type"><h3 id="type-field">field() = <a href="sumo_internal.html#type-field" class="seealso">sumo_internal:field()</a></h3></div>
-    <div class="type"><h3 id="type-field_attr">field_attr() = id<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| unique<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| index<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| not_null<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| auto_increment<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| {length, integer()}</h3></div>
+    <div class="type"><h3 id="type-field_attr">field_attr() = <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;id |<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;unique |<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;index |<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;not_null |<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;auto_increment |<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{length, integer()}</h3></div>
     <div class="type"><h3 id="type-field_attrs">field_attrs() = [<a href="#type-field_attr" class="seealso">field_attr()</a>]</h3></div>
     <div class="type"><h3 id="type-field_name">field_name() = atom()</h3></div>
-    <div class="type"><h3 id="type-field_type">field_type() = integer<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| string<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| binary<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| text<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| float<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| date<br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| datetime</h3></div>
+    <div class="type"><h3 id="type-field_type">field_type() = <br />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;integer | string | binary | text | float | date | datetime</h3></div>
     <div class="type"><h3 id="type-field_value">field_value() = term()</h3></div>
+    <div class="type"><h3 id="type-operator">operator() = '&lt;' | '&gt;' | '==' | '=&lt;' | '&gt;=' | '/=' | like</h3></div>
     <div class="type"><h3 id="type-schema">schema() = <a href="sumo_internal.html#type-schema" class="seealso">sumo_internal:schema()</a></h3></div>
     <div class="type"><h3 id="type-schema_name">schema_name() = atom()</h3></div>
+    <div class="type"><h3 id="type-sort">sort() = <a href="#type-field_name" class="seealso">field_name()</a> | [{<a href="#type-field_name" class="seealso">field_name()</a>, <a href="#type-sort_order" class="seealso">sort_order()</a>}]</h3></div>
+    <div class="type"><h3 id="type-sort_order">sort_order() = asc | desc</h3></div>
     <div class="type"><h3 id="type-user_doc">user_doc() = term()</h3></div></div>
 <div id="functions" class="category"><h4><a href="#functions">Functions</a></h4><hr />
 <div class="function">
@@ -82,25 +86,31 @@ You may obtain a copy of the License at</p>
 <p>Returns the doc identified by Id.</p>
 </div></div>
 <div class="function">
-<h3 id="find_all/1">find_all(DocName) -&gt; term()
-</h3>
+<h3 id="find_all/1">find_all(DocName::schema_name()) -&gt; [user_doc()]</h3>
 
 
 <div class="description">
 
-<p>Returns all docs from the given repo.</p>
+<p>Returns all docs from the given store.</p>
 </div></div>
 <div class="function">
-<h3 id="find_all/4">find_all(DocName, OrderField, Limit, Offset) -&gt; term()
-</h3>
+<h3 id="find_all/1-1">find_all(DocName::schema_name(), SortFields0::sort(), Limit::non_neg_integer(), Offset::non_neg_integer()) -&gt; [user_doc()]</h3>
 
 
 <div class="description">
 
-<p>Returns Limit docs from the given repo, starting at offset.</p>
+<p>Returns Limit docs from the given store, starting at offset.</p>
 </div></div>
 <div class="function">
-<h3 id="find_by/1">find_by(DocName::schema_name(), Conditions::conditions(), Limit::non_neg_integer(), Offset::non_neg_integer()) -&gt; [user_doc()]</h3>
+<h3 id="find_by/1">find_by(DocName::schema_name(), Conditions::conditions()) -&gt; [user_doc()]</h3>
+
+
+<div class="description">
+
+<p>Returns *all* docs that match Conditions.</p>
+</div></div>
+<div class="function">
+<h3 id="find_by/1-1">find_by(DocName::schema_name(), Conditions::conditions(), Limit::non_neg_integer(), Offset::non_neg_integer()) -&gt; [user_doc()]</h3>
 
 
 <div class="description">
@@ -109,12 +119,13 @@ You may obtain a copy of the License at</p>
   offset Offset.</p>
 </div></div>
 <div class="function">
-<h3 id="find_by/1-1">find_by(DocName::schema_name(), Conditions::conditions()) -&gt; [user_doc()]</h3>
+<h3 id="find_by/1-2">find_by(DocName::schema_name(), Conditions::conditions(), SortFields0::sort(), Limit::non_neg_integer(), Offset::non_neg_integer()) -&gt; [user_doc()]</h3>
 
 
 <div class="description">
 
-<p>Returns *all* docs that match Conditions.</p>
+<p>Returns Limit number of docs that match Conditions, starting at
+  offset Offset.</p>
 </div></div>
 <div class="function">
 <h3 id="persist/1">persist(DocName::schema_name(), UserDoc) -&gt; UserDoc</h3>
@@ -157,13 +168,13 @@ You may obtain a copy of the License at</p>
 <p>Creates the schema for the docs of type DocName.</p>
 </div></div>
 <div class="function">
-<h3 id="create_schema/1-1">create_schema(DocName::schema_name(), Repo::atom()) -&gt; ok</h3>
+<h3 id="create_schema/1-1">create_schema(DocName::schema_name(), Store::atom()) -&gt; ok</h3>
 
 
 <div class="description">
 
 <p>Creates the schema for the docs of type DocName using the given
-  repository.</p>
+  store.</p>
 </div></div>
 <div class="function">
 <h3 id="call/1">call(DocName::schema_name(), Function::atom()) -&gt; term()</h3>
@@ -171,7 +182,7 @@ You may obtain a copy of the License at</p>
 
 <div class="description">
 
-<p>Calls the given custom function of a repo.</p>
+<p>Calls the given custom function of a store.</p>
 </div></div>
 <div class="function">
 <h3 id="call/1-1">call(DocName::schema_name(), Function::atom(), Args::[term()]) -&gt; term()</h3>
@@ -179,7 +190,7 @@ You may obtain a copy of the License at</p>
 
 <div class="description">
 
-<p>Calls the given custom function of a repo with the given args.</p>
+<p>Calls the given custom function of a store with the given args.</p>
 </div></div>
 <div class="function">
 <h3 id="new_schema/1">new_schema(Name::schema_name(), Fields::[field()]) -&gt; schema()</h3>

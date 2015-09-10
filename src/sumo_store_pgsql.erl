@@ -315,7 +315,10 @@ create_column(Field) ->
 create_column(Name, integer, Attrs) ->
   case lists:member(auto_increment, Attrs) of
     true ->
-      [escape(atom_to_list(Name)), create_column_options(Attrs)];
+      AttrsNoAutoInc = lists:delete(auto_increment, Attrs),
+      [escape(atom_to_list(Name)),
+       " SERIAL ",
+       create_column_options(AttrsNoAutoInc)];
     false ->
       [escape(atom_to_list(Name)), " INTEGER ", create_column_options(Attrs)]
   end;
@@ -333,15 +336,11 @@ create_column(Name, datetime, Attrs) ->
   [escape(atom_to_list(Name)), " TIMESTAMP ", create_column_options(Attrs)].
 
 create_column_options(Attrs) ->
-  lists:filter(fun(T) -> is_list(T) end, lists:map(
-    fun(Option) ->
-      create_column_option(Option)
-    end,
-    Attrs
-  )).
+  Options = lists:map(fun create_column_option/1, Attrs),
+  lists:filter(fun is_list/1, Options).
 
 create_column_option(auto_increment) ->
-  [" SERIAL "];
+  throw({badarg, "Only integer can be auto_increment"});
 create_column_option(not_null) ->
   [" NOT NULL "];
 create_column_option({length, X}) ->
@@ -352,12 +351,8 @@ create_column_option(_Option) ->
 create_index(Field) ->
   Name = sumo_internal:field_name(Field),
   Attrs = sumo_internal:field_attrs(Field),
-  lists:filter(fun(T) -> is_list(T) end, lists:map(
-    fun(Attr) ->
-      create_index(Name, Attr)
-    end,
-    Attrs
-  )).
+  Attrs1 = [create_index(Name, Attr) || Attr <- Attrs],
+  lists:filter(fun is_list/1, Attrs1).
 
 create_index(Name, id) ->
   ["PRIMARY KEY(", escape(atom_to_list(Name)), ")"];

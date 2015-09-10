@@ -40,7 +40,7 @@ CT_OPTS = -cover test/sumo.coverspec -vvv -erl_args -config ${CONFIG}
 SHELL_OPTS = -name ${PROJECT}@`hostname` -config ${CONFIG} -s sync
 
 test-shell: build-ct-suites app
-	erl -pa ebin -pa deps/*/ebin -pa test -s lager -s sync -config ${CONFIG}
+	erl  -name ${PROJECT}@`hostname` -pa ebin -pa deps/*/ebin -pa test -s lager -s sync -config ${CONFIG}
 
 erldocs:
 	erldocs . -o docs

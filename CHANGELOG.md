@@ -1,5 +1,25 @@
 # Change Log
 
+## [0.3.13](https://github.com/inaka/sumo_db/tree/0.3.13) (2015-09-14)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.12...0.3.13)
+
+**Fixed bugs:**
+
+- Sumo Riak sometimes returns a binary\(\) instead of datetime\(\) tuple [\#194](https://github.com/inaka/sumo_db/issues/194)
+- Typo in sumo\_store\_mongo [\#185](https://github.com/inaka/sumo_db/issues/185)
+- Fix documentation generation with erldoc [\#164](https://github.com/inaka/sumo_db/issues/164)
+
+**Closed issues:**
+
+- Update sumo dependencies for OTP 18 compatibility  [\#195](https://github.com/inaka/sumo_db/issues/195)
+
+**Merged pull requests:**
+
+- \[Closes \#194\] Call wakeup after persisting document in riak [\#196](https://github.com/inaka/sumo_db/pull/196) ([jfacorro](https://github.com/jfacorro))
+- \[\#138\] Add node name to test-shell target [\#193](https://github.com/inaka/sumo_db/pull/193) ([jfacorro](https://github.com/jfacorro))
+- \[Closes \#164\] Fixed docstrings that were causing errors [\#191](https://github.com/inaka/sumo_db/pull/191) ([jfacorro](https://github.com/jfacorro))
+- \[Closes \#185\] Fixed typo [\#190](https://github.com/inaka/sumo_db/pull/190) ([jfacorro](https://github.com/jfacorro))
+
 ## [0.3.12](https://github.com/inaka/sumo_db/tree/0.3.12) (2015-09-03)
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.11...0.3.12)
 
@@ -15,6 +35,7 @@
 
 **Merged pull requests:**
 
+- Generate release [\#189](https://github.com/inaka/sumo_db/pull/189) ([Euen](https://github.com/Euen))
 - Make elasticsearch backend compatible with the others [\#187](https://github.com/inaka/sumo_db/pull/187) ([elbrujohalcon](https://github.com/elbrujohalcon))
 - \[\#182\] Fixed sumo\_store\_riak to support date/datetime fields. [\#183](https://github.com/inaka/sumo_db/pull/183) ([cabol](https://github.com/cabol))
 - Correct date  and datetime in the riak store  [\#182](https://github.com/inaka/sumo_db/pull/182) ([igaray](https://github.com/igaray))

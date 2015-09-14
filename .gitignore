@@ -12,3 +12,5 @@ examples/blog/log
 log*/
 erl_crash.dump
 .erlang.mk.*
+.erlang.mk/
+sumo_db.d

@@ -155,7 +155,10 @@ check_proper_dates_module(Module) ->
   Date = Module:birthdate(P1),
   {Date, {_, _, _}} = Module:created_at(P1),
   Date = Module:birthdate(P2),
-  {Date, {_, _, _}} = Module:created_at(P2).
+  {Date, {_, _, _}} = Module:created_at(P2),
+
+  Person = sumo:persist(Module, Module:new(<<"X">>, <<"Z">>, 6)),
+  Date = Module:birthdate(Person).
 
 %%% Helper
 

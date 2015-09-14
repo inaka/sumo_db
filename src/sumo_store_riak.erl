@@ -119,7 +119,7 @@ persist(Doc,
     {error, Error} ->
       {error, Error, State};
     _ ->
-      {ok, NewDoc, State}
+      {ok, wakeup(NewDoc), State}
   end.
 
 -spec delete_by(

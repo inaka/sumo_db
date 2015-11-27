@@ -69,8 +69,9 @@
 %% conn: is the Pid of the gen_server that holds the connection with Riak
 %% bucket: Riak bucket (per store)
 %% index: Riak index to be used by Riak Search
-%% read_quorum: Riak read quorum parameters.
-%% write_quorum: Riak write quorum parameters.
+%% get_opts: Riak read options parameters.
+%% put_opts: Riak write options parameters.
+%% del_opts: Riak delete options parameters.
 %% <a href="http://docs.basho.com/riak/latest/dev/using/basics">Reference</a>.
 -record(state, {conn     :: connection(),
                 bucket   :: bucket(),
@@ -201,6 +202,13 @@ find_all(DocName, _SortFields, Limit, Offset, State) ->
   %% @todo implement search with sort parameters.
   find_by(DocName, [], Limit, Offset, State).
 
+%% @doc
+%% find_by may be used in two ways: either with a given limit and offset or not
+%% If a limit and offset is not given, then the atom 'undefined' is used as a
+%% marker to indicate that the store should find out how many keys matching the
+%% query exist, and then obtain results for all of them.
+%% This is done to overcome Solr's default pagination value of 10.
+%% @end
 -spec find_by(sumo:schema_name(), sumo:conditions(), state()) ->
   sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName, Conditions, State) ->
@@ -215,6 +223,8 @@ find_by(DocName, Conditions, State) ->
 ) -> sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName, Conditions, Limit, Offset, State) when is_list(Conditions) ->
   IdField = sumo_internal:id_field_name(DocName),
+  %% If the key field is present in the conditions, we are looking for a
+  %% particular document. If not, it is a general query.
   case lists:keyfind(IdField, 1, Conditions) of
     {_K, Key} ->
       find_by_id_field(DocName, Key, State);
@@ -239,42 +249,52 @@ find_by_id_field(DocName, Key, State) ->
 
 %% @private
 find_by_query(DocName, Conditions, undefined, undefined, State) ->
-  #state{conn = Conn, index = Index} = State,
+  %% First get all keys matching the query, and then obtain documents for those
+  %% keys.
+  #state{conn = Conn, bucket = Bucket, index = Index, get_opts = Opts} = State,
   Query = build_query(Conditions),
-  find_all_by_query(DocName, Conn, Index, Query, State);
-
-%% @private
-find_by_query(DocName, Conditions, Limit, Offset, State) ->
-  #state{conn = Conn, index = Index} = State,
-  Query = build_query(Conditions),
-  case search_docs_by(DocName, Conn, Index, Query, Limit, Offset) of
-    {ok, {_, Res}} -> {ok, Res, State};
-    {error, Error} -> {error, Error, State}
-  end.
-
-%% @private
-find_all_by_query(DocName, Conn, Index, Query, State) ->
-  FirstQuery =
-    case search_docs_by(DocName, Conn, Index, Query, 0, 0) of
-      {ok, {Total, Res}} ->
-        {ok, length(Res), Total, Res};
-      Error1 ->
-        Error1
-    end,
-  case FirstQuery of
-    {ok, ResultCount, Total1, InitialResults} when ResultCount < Total1 ->
-      Offset = ResultCount,
-      Limit  = Total1 - ResultCount,
-      case search_docs_by(DocName, Conn, Index, Query, Limit, Offset) of
-        {ok, {Total1, RemainingResults}} ->
-          {ok, lists:append(InitialResults, RemainingResults), State};
-        {error, Error2} ->
-          {error, Error2, State}
-      end;
-    {ok, _ResultCount, _Total, Results} ->
+  case find_by_query_get_keys(Conn, Index, Query) of
+    {ok, Keys} ->
+      Results = fetch_docs(DocName, Conn, Bucket, Keys, Opts),
       {ok, Results, State};
     {error, Error} ->
       {error, Error, State}
+  end;
+
+%% @private
+find_by_query(DocName, Conditions, Limit, Offset, State) ->
+  %% Limit and offset were specified so we return a possibly partial result set.
+  #state{conn = Conn, bucket = Bucket, index = Index, get_opts = Opts} = State,
+  Query = build_query(Conditions),
+  case search_keys_by(Conn, Index, Query, Limit, Offset) of
+    {ok, {_Total, Keys}} ->
+      Results = fetch_docs(DocName, Conn, Bucket, Keys, Opts),
+      {ok, Results, State};
+    {error, Error} ->
+      {error, Error, State}
+  end.
+
+%% @private
+find_by_query_get_keys(Conn, Index, Query) ->
+  InitialResults =
+    case search_keys_by(Conn, Index, Query, 0, 0) of
+      {ok, {Total, Keys}} -> {ok, length(Keys), Total, Keys};
+      Error               -> Error
+    end,
+  case InitialResults of
+    {ok, ResultCount, Total1, Keys1} when ResultCount < Total1 ->
+      Limit  = Total1 - ResultCount,
+      Offset = ResultCount,
+      case search_keys_by(Conn, Index, Query, Limit, Offset) of
+        {ok, {Total1, Keys2}} ->
+          {ok, lists:append(Keys1, Keys2)};
+        {error, Error1} ->
+          {error, Error1}
+      end;
+    {ok, _ResultCount, _Total, Keys1}  ->
+      {ok, Keys1};
+    {error, Error2} ->
+      {error, Error2}
   end.
 
 -spec find_by(
@@ -514,6 +534,23 @@ receive_stream(Ref, F, Acc) ->
       {error, Acc}
   after
     30000 -> {timeout, Acc}
+  end.
+
+%% @private
+%% @doc Search all docs that match with the given query, but only keys are
+%%      returned.
+%%      IMPORTANT: assumes that default schema 'yokozuna' is being used.
+search_keys_by(Conn, Index, Query, Limit, Offset) ->
+  case sumo_store_riak:search(Conn, Index, Query, Limit, Offset) of
+    {ok, {search_results, Results, _, Total}} ->
+      F = fun({_, KV}, Acc) ->
+            {_, K} = lists:keyfind(<<"_yz_rk">>, 1, KV),
+            [K | Acc]
+          end,
+      Keys = lists:foldl(F, [], Results),
+      {ok, {Total, Keys}};
+    {error, Error} ->
+      {error, Error}
   end.
 
 %% @private

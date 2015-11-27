@@ -32,6 +32,7 @@ ERLC_OPTS += +warn_bif_clash +warn_unused_record +warn_deprecated_function +warn
 ERLC_OPTS += +warn_export_vars +warn_exported_vars +warn_missing_spec +warn_untyped_record +debug_info
 
 COMPILE_FIRST += sumo_backend sumo_doc sumo_store
+
 # Commont Test Config
 
 TEST_ERLC_OPTS += +'{parse_transform, lager_transform}'
@@ -55,3 +56,12 @@ quicktests: app build-ct-suites
 		$(CT_RUN) -suite $(addsuffix _SUITE,$(CT_SUITES)) $(CT_OPTS) ; \
 	fi
 	$(gen_verbose) rm -f test/*.beam
+
+# Riak tests
+CT_SUITES_RIAK = nested_docs
+CT_OPTS_RIAK = -vvv -erl_args -config test/riak/riak_test.config
+
+riak_tests: test-build
+	mkdir -p logs/ ; \
+	$(gen_verbose) $(CT_RUN) -suite $(addsuffix _SUITE,$(CT_SUITES_RIAK)) $(CT_OPTS_RIAK)
+	rm -rf test/*beam

@@ -40,23 +40,12 @@
 
 -behaviour(supervisor).
 
--type init_result() ::
-   {ok,
-    {{supervisor:strategy(), non_neg_integer(), non_neg_integer()},
-     [supervisor:child_spec()]
-    }
-   }
-   | ignore.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Code starts here.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
--spec start_link() -> supervisor:startlink_ret().
+-spec start_link() -> {ok, pid()} | {error, any()}.
 start_link() ->
   supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
--spec init(term()) -> init_result().
+-spec init(any()) ->
+  {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
 init([]) ->
   {ok, Stores} = application:get_env(sumo_db, stores),
   Children = lists:map(

@@ -76,7 +76,7 @@ get_pool(Name) ->
 init(Options) ->
   PoolSize = proplists:get_value(poolsize, Options),
   Pool     = list_to_atom(erlang:ref_to_list(make_ref())),
-  emysql:add_pool(
+  _ = emysql:add_pool(
     Pool,
     PoolSize,
     proplists:get_value(username, Options),

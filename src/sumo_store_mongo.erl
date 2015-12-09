@@ -86,7 +86,6 @@ delete_by(DocName, Conditions, #state{pool = Pool} = State) ->
 -spec delete_all(sumo:schema_name(), state()) ->
   sumo_store:result(sumo_store:affected_rows(), state()).
 delete_all(DocName, #state{pool=Pool}=State) ->
-  lager:debug("dropping collection: ~p", [DocName]),
   ok = emongo:delete(Pool, atom_to_list(DocName)),
   {ok, unknown, State}.
 
@@ -192,7 +191,6 @@ create_schema(Schema, #state{pool=Pool} = State) ->
     fun(Field) ->
       create_field(Field),
       Name = sumo_internal:field_name(Field),
-      lager:debug("creating index: ~p for ~p", [Name, SchemaName]),
       ok = emongo:ensure_index(
         Pool, atom_to_list(SchemaName), [{atom_to_list(Name), 1}])
     end,

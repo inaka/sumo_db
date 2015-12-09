@@ -19,14 +19,13 @@ dep_iso8601 = git https://github.com/zerotao/erlang_iso8601.git 0d14540
 TEST_DEPS = mixer
 dep_mixer = git git://github.com/inaka/mixer.git 0.1.2
 
-PLT_APPS := mnesia
-DIALYZER_DIRS := ebin/
-DIALYZER_OPTS := --verbose --statistics -Werror_handling \
-                 -Wrace_conditions #-Wunmatched_returns
-
 include erlang.mk
 
-ERLC_OPTS += +'{parse_transform, lager_transform}'
+LOCAL_DEPS := tools common_test crypto test_server mnesia
+DIALYZER_DIRS := ebin/
+DIALYZER_OPTS := --verbose --statistics -Wunmatched_returns
+
+ERLC_OPTS := +'{parse_transform, lager_transform}'
 ERLC_OPTS += +warn_unused_vars +warn_export_all +warn_shadow_vars +warn_unused_import +warn_unused_function
 ERLC_OPTS += +warn_bif_clash +warn_unused_record +warn_deprecated_function +warn_obsolete_guard +strict_validation
 ERLC_OPTS += +warn_export_vars +warn_exported_vars +warn_missing_spec +warn_untyped_record +debug_info
@@ -35,10 +34,10 @@ COMPILE_FIRST += sumo_backend sumo_doc sumo_store
 
 # Commont Test Config
 
-TEST_ERLC_OPTS += +'{parse_transform, lager_transform}'
-CT_OPTS = -cover test/sumo.coverspec -vvv -erl_args -config ${CONFIG}
+TEST_ERLC_OPTS += +'{parse_transform, lager_transform}' +debug_info
+CT_OPTS = -cover test/sumo.coverspec -vvv -erl_args -boot start_sasl -config ${CONFIG}
 
-SHELL_OPTS = -name ${PROJECT}@`hostname` -config ${CONFIG} -s sync
+SHELL_OPTS = -name ${PROJECT}@`hostname` -config ${CONFIG} -boot start_sasl -s sync
 
 test-shell: build-ct-suites app
 	erl  -name ${PROJECT}@`hostname` -pa ebin -pa deps/*/ebin -pa test -s lager -s sync -config ${CONFIG}
@@ -49,13 +48,22 @@ erldocs:
 changelog:
 	github_changelog_generator --token ${TOKEN}
 
-quicktests: app build-ct-suites
-	@if [ -d "test" ] ; \
-	then \
-		mkdir -p logs/ ; \
-		$(CT_RUN) -suite $(addsuffix _SUITE,$(CT_SUITES)) $(CT_OPTS) ; \
-	fi
-	$(gen_verbose) rm -f test/*.beam
+EDOC_OPTS += todo, report_missing_types
+
+quicktests: app
+	@$(MAKE) --no-print-directory app-build test-dir ERLC_OPTS="$(TEST_ERLC_OPTS)"
+	$(verbose) mkdir -p $(CURDIR)/logs/
+	$(gen_verbose) $(CT_RUN) -suite $(addsuffix _SUITE,$(CT_SUITES)) $(CT_OPTS)
+
+test-build-plt: ERLC_OPTS=$(TEST_ERLC_OPTS)
+test-build-plt:
+	@$(MAKE) --no-print-directory test-dir ERLC_OPTS="$(TEST_ERLC_OPTS)"
+	$(gen_verbose) touch ebin/test
+
+plt-all: PLT_APPS := $(ALL_TEST_DEPS_DIRS)
+plt-all: test-deps test-build-plt plt
+
+dialyze-all: app test-build-plt dialyze
 
 # Riak tests
 CT_SUITES_RIAK = nested_docs
@@ -65,3 +73,4 @@ riak_tests: test-build
 	mkdir -p logs/ ; \
 	$(gen_verbose) $(CT_RUN) -suite $(addsuffix _SUITE,$(CT_SUITES_RIAK)) $(CT_OPTS_RIAK)
 	rm -rf test/*beam
+

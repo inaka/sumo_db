@@ -116,7 +116,6 @@ delete_by(DocName,
 -spec delete_all(sumo:schema_name(), state()) ->
   sumo_store:result(sumo_store:affected_rows(), state()).
 delete_all(DocName, #{index := Index, pool_name := PoolName} = State) ->
-    lager:debug("deleting all: ~p", [DocName]),
     Type = atom_to_binary(DocName, utf8),
     MatchAll = #{query => #{match_all => #{}}},
 
@@ -186,7 +185,6 @@ create_schema(Schema, #{index := Index, pool_name := PoolName} = State) ->
         _ -> ok
     end,
 
-    lager:debug("creating type: ~p", [SchemaName]),
     {ok, _} = tirerl:put_mapping(PoolName, Index, Type, Mapping),
 
     {ok, State}.

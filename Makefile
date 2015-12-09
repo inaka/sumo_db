@@ -65,9 +65,6 @@ plt-all: test-deps test-build-plt plt
 
 dialyze-all: app test-build-plt dialyze
 
-erldocs:
-	erldocs . -o docs
-
 # Riak tests
 CT_SUITES_RIAK = nested_docs
 CT_OPTS_RIAK = -vvv -erl_args -config test/riak/riak_test.config

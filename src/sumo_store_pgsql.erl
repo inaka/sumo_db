@@ -358,7 +358,7 @@ create_index(Name, id) ->
   ["PRIMARY KEY(", escape(atom_to_list(Name)), ")"];
 create_index(Name, unique) ->
   List = atom_to_list(Name),
-  ["UNIQUE KEY ", escape(List), " (", escape(List), ")"];
+  ["UNIQUE ", " (", escape(List), ")"];
 create_index(Name, index) ->
   List = atom_to_list(Name),
   ["KEY ", escape(List), " (", escape(List), ")"];

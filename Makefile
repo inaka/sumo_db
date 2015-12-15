@@ -41,7 +41,7 @@ CT_OPTS = -cover test/sumo.coverspec -vvv -erl_args -boot start_sasl -config ${C
 
 SHELL_OPTS = -name ${PROJECT}@`hostname` -config ${CONFIG} -boot start_sasl -s sync
 
-test-shell: build-ct-suites app
+test-shell: test-build app
 	erl  -name ${PROJECT}@`hostname` -pa ebin -pa deps/*/ebin -pa test -s lager -s sync -config ${CONFIG}
 
 erldocs:

@@ -273,10 +273,10 @@ condition_to_guard({'not', Expr}, FieldsMap) ->
 condition_to_guard({Name1, Op, Name2}, FieldsMap) when is_atom(Name2) ->
   check_operator(Op),
   %NOTE: Name2 can be a field name or a value, that's why the following happens
-  {Op, maps:get(Name1, FieldsMap), maps:get(Name2, FieldsMap, Name2)};
+  {Op, maps:get(Name1, FieldsMap), maps:get(Name2, FieldsMap, {const, Name2})};
 condition_to_guard({Name1, Op, Value}, FieldsMap) ->
   check_operator(Op),
-  {Op, maps:get(Name1, FieldsMap), Value};
+  {Op, maps:get(Name1, FieldsMap), {const, Value}};
 condition_to_guard({Name, 'null'}, FieldsMap) ->
   condition_to_guard({Name, '==', undefined}, FieldsMap);
 condition_to_guard({Name, 'not_null'}, FieldsMap) ->

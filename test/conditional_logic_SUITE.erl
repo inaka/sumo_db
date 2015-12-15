@@ -13,7 +13,8 @@
          not_null_conditional/1,
          null_conditional/1,
          operators/1,
-         deeply_nested/1
+         deeply_nested/1,
+         dates/1
         ]).
 
 -define(EXCLUDED_FUNS,
@@ -63,6 +64,28 @@ end_per_suite(Config) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Tests cases
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+dates(_Config) ->
+  lists:foreach(
+    fun do_dates/1,
+    sumo_test_utils:people_with_conditional_logic()),
+  {comment, ""}.
+
+do_dates(Module) ->
+  ct:comment("dates with ~p", [Module]),
+  [_, _, _, _, _] = sumo:find_all(Module),
+
+  Now = {Today, _} = calendar:universal_time(),
+
+  [] = sumo:find_by(Module, [{birthdate, '>', Today}]),
+
+  [_, _, _, _, _] = sumo:find_by(Module, [{birthdate, '==', Today}]),
+
+  [_, _, _, _, _] = sumo:find_by(Module, [{birthdate, '=<', Today}]),
+
+  [] = sumo:find_by(Module, [{created_at, '>', Now}]),
+
+  [_, _, _, _, _] = sumo:find_by(Module, [{created_at, '=<', Now}]).
 
 backward_compatibility(_Config) ->
   lists:foreach(

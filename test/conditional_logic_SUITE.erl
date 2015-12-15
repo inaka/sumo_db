@@ -67,9 +67,11 @@ end_per_suite(Config) ->
 backward_compatibility(_Config) ->
   lists:foreach(
     fun do_backward_compatibility/1,
-    sumo_test_utils:people_with_conditional_logic()).
+    sumo_test_utils:people_with_conditional_logic()),
+  {comment, ""}.
 
 do_backward_compatibility(Module) ->
+  ct:comment("backward_compatibility with ~p", [Module]),
   [_, _, _, _, _] = sumo:find_all(Module),
 
   [_, _, _] = sumo:find_by(Module, [{last_name, "Doe"}]),
@@ -79,9 +81,11 @@ do_backward_compatibility(Module) ->
 or_conditional(_Config) ->
   lists:foreach(
     fun do_or_conditional/1,
-    sumo_test_utils:people_with_conditional_logic()).
+    sumo_test_utils:people_with_conditional_logic()),
+  {comment, ""}.
 
 do_or_conditional(Module) ->
+  ct:comment("or_conditional with ~p", [Module]),
   [_, _, _] = sumo:find_by(Module,
                            {'or', [{name, "John"},
                                    {name, "Joe"},
@@ -102,9 +106,11 @@ do_or_conditional(Module) ->
 and_conditional(_Config) ->
   lists:foreach(
     fun do_and_conditional/1,
-    sumo_test_utils:people_with_conditional_logic()).
+    sumo_test_utils:people_with_conditional_logic()),
+  {comment, ""}.
 
 do_and_conditional(Module) ->
+  ct:comment("and_conditional with ~p", [Module]),
   [] = sumo:find_by(Module,
                     {'and', [{name, "John"},
                              {name, "Joe"},
@@ -126,9 +132,11 @@ do_and_conditional(Module) ->
 not_null_conditional(_Config) ->
   lists:foreach(
     fun do_not_null_conditional/1,
-    sumo_test_utils:people_with_conditional_logic()).
+    sumo_test_utils:people_with_conditional_logic()),
+  {comment, ""}.
 
 do_not_null_conditional(Module) ->
+  ct:comment("not_null_conditional with ~p", [Module]),
   [_, _, _] = sumo:find_by(Module, {age, 'not_null'}),
 
   [_] = sumo:find_by(Module, {address, 'not_null'}).
@@ -137,9 +145,11 @@ do_not_null_conditional(Module) ->
 null_conditional(_Config) ->
   lists:foreach(
     fun do_null_conditional/1,
-    sumo_test_utils:people_with_conditional_logic()).
+    sumo_test_utils:people_with_conditional_logic()),
+  {comment, ""}.
 
 do_null_conditional(Module) ->
+  ct:comment("null_conditional with ~p", [Module]),
   [_, _] = sumo:find_by(Module, {age, 'null'}),
 
   [_, _, _, _] = sumo:find_by(Module, {address, 'null'}).
@@ -147,9 +157,11 @@ do_null_conditional(Module) ->
 operators(_Config) ->
   lists:foreach(
     fun do_operators/1,
-    sumo_test_utils:people_with_numeric_sort()).
+    sumo_test_utils:people_with_numeric_sort()),
+  {comment, ""}.
 
 do_operators(Module) ->
+  ct:comment("operators with ~p", [Module]),
   [_, _] = sumo:find_by(Module,
                         {'and', [{age, 'not_null'},
                                  {age, '<', 100}
@@ -215,9 +227,11 @@ do_operators(Module) ->
 deeply_nested(_Config) ->
   lists:foreach(
     fun do_deeply_nested/1,
-    sumo_test_utils:people_with_conditional_logic()).
+    sumo_test_utils:people_with_conditional_logic()),
+  {comment, ""}.
 
 do_deeply_nested(Module) ->
+  ct:comment("deeply_nested with ~p", [Module]),
   Conditions = {'or', [{'and', [{age, '>', 100},
                                 {address, '==', "something"}]},
                        {age, 'null'},

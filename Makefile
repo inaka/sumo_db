@@ -19,7 +19,7 @@ dep_iso8601 = git https://github.com/zerotao/erlang_iso8601.git 0d14540
 TEST_DEPS = mixer
 dep_mixer = git git://github.com/inaka/mixer.git 0.1.2
 
-CT_SUITES ?= conditional_logic sumo_basic sumo_config sumo_find
+CT_SUITES ?= conditional_logic sumo_basic sumo_config sumo_find sumo_events
 
 include erlang.mk
 

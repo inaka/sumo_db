@@ -24,5 +24,6 @@
  , sumo_store_riak
  , sumo_store_sup
  , sumo_sup
+ , sumo_event_manager_sup
  ]
 }.

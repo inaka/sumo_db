@@ -1,6 +1,10 @@
 -module(sumo_events_SUITE).
 
--export([all/0]).
+-export([
+         all/0,
+         init_per_suite/1,
+         end_per_suite/1
+        ]).
 
 -export([events_manager_supervisor_running/1]).
 
@@ -12,6 +16,15 @@
 
 -spec all() -> [atom()].
 all() -> [events_manager_supervisor_running].
+
+-spec init_per_suite(Config::config()) -> config().
+init_per_suite(Config) ->
+  sumo_test_utils:start_apps(),
+  Config.
+
+-spec end_per_suite(Config::config()) -> config().
+end_per_suite(Config) ->
+  Config.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Common test

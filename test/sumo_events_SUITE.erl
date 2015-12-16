@@ -46,7 +46,8 @@ end_per_suite(Config) ->
 %% Common test
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec events_manager_supervisor_running(Config::config()) -> {comment, string()}.
+-spec events_manager_supervisor_running(Config::config()) ->
+  {comment, string()}.
 events_manager_supervisor_running(_Config) ->
   Events = application:get_env(sumo_db, events, []),
   Fun = fun(Module) ->

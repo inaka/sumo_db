@@ -1,5 +1,5 @@
 %%% @hidden
-%%% @doc Main supervisor.
+%%% @doc Events managers supervisor.
 %%%
 %%% Copyright 2012 Inaka &lt;hello@inaka.net&gt;
 %%%
@@ -17,8 +17,8 @@
 %%% @end
 %%% @copyright Inaka <hello@inaka.net>
 %%%
--module(sumo_sup).
--author("Marcelo Gornstein <marcelog@gmail.com>").
+-module(sumo_event_manager_sup).
+-author("Harenson Henao <harenson@gmail.com>").
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
@@ -33,12 +33,20 @@ start_link() -> supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 -spec init(any()) ->
   {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
 init([]) ->
-  {ok, {
-    {one_for_one, 5, 10},
-    [ sup(sumo_backend_sup)
-    , sup(sumo_store_sup)
-    , sup(sumo_event_manager_sup)
-    ]
-  }}.
+  Events = application:get_env(sumo_db, events, []),
+  EventsManagers = lists:usort([Manager || {_, Manager} <- Events]),
+  ManagersList = [manager(EventManager) || EventManager <- EventsManagers],
+  {ok, {{one_for_one, 5, 10}, ManagersList}}.
 
-sup(I) -> {I, {I, start_link, []}, permanent, infinity, supervisor, [I]}.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% internal
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% @private
+manager(EventManager) ->
+  #{ id => EventManager
+   , start => { gen_event
+              , start_link
+              , [{local, EventManager}]
+              }
+   }.

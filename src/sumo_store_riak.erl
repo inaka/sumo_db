@@ -73,12 +73,14 @@
 %% put_opts: Riak write options parameters.
 %% del_opts: Riak delete options parameters.
 %% <a href="http://docs.basho.com/riak/latest/dev/using/basics">Reference</a>.
--record(state, {conn     :: connection(),
-                bucket   :: bucket(),
-                index    :: index(),
-                get_opts :: get_options(),
-                put_opts :: put_options(),
-                del_opts :: delete_options()}).
+-record(state, {
+  conn     :: connection(),
+  bucket   :: bucket(),
+  index    :: index(),
+  get_opts :: get_options(),
+  put_opts :: put_options(),
+  del_opts :: delete_options()
+}).
 -type state() :: #state{}.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -102,12 +104,14 @@ init(Opts) ->
   GetOpts = proplists:get_value(get_options, Opts, []),
   PutOpts = proplists:get_value(put_options, Opts, []),
   DelOpts = proplists:get_value(delete_options, Opts, []),
-  State = #state{conn = Conn,
-                 bucket = {BucketType, Bucket},
-                 index = Index,
-                 get_opts = GetOpts,
-                 put_opts = PutOpts,
-                 del_opts = DelOpts},
+  State = #state{
+    conn = Conn,
+    bucket = {BucketType, Bucket},
+    index = Index,
+    get_opts = GetOpts,
+    put_opts = PutOpts,
+    del_opts = DelOpts
+  },
   {ok, State}.
 
 -spec persist(
@@ -170,9 +174,9 @@ delete_by(DocName, Conditions,
 delete_all(_DocName,
            #state{conn = Conn, bucket = Bucket, del_opts = Opts} = State) ->
   Del = fun(Kst, Acc) ->
-          lists:foreach(fun(K) -> delete_map(Conn, Bucket, K, Opts) end, Kst),
-          Acc + length(Kst)
-        end,
+    lists:foreach(fun(K) -> delete_map(Conn, Bucket, K, Opts) end, Kst),
+    Acc + length(Kst)
+end,
   case stream_keys(Conn, Bucket, Del, 0) of
     {ok, Count} -> {ok, Count, State};
     {_, Count}  -> {error, Count, State}
@@ -184,8 +188,8 @@ delete_all(_DocName,
 find_all(DocName,
          #state{conn = Conn, bucket = Bucket, get_opts = Opts} = State) ->
   Get = fun(Kst, Acc) ->
-          fetch_docs(DocName, Conn, Bucket, Kst, Opts) ++ Acc
-        end,
+    fetch_docs(DocName, Conn, Bucket, Kst, Opts) ++ Acc
+  end,
   case stream_keys(Conn, Bucket, Get, []) of
     {ok, Docs} -> {ok, Docs, State};
     {_, Docs}  -> {error, Docs, State}
@@ -252,7 +256,8 @@ find_by_query(DocName, Conditions, undefined, undefined, State) ->
   %% First get all keys matching the query, and then obtain documents for those
   %% keys.
   #state{conn = Conn, bucket = Bucket, index = Index, get_opts = Opts} = State,
-  Query = build_query(Conditions),
+  TranslatedConditions = translate_conditions(DocName, Conditions),
+  Query = build_query(TranslatedConditions),
   case find_by_query_get_keys(Conn, Index, Query) of
     {ok, Keys} ->
       Results = fetch_docs(DocName, Conn, Bucket, Keys, Opts),
@@ -260,12 +265,11 @@ find_by_query(DocName, Conditions, undefined, undefined, State) ->
     {error, Error} ->
       {error, Error, State}
   end;
-
-%% @private
 find_by_query(DocName, Conditions, Limit, Offset, State) ->
   %% Limit and offset were specified so we return a possibly partial result set.
   #state{conn = Conn, bucket = Bucket, index = Index, get_opts = Opts} = State,
-  Query = build_query(Conditions),
+  TranslatedConditions = translate_conditions(DocName, Conditions),
+  Query = build_query(TranslatedConditions),
   case search_keys_by(Conn, Index, Query, Limit, Offset) of
     {ok, {_Total, Keys}} ->
       Results = fetch_docs(DocName, Conn, Bucket, Keys, Opts),
@@ -276,11 +280,10 @@ find_by_query(DocName, Conditions, Limit, Offset, State) ->
 
 %% @private
 find_by_query_get_keys(Conn, Index, Query) ->
-  InitialResults =
-    case search_keys_by(Conn, Index, Query, 0, 0) of
-      {ok, {Total, Keys}} -> {ok, length(Keys), Total, Keys};
-      Error               -> Error
-    end,
+  InitialResults = case search_keys_by(Conn, Index, Query, 0, 0) of
+    {ok, {Total, Keys}} -> {ok, length(Keys), Total, Keys};
+    Error               -> Error
+  end,
   case InitialResults of
     {ok, ResultCount, Total1, Keys1} when ResultCount < Total1 ->
       Limit  = Total1 - ResultCount,
@@ -335,12 +338,12 @@ rmap_to_doc(DocName, RMap) ->
 
 -spec rmap_to_map(riakc_map:crdt_map()) -> map().
 rmap_to_map(RMap) ->
-  F = fun({{K, map}, V}, Acc) ->
-        maps:put(to_atom(K), rmap_to_map({map, V, [], [], undefined}), Acc);
-      ({{K, _}, V}, Acc) ->
-        maps:put(to_atom(K), V, Acc)
-      end,
-  lists:foldl(F, #{}, riakc_map:value(RMap)).
+  lists:foldl(fun
+    ({{K, map}, V}, Acc) ->
+      maps:put(to_atom(K), rmap_to_map({map, V, [], [], undefined}), Acc);
+    ({{K, _}, V}, Acc) ->
+      maps:put(to_atom(K), V, Acc)
+  end, #{}, riakc_map:value(RMap)).
 
 -spec fetch_map(
   connection(), bucket(), key(), options()
@@ -352,13 +355,12 @@ fetch_map(Conn, Bucket, Key, Opts) ->
   sumo:schema_name(), connection(), bucket(), [key()], options()
 ) -> [sumo_internal:doc()].
 fetch_docs(DocName, Conn, Bucket, Keys, Opts) ->
-  Fun = fun(K, Acc) ->
-          case fetch_map(Conn, Bucket, K, Opts) of
-            {ok, M} -> [rmap_to_doc(DocName, M) | Acc];
-            _       -> Acc
-          end
-        end,
-  lists:foldl(Fun, [], Keys).
+  lists:foldl(fun(K, Acc) ->
+    case fetch_map(Conn, Bucket, K, Opts) of
+      {ok, M} -> [rmap_to_doc(DocName, M) | Acc];
+      _       -> Acc
+    end
+  end, [], Keys).
 
 -spec delete_map(
   connection(), bucket(), key(), options()
@@ -391,57 +393,123 @@ build_query(Conditions) ->
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% @private
+translate_conditions(DocName, Conditions) when is_list(Conditions) ->
+  DTFields = datetime_fields_from_docname(DocName),
+  lists:foldl(fun
+    ({K, V}, Acc) when K == 'and'; K == 'or' ->
+      [{K, translate_conditions(DocName, V)} | Acc];
+    ({'not', V}, Acc) ->
+      [NotCond] = translate_conditions(DocName, [V]),
+      [{'not', NotCond} | Acc];
+    ({K, V} = KV, Acc) ->
+      case lists:keyfind(K, 1, DTFields) of
+        {K, FieldType} ->
+          [{K, validate_date(V, FieldType)} | Acc];
+        false ->
+          [KV | Acc]
+      end;
+    ({K, Op, V} = KV, Acc) ->
+      case lists:keyfind(K, 1, DTFields) of
+        {K, FieldType} ->
+          [{K, Op, validate_date(V, FieldType)} | Acc];
+        false ->
+          [KV | Acc]
+      end;
+    (Cond, Acc) ->
+      [Cond | Acc]
+  end, [], Conditions);
+translate_conditions(DocName, Conditions) ->
+  translate_conditions(DocName, [Conditions]).
+
+%% @private
+validate_date(FieldValue, FieldType) ->
+  case {FieldType, is_datetime(FieldValue)} of
+    {datetime, true} ->
+      iso8601:format(FieldValue);
+    {date, true} ->
+      DateTime = {FieldValue, {0, 0, 0}},
+      iso8601:format(DateTime)
+  end.
+
+%% @private
 sleep(Doc) ->
-  DTFields = datetime_fields(Doc),
-  Encode =
-    fun({FieldName, FieldType, FieldValue}, Acc) ->
-      case {FieldType, is_datetime(FieldValue)} of
-        {datetime, true} ->
-          sumo_internal:set_field(FieldName, iso8601:format(FieldValue), Acc);
-        {date, true} ->
-          DateTime = {FieldValue, {0, 0, 0}},
-          sumo_internal:set_field(FieldName, iso8601:format(DateTime), Acc);
-        _ ->
-          Acc
-      end
-    end,
-  lists:foldl(Encode, Doc, DTFields).
+  DTFields = datetime_fields_from_doc(Doc),
+  lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
+    case {FieldType, is_datetime(FieldValue)} of
+      {datetime, true} ->
+        sumo_internal:set_field(FieldName, iso8601:format(FieldValue), Acc);
+      {date, true} ->
+        DateTime = {FieldValue, {0, 0, 0}},
+        sumo_internal:set_field(FieldName, iso8601:format(DateTime), Acc);
+      _ ->
+        Acc
+    end
+  end, Doc, DTFields).
 
 %% @private
 wakeup(Doc) ->
-  DTFields = datetime_fields(Doc),
-  Decode =
-    fun({FieldName, FieldType, FieldValue}, Acc) ->
-      case FieldType of
-        datetime when FieldValue /= <<"undefined">> ->
-          sumo_internal:set_field(FieldName, iso8601:parse(FieldValue), Acc);
-        date when FieldValue /= <<"undefined">> ->
-          {Date, _} = iso8601:parse(FieldValue),
-          sumo_internal:set_field(FieldName, Date, Acc);
-        _ ->
-          Acc
-      end
-    end,
-  lists:foldl(Decode, Doc, DTFields).
-
-%% @private
-datetime_fields(Doc) ->
   DocName = sumo_internal:doc_name(Doc),
   Schema = sumo_internal:get_schema(DocName),
   SchemaFields = sumo_internal:schema_fields(Schema),
-  Filter =
-    fun(Field, Acc) ->
-      FieldType = sumo_internal:field_type(Field),
-      case FieldType of
-        T when T =:= datetime; T =:= date ->
-          FieldName = sumo_internal:field_name(Field),
-          FieldValue = sumo_internal:get_field(FieldName, Doc),
-          [{FieldName, FieldType, FieldValue} | Acc];
-        _ ->
-          Acc
-      end
-    end,
-  lists:foldl(Filter, [], SchemaFields).
+  lists:foldl(fun(Field, Acc) ->
+    FieldType = sumo_internal:field_type(Field),
+    FieldName = sumo_internal:field_name(Field),
+    FieldValue = sumo_internal:get_field(FieldName, Doc),
+    case FieldType of
+      _ when FieldValue =:= <<"undefined">> ->
+        sumo_internal:set_field(FieldName, undefined, Acc);
+      _ when FieldType =:= datetime; FieldType =:= date ->
+        case {FieldType, iso8601:is_datetime(FieldValue)} of
+          {datetime, true} ->
+            sumo_internal:set_field(FieldName, iso8601:parse(FieldValue), Acc);
+          {date, true} ->
+            {Date, _} = iso8601:parse(FieldValue),
+            sumo_internal:set_field(FieldName, Date, Acc);
+          _ ->
+            Acc
+        end;
+      integer ->
+        sumo_internal:set_field(FieldName, to_int(FieldValue), Acc);
+      float ->
+        sumo_internal:set_field(FieldName, to_float(FieldValue), Acc);
+      string ->
+        sumo_internal:set_field(FieldName, to_list(FieldValue), Acc);
+      _ ->
+        Acc
+    end
+  end, Doc, SchemaFields).
+
+%% @private
+datetime_fields_from_doc(Doc) ->
+  DocName = sumo_internal:doc_name(Doc),
+  Schema = sumo_internal:get_schema(DocName),
+  SchemaFields = sumo_internal:schema_fields(Schema),
+  lists:foldl(fun(Field, Acc) ->
+    FieldType = sumo_internal:field_type(Field),
+    case FieldType of
+      T when T =:= datetime; T =:= date ->
+        FieldName = sumo_internal:field_name(Field),
+        FieldValue = sumo_internal:get_field(FieldName, Doc),
+        [{FieldName, FieldType, FieldValue} | Acc];
+      _ ->
+        Acc
+    end
+  end, [], SchemaFields).
+
+%% @private
+datetime_fields_from_docname(DocName) ->
+  Schema = sumo_internal:get_schema(DocName),
+  SchemaFields = sumo_internal:schema_fields(Schema),
+  lists:foldl(fun(Field, Acc) ->
+    FieldType = sumo_internal:field_type(Field),
+    case FieldType of
+      T when T =:= datetime; T =:= date ->
+        FieldName = sumo_internal:field_name(Field),
+        [{FieldName, FieldType} | Acc];
+      _ ->
+        Acc
+    end
+  end, [], SchemaFields).
 
 %% @private
 is_datetime({{_, _, _} = Date, {_, _, _}}) ->
@@ -462,15 +530,15 @@ new_doc(Doc, #state{conn = Conn, bucket = Bucket, put_opts = Opts}) ->
   DocName = sumo_internal:doc_name(Doc),
   IdField = sumo_internal:id_field_name(DocName),
   Id = case sumo_internal:get_field(IdField, Doc) of
-         undefined ->
-           case update_map(Conn, Bucket, undefined, doc_to_rmap(Doc), Opts) of
-             {ok, RiakMapId} -> RiakMapId;
-             {error, Error}  -> throw(Error);
-             _               -> throw(unexpected)
-           end;
-         Id0 ->
-           to_bin(Id0)
-       end,
+    undefined ->
+      case update_map(Conn, Bucket, undefined, doc_to_rmap(Doc), Opts) of
+        {ok, RiakMapId} -> RiakMapId;
+        {error, Error}  -> throw(Error);
+        _               -> throw(unexpected)
+      end;
+    Id0 ->
+      to_bin(Id0)
+  end,
   {Id, sumo_internal:set_field(IdField, Id, Doc)}.
 
 %% @private
@@ -505,11 +573,10 @@ rmap_update({K, V}, RMap) ->
 
 %% @private
 kv_to_doc(DocName, KV) ->
-  F = fun({K, V}, Acc) ->
-        NK = normalize_doc_fields(K),
-        sumo_internal:set_field(to_atom(NK), V, Acc)
-      end,
-  wakeup(lists:foldl(F, sumo_internal:new_doc(DocName), KV)).
+  wakeup(lists:foldl(fun({K, V}, Acc) ->
+    NK = normalize_doc_fields(K),
+    sumo_internal:set_field(to_atom(NK), V, Acc)
+  end, sumo_internal:new_doc(DocName), KV)).
 
 %% @private
 normalize_doc_fields(Src) ->
@@ -543,11 +610,10 @@ receive_stream(Ref, F, Acc) ->
 search_keys_by(Conn, Index, Query, Limit, Offset) ->
   case sumo_store_riak:search(Conn, Index, Query, Limit, Offset) of
     {ok, {search_results, Results, _, Total}} ->
-      F = fun({_, KV}, Acc) ->
-            {_, K} = lists:keyfind(<<"_yz_rk">>, 1, KV),
-            [K | Acc]
-          end,
-      Keys = lists:foldl(F, [], Results),
+      Keys = lists:foldl(fun({_, KV}, Acc) ->
+        {_, K} = lists:keyfind(<<"_yz_rk">>, 1, KV),
+        [K | Acc]
+      end, [], Results),
       {ok, {Total, Keys}};
     {error, Error} ->
       {error, Error}
@@ -566,11 +632,10 @@ search_docs_by(DocName, Conn, Index, Query, Limit, Offset) ->
 
 %% @private
 delete_docs(Conn, Bucket, Docs, Opts) ->
-  F = fun(D) ->
-        K = doc_id(D),
-        delete_map(Conn, Bucket, K, Opts)
-      end,
-  lists:foreach(F, Docs).
+  lists:foreach(fun(D) ->
+    K = doc_id(D),
+    delete_map(Conn, Bucket, K, Opts)
+  end, Docs).
 
 %% @private
 to_bin(Data) when is_integer(Data) ->
@@ -592,6 +657,40 @@ to_atom(Data) when is_list(Data) ->
 to_atom(Data) when is_pid(Data); is_reference(Data); is_tuple(Data) ->
   list_to_atom(integer_to_list(erlang:phash2(Data)));
 to_atom(Data) ->
+  Data.
+
+%% @private
+to_list(Data) when is_binary(Data) ->
+  binary_to_list(Data);
+to_list(Data) when is_integer(Data) ->
+  integer_to_list(Data);
+to_list(Data) when is_float(Data) ->
+  float_to_list(Data);
+to_list(Data) when is_atom(Data) ->
+  atom_to_list(Data);
+to_list(Data) when is_pid(Data); is_reference(Data); is_tuple(Data) ->
+  integer_to_list(erlang:phash2(Data));
+to_list(Data) ->
+  Data.
+
+%% @private
+to_int(Data) when is_binary(Data) ->
+  binary_to_integer(Data);
+to_int(Data) when is_list(Data) ->
+  list_to_integer(Data);
+to_int(Data) when is_pid(Data); is_reference(Data); is_tuple(Data) ->
+  erlang:phash2(Data);
+to_int(Data) ->
+  Data.
+
+%% @private
+to_float(Data) when is_binary(Data) ->
+  binary_to_float(Data);
+to_float(Data) when is_list(Data) ->
+  list_to_float(Data);
+to_float(Data) when is_pid(Data); is_reference(Data); is_tuple(Data) ->
+  erlang:phash2(Data);
+to_float(Data) ->
   Data.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

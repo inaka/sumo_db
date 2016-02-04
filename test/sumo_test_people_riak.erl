@@ -27,7 +27,7 @@
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
   Fields =
-    [sumo:new_field(id,         integer, [id, auto_increment]),
+    [sumo:new_field(id,         binary, [id]),
      sumo:new_field(name,       string, [{length, 255}, not_null, unique]),
      sumo:new_field(last_name,  string, [{length, 255}, not_null]),
      sumo:new_field(age,        integer),

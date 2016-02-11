@@ -310,10 +310,10 @@ wakeup(Doc) ->
   lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
     case {FieldType, FieldValue} of
       {datetime, {_, _, _}} ->
-        DateTime = timestamp_to_datetime(FieldValue),
+        DateTime = calendar:now_to_universal_time(FieldValue),
         sumo_internal:set_field(FieldName, DateTime, Acc);
       {date, {_, _, _}} ->
-        {Date, _} = timestamp_to_datetime(FieldValue),
+        {Date, _} = calendar:now_to_universal_time(FieldValue),
         sumo_internal:set_field(FieldName, Date, Acc);
       _ ->
         Acc
@@ -359,14 +359,6 @@ is_datetime({_, _, _} = Date) ->
   calendar:valid_date(Date);
 is_datetime(_) ->
   false.
-
-%% @private
-timestamp_to_datetime(Timestamp) ->
-  {Mega, Sec, _Micro} = Timestamp,
-  Milliseconds = (Mega * 1000000 + Sec) * 1000,
-  BaseDate = calendar:datetime_to_gregorian_seconds({{1970,1,1},{0,0,0}}),
-  Seconds = BaseDate + (Milliseconds div 1000),
-  calendar:gregorian_seconds_to_datetime(Seconds).
 
 %% @private
 translate_conditions(DocName, Conditions) when is_list(Conditions) ->

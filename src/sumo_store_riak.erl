@@ -487,7 +487,7 @@ datetime_fields_from_doc(Doc) ->
   lists:foldl(fun(Field, Acc) ->
     FieldType = sumo_internal:field_type(Field),
     case FieldType of
-      T when T =:= datetime; T =:= date ->
+      _ when FieldType =:= datetime; FieldType =:= date ->
         FieldName = sumo_internal:field_name(Field),
         FieldValue = sumo_internal:get_field(FieldName, Doc),
         [{FieldName, FieldType, FieldValue} | Acc];
@@ -503,7 +503,7 @@ datetime_fields_from_docname(DocName) ->
   lists:foldl(fun(Field, Acc) ->
     FieldType = sumo_internal:field_type(Field),
     case FieldType of
-      T when T =:= datetime; T =:= date ->
+      _ when FieldType =:= datetime; FieldType =:= date ->
         FieldName = sumo_internal:field_name(Field),
         [{FieldName, FieldType} | Acc];
       _ ->

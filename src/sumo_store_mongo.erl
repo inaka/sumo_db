@@ -67,7 +67,8 @@ persist(Doc, #state{pool=Pool}=State) ->
     {oid, NewId},
     sumo_internal:set_field(IdField, emongo:dec2hex(NewId), Doc)
   ),
-  Fields = sumo_internal:doc_fields(NewDoc),
+  NewDoc2 = sleep(NewDoc),
+  Fields = sumo_internal:doc_fields(NewDoc2),
   ok = emongo:update(
     Pool, atom_to_list(DocName), Selector,
     maps:to_list(Fields), true
@@ -77,10 +78,22 @@ persist(Doc, #state{pool=Pool}=State) ->
 -spec delete_by(sumo:schema_name(), sumo:conditions(), state()) ->
   sumo_store:result(sumo_store:affected_rows(), state()).
 delete_by(DocName, Conditions, #state{pool = Pool} = State) ->
+  % @TODO: Fix this workaround (it affects performance).
+  % This is a workaround to get the number of docs to be deleted,
+  % before to delete them, since the mongodb client `emongo'
+  % doesn't return this value needed by sumo.
+  % Besides, its is extremely recommended change the mongo client,
+  % because the current one is too old, with lack of maintenance.
+  TotalDocsToBeDeleted = length(emongo:find(
+    Pool,
+    atom_to_list(DocName),
+    build_query(Conditions),
+    [])),
+
   ok = emongo:delete(Pool,
                      atom_to_list(DocName),
                      build_query(Conditions)),
-  {ok, 1, State}.
+  {ok, TotalDocsToBeDeleted, State}.
 
 
 -spec delete_all(sumo:schema_name(), state()) ->
@@ -122,9 +135,10 @@ find_by(DocName,
                _  -> [{orderby, SortFields} | Options]
              end,
 
+  Query = build_query(translate_conditions(DocName, Conditions)),
   Results = emongo:find(Pool,
                         atom_to_list(DocName),
-                        build_query(Conditions),
+                        Query,
                         Options1),
 
   FoldFun =
@@ -160,7 +174,7 @@ find_by(DocName,
       Results
      ),
 
-  {ok, Docs, State}.
+  {ok, [wakeup(Doc) || Doc <- Docs], State}.
 
 -spec find_by(sumo:schema_name(), sumo:conditions(), state()) ->
   sumo_store:result([sumo_internal:doc()], state()).
@@ -276,4 +290,116 @@ like_to_regex(Like) ->
   case lists:last(Like) of
     $% -> Regex1;
     _ -> <<Regex1/binary, "$">>
+  end.
+
+%% @private
+sleep(Doc) ->
+  DTFields = datetime_fields_from_doc(Doc),
+  lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
+    case {FieldType, is_datetime(FieldValue)} of
+      {date, true} ->
+        sumo_internal:set_field(FieldName, {FieldValue, {0, 0, 0}}, Acc);
+      _ ->
+        Acc
+    end
+  end, Doc, DTFields).
+
+%% @private
+wakeup(Doc) ->
+  DTFields = datetime_fields_from_doc(Doc),
+  lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
+    case {FieldType, FieldValue} of
+      {datetime, {_, _, _}} ->
+        DateTime = timestamp_to_datetime(FieldValue),
+        sumo_internal:set_field(FieldName, DateTime, Acc);
+      {date, {_, _, _}} ->
+        {Date, _} = timestamp_to_datetime(FieldValue),
+        sumo_internal:set_field(FieldName, Date, Acc);
+      _ ->
+        Acc
+    end
+  end, Doc, DTFields).
+
+%% @private
+datetime_fields_from_doc(Doc) ->
+  DocName = sumo_internal:doc_name(Doc),
+  Schema = sumo_internal:get_schema(DocName),
+  SchemaFields = sumo_internal:schema_fields(Schema),
+  lists:foldl(fun(Field, Acc) ->
+    FieldType = sumo_internal:field_type(Field),
+    case FieldType of
+      T when T =:= datetime; T =:= date ->
+        FieldName = sumo_internal:field_name(Field),
+        FieldValue = sumo_internal:get_field(FieldName, Doc),
+        [{FieldName, FieldType, FieldValue} | Acc];
+      _ ->
+        Acc
+    end
+  end, [], SchemaFields).
+
+%% @private
+datetime_fields_from_docname(DocName) ->
+  Schema = sumo_internal:get_schema(DocName),
+  SchemaFields = sumo_internal:schema_fields(Schema),
+  lists:foldl(fun(Field, Acc) ->
+    FieldType = sumo_internal:field_type(Field),
+    case FieldType of
+      _ when FieldType =:= datetime; FieldType =:= date ->
+        FieldName = sumo_internal:field_name(Field),
+        [{FieldName, FieldType} | Acc];
+      _ ->
+        Acc
+    end
+  end, [], SchemaFields).
+
+%% @private
+is_datetime({{_, _, _} = Date, {_, _, _}}) ->
+  calendar:valid_date(Date);
+is_datetime({_, _, _} = Date) ->
+  calendar:valid_date(Date);
+is_datetime(_) ->
+  false.
+
+%% @private
+timestamp_to_datetime(Timestamp) ->
+  {Mega, Sec, _Micro} = Timestamp,
+  Milliseconds = (Mega * 1000000 + Sec) * 1000,
+  BaseDate = calendar:datetime_to_gregorian_seconds({{1970,1,1},{0,0,0}}),
+  Seconds = BaseDate + (Milliseconds div 1000),
+  calendar:gregorian_seconds_to_datetime(Seconds).
+
+%% @private
+translate_conditions(DocName, Conditions) when is_list(Conditions) ->
+  DTFields = datetime_fields_from_docname(DocName),
+  lists:foldl(fun
+    ({K, V}, Acc) when K == 'and'; K == 'or' ->
+      [{K, translate_conditions(DocName, V)} | Acc];
+    ({'not', V}, Acc) ->
+      [NotCond] = translate_conditions(DocName, [V]),
+      [{'not', NotCond} | Acc];
+    ({K, V} = KV, Acc) ->
+      case lists:keyfind(K, 1, DTFields) of
+        {K, FieldType} ->
+          [{K, validate_date(V, FieldType)} | Acc];
+        false ->
+          [KV | Acc]
+      end;
+    ({K, Op, V} = KV, Acc) ->
+      case lists:keyfind(K, 1, DTFields) of
+        {K, FieldType} ->
+          [{K, Op, validate_date(V, FieldType)} | Acc];
+        false ->
+          [KV | Acc]
+      end;
+    (Cond, Acc) ->
+      [Cond | Acc]
+  end, [], Conditions);
+translate_conditions(DocName, Conditions) ->
+  translate_conditions(DocName, [Conditions]).
+
+%% @private
+validate_date(FieldValue, FieldType) ->
+  case {FieldType, is_datetime(FieldValue)} of
+    {datetime, true} -> FieldValue;
+    {date, true}     -> {FieldValue, {0, 0, 0}}
   end.

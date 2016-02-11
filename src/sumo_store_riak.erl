@@ -651,6 +651,8 @@ to_bin(Data) when is_atom(Data) ->
   atom_to_binary(Data, utf8);
 to_bin(Data) when is_list(Data) ->
   iolist_to_binary(Data);
+to_bin(Data) when is_pid(Data); is_reference(Data); is_tuple(Data) ->
+  integer_to_binary(erlang:phash2(Data));
 to_bin(Data) ->
   Data.
 
@@ -683,6 +685,8 @@ to_int(Data) when is_binary(Data) ->
   binary_to_integer(Data);
 to_int(Data) when is_list(Data) ->
   list_to_integer(Data);
+to_int(Data) when is_float(Data) ->
+  trunc(Data);
 to_int(Data) when is_pid(Data); is_reference(Data); is_tuple(Data) ->
   erlang:phash2(Data);
 to_int(Data) ->
@@ -693,8 +697,10 @@ to_float(Data) when is_binary(Data) ->
   binary_to_float(Data);
 to_float(Data) when is_list(Data) ->
   list_to_float(Data);
+to_float(Data) when is_integer(Data) ->
+  Data / 1;
 to_float(Data) when is_pid(Data); is_reference(Data); is_tuple(Data) ->
-  erlang:phash2(Data);
+  erlang:phash2(Data) / 1;
 to_float(Data) ->
   Data.
 

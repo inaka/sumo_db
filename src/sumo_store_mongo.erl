@@ -165,16 +165,16 @@ find_by(DocName,
   Docs =
     lists:map(
       fun(Row) ->
-          lists:foldl(
-            FoldFun,
-            sumo_internal:new_doc(DocName),
-            Row
-           )
+        wakeup(lists:foldl(
+          FoldFun,
+          sumo_internal:new_doc(DocName),
+          Row
+         ))
       end,
       Results
      ),
 
-  {ok, [wakeup(Doc) || Doc <- Docs], State}.
+  {ok, Docs, State}.
 
 -spec find_by(sumo:schema_name(), sumo:conditions(), state()) ->
   sumo_store:result([sumo_internal:doc()], state()).

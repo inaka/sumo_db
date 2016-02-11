@@ -459,15 +459,7 @@ wakeup(Doc) ->
       _ when FieldValue =:= <<"undefined">> ->
         sumo_internal:set_field(FieldName, undefined, Acc);
       _ when FieldType =:= datetime; FieldType =:= date ->
-        case {FieldType, iso8601:is_datetime(FieldValue)} of
-          {datetime, true} ->
-            sumo_internal:set_field(FieldName, iso8601:parse(FieldValue), Acc);
-          {date, true} ->
-            {Date, _} = iso8601:parse(FieldValue),
-            sumo_internal:set_field(FieldName, Date, Acc);
-          _ ->
-            Acc
-        end;
+        set_datetime_field(FieldType, FieldName, FieldValue, Acc);
       integer ->
         sumo_internal:set_field(FieldName, to_int(FieldValue), Acc);
       float ->
@@ -475,9 +467,22 @@ wakeup(Doc) ->
       string ->
         sumo_internal:set_field(FieldName, to_list(FieldValue), Acc);
       _ ->
+        %% @TODO: validate nested entities, needs to define sumo types for it
         Acc
     end
   end, Doc, SchemaFields).
+
+%% @private
+set_datetime_field(FieldType, FieldName, FieldValue, Doc) ->
+  case {FieldType, iso8601:is_datetime(FieldValue)} of
+    {datetime, true} ->
+      sumo_internal:set_field(FieldName, iso8601:parse(FieldValue), Doc);
+    {date, true} ->
+      {Date, _} = iso8601:parse(FieldValue),
+      sumo_internal:set_field(FieldName, Date, Doc);
+    _ ->
+      Doc
+  end.
 
 %% @private
 datetime_fields_from_doc(Doc) ->

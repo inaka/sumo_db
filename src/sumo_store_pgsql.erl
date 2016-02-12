@@ -257,7 +257,7 @@ find_by(DocName, Conditions, SortFields, Limit, Offset, State) ->
                    Fields = tuple_to_list(Row),
                    Pairs = lists:zip(ColumnNames, Fields),
                    NewDoc = sumo_internal:new_doc(DocName),
-                   lists:foldl(FoldFun, NewDoc, Pairs)
+                   wakeup(lists:foldl(FoldFun, NewDoc, Pairs))
                end,
       Docs = lists:map(RowFun, Rows),
       {ok, Docs, State};
@@ -368,3 +368,28 @@ create_index(_, _) ->
 %% @todo remove this once pgsql specs are fixed to support iodata and make
 %%       dialyzer happy
 stringify(Sql) -> binary_to_list(iolist_to_binary(Sql)).
+
+%% @private
+wakeup(Doc) ->
+  Fields = sumo_store_utils:fields_from_doc(Doc),
+  lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
+    case {FieldType, FieldValue} of
+      {integer, FieldValue} ->
+        Integer = sumo_store_utils:to_int(FieldValue),
+        sumo_internal:set_field(FieldName, Integer, Acc);
+      {binary, FieldValue} ->
+        Binary = sumo_store_utils:to_bin(FieldValue),
+        sumo_internal:set_field(FieldName, Binary, Acc);
+      {text, FieldValue} ->
+        Text = sumo_store_utils:to_bin(FieldValue),
+        sumo_internal:set_field(FieldName, Text, Acc);
+      {float, FieldValue} ->
+        Float = sumo_store_utils:to_float(FieldValue),
+        sumo_internal:set_field(FieldName, Float, Acc);
+      {string, FieldValue} ->
+        String = sumo_store_utils:to_list(FieldValue),
+        sumo_internal:set_field(FieldName, String, Acc);
+      _ ->
+        Acc
+    end
+  end, Doc, Fields).

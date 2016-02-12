@@ -426,7 +426,8 @@ get_docs(DocName, Name, Args, State) ->
 
 build_docs(DocName, #result_packet{rows = Rows, field_list = Fields}) ->
   FieldNames = [binary_to_atom(Field#field.name, utf8) || Field <- Fields],
-  [build_doc(sumo_internal:new_doc(DocName), FieldNames, Row) || Row <- Rows].
+  [wakeup(build_doc(sumo_internal:new_doc(DocName), FieldNames, Row)) ||
+   Row <- Rows].
 
 build_doc(Doc, [], []) -> Doc;
 build_doc(Doc, [FieldName|FieldNames], [{date, Value}|Values]) ->
@@ -483,3 +484,28 @@ hash(Clause) ->
   List = binary_to_list(Bin),
   Fun = fun(Num) -> string:right(integer_to_list(Num, 16), 2, $0) end,
   lists:flatmap(Fun, List).
+
+%% @private
+wakeup(Doc) ->
+  Fields = sumo_store_utils:fields_from_doc(Doc),
+  lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
+    case {FieldType, FieldValue} of
+      {integer, FieldValue} ->
+        Integer = sumo_store_utils:to_int(FieldValue),
+        sumo_internal:set_field(FieldName, Integer, Acc);
+      {binary, FieldValue} ->
+        Binary = sumo_store_utils:to_bin(FieldValue),
+        sumo_internal:set_field(FieldName, Binary, Acc);
+      {text, FieldValue} ->
+        Text = sumo_store_utils:to_bin(FieldValue),
+        sumo_internal:set_field(FieldName, Text, Acc);
+      {float, FieldValue} ->
+        Float = sumo_store_utils:to_float(FieldValue),
+        sumo_internal:set_field(FieldName, Float, Acc);
+      {string, FieldValue} ->
+        String = sumo_store_utils:to_list(FieldValue),
+        sumo_internal:set_field(FieldName, String, Acc);
+      _ ->
+        Acc
+    end
+  end, Doc, Fields).

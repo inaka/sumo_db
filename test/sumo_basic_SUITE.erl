@@ -96,7 +96,7 @@ init_store(Module) ->
      "LastName",
      3,
      "",
-     {2016,2,05},
+     {2016, 2, 05},
      1.75,
      <<"My description text">>
     )
@@ -131,7 +131,7 @@ find_by_module(Module) ->
   "LastName" = Module:last_name(LastPerson),
   3 = Module:age(LastPerson),
   "" = Module:address(LastPerson),
-  {2016,2,05} = Module:birthdate(LastPerson),
+  {2016, 2, 05} = Module:birthdate(LastPerson),
   1.75 = Module:height(LastPerson),
   <<"My description text">> = Module:description(LastPerson),
 

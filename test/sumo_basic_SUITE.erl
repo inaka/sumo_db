@@ -89,6 +89,18 @@ init_store(Module) ->
   sumo:persist(Module, Module:new(<<"E">>, <<"A">>, 2)),
   sumo:persist(Module, Module:new(<<"F">>, <<"E">>, 1)),
   sumo:persist(Module, Module:new(<<"Model T-2000">>, <<"undefined">>, 7)),
+  sumo:persist(
+    Module,
+    Module:new(
+     "Name",
+     "LastName",
+     3,
+     "",
+     {2016,2,05},
+     1.75,
+     <<"My description text">>
+    )
+  ),
 
   %% Sync Timeout.
   sync_timeout(Module).
@@ -100,9 +112,10 @@ find_module(Module) ->
   notfound = sumo:find(Module, 0).
 
 find_all_module(Module) ->
-  7 = length(sumo:find_all(Module)).
+  8 = length(sumo:find_all(Module)).
 
 find_by_module(Module) ->
+  ct:pal("find_by_module Module: ~p", [Module]),
   Results = sumo:find_by(Module, [{last_name, <<"D">>}]),
   2 = length(Results),
   SortFun = fun(A, B) -> Module:name(A) < Module:name(B) end,
@@ -110,6 +123,17 @@ find_by_module(Module) ->
 
   "B" = to_str(Module:name(First)),
   "D" = to_str(Module:name(Second)),
+  3 = Module:age(First),
+  4 = Module:age(Second),
+  % Check that it returns what we have inserted
+  [LastPerson | _NothingElse] = sumo:find_by(Module, [{last_name, "LastName"}]),
+  "Name" = Module:name(LastPerson),
+  "LastName" = Module:last_name(LastPerson),
+  3 = Module:age(LastPerson),
+  "" = Module:address(LastPerson),
+  {2016,2,05} = Module:birthdate(LastPerson),
+  1.75 = Module:height(LastPerson),
+  <<"My description text">> = Module:description(LastPerson),
 
   %% Check find_by ID
   [First1] = sumo:find_by(Module, [{id, Module:id(First)}]),
@@ -119,7 +143,7 @@ find_by_module(Module) ->
   3 = length(Results1),
 
   %% This test is #177 github issue related
-  7 = length(sumo:find_by(Module, [])),
+  8 = length(sumo:find_by(Module, [])),
   Robot = sumo:find_by(Module, [{name, <<"Model T-2000">>}]),
   1 = length(Robot).
 

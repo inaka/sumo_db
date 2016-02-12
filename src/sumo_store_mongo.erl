@@ -306,7 +306,7 @@ sleep(Doc) ->
 
 %% @private
 wakeup(Doc) ->
-  DTFields = datetime_fields_from_doc(Doc),
+  Fields = fields_from_doc(Doc),
   lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
     case {FieldType, FieldValue} of
       {datetime, {_, _, _}} ->
@@ -315,10 +315,25 @@ wakeup(Doc) ->
       {date, {_, _, _}} ->
         {Date, _} = calendar:now_to_universal_time(FieldValue),
         sumo_internal:set_field(FieldName, Date, Acc);
+      {integer, FieldValue} ->
+        Integer = sumo_store_utils:to_int(FieldValue),
+        sumo_internal:set_field(FieldName, Integer, Acc);
+      {binary, FieldValue} ->
+        Binary = sumo_store_utils:to_bin(FieldValue),
+        sumo_internal:set_field(FieldName, Binary, Acc);
+      {text, FieldValue} ->
+        Text = sumo_store_utils:to_bin(FieldValue),
+        sumo_internal:set_field(FieldName, Text, Acc);
+      {float, FieldValue} ->
+        Float = sumo_store_utils:to_float(FieldValue),
+        sumo_internal:set_field(FieldName, Float, Acc);
+      {string, FieldValue} ->
+        String = sumo_store_utils:to_list(FieldValue),
+        sumo_internal:set_field(FieldName, String, Acc);
       _ ->
         Acc
     end
-  end, Doc, DTFields).
+  end, Doc, Fields).
 
 %% @private
 datetime_fields_from_doc(Doc) ->
@@ -332,9 +347,21 @@ datetime_fields_from_doc(Doc) ->
         FieldName = sumo_internal:field_name(Field),
         FieldValue = sumo_internal:get_field(FieldName, Doc),
         [{FieldName, FieldType, FieldValue} | Acc];
-      _ ->
+     _ ->
         Acc
     end
+  end, [], SchemaFields).
+
+%% @private
+fields_from_doc(Doc) ->
+  DocName = sumo_internal:doc_name(Doc),
+  Schema = sumo_internal:get_schema(DocName),
+  SchemaFields = sumo_internal:schema_fields(Schema),
+  lists:foldl(fun(Field, Acc) ->
+    FieldType = sumo_internal:field_type(Field),
+    FieldName = sumo_internal:field_name(Field),
+    FieldValue = sumo_internal:get_field(FieldName, Doc),
+    [{FieldName, FieldType, FieldValue} | Acc]
   end, [], SchemaFields).
 
 %% @private

@@ -242,7 +242,17 @@ build_match_spec(DocName, Conditions) ->
   FieldsMap =
     maps:from_list(
       [field_tuple(I, Fields) || I <- lists:seq(1, length(Fields))]),
-  MatchHead = list_to_tuple([DocName | lists:sort(maps:values(FieldsMap))]),
+  % The following ordering function avoids '$10' been added between
+  % '$1' and '$2' in the MatchHead list. Without this fix, this store
+  % would fail when trying to use `find_by` function.
+  OrderingFun =
+    fun(A, B) ->
+      "$" ++ ANumber = atom_to_list(A),
+      "$" ++ BNumber = atom_to_list(B),
+      list_to_integer(ANumber) =< list_to_integer(BNumber)
+    end,
+  ValuesSorted = lists:sort(OrderingFun, maps:values(FieldsMap)),
+  MatchHead = list_to_tuple([DocName | ValuesSorted]),
   Guard =
     [condition_to_guard(Condition, FieldsMap) || Condition <- Conditions] ,
   Result = '$_',

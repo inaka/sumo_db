@@ -315,21 +315,9 @@ wakeup(Doc) ->
       {date, {_, _, _}} ->
         {Date, _} = calendar:now_to_universal_time(FieldValue),
         sumo_internal:set_field(FieldName, Date, Acc);
-      {integer, FieldValue} ->
-        Integer = sumo_utils:to_int(FieldValue),
-        sumo_internal:set_field(FieldName, Integer, Acc);
-      {binary, FieldValue} ->
-        Binary = sumo_utils:to_bin(FieldValue),
-        sumo_internal:set_field(FieldName, Binary, Acc);
       {text, FieldValue} ->
         Text = sumo_utils:to_bin(FieldValue),
         sumo_internal:set_field(FieldName, Text, Acc);
-      {float, FieldValue} ->
-        Float = sumo_utils:to_float(FieldValue),
-        sumo_internal:set_field(FieldName, Float, Acc);
-      {string, FieldValue} ->
-        String = sumo_utils:to_list(FieldValue),
-        sumo_internal:set_field(FieldName, String, Acc);
       _ ->
         Acc
     end

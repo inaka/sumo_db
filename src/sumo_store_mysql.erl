@@ -487,23 +487,23 @@ hash(Clause) ->
 
 %% @private
 wakeup(Doc) ->
-  Fields = sumo_store_utils:fields_from_doc(Doc),
+  Fields = sumo_utils:fields_from_doc(Doc),
   lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
     case {FieldType, FieldValue} of
       {integer, FieldValue} ->
-        Integer = sumo_store_utils:to_int(FieldValue),
+        Integer = sumo_utils:to_int(FieldValue),
         sumo_internal:set_field(FieldName, Integer, Acc);
       {binary, FieldValue} ->
-        Binary = sumo_store_utils:to_bin(FieldValue),
+        Binary = sumo_utils:to_bin(FieldValue),
         sumo_internal:set_field(FieldName, Binary, Acc);
       {text, FieldValue} ->
-        Text = sumo_store_utils:to_bin(FieldValue),
+        Text = sumo_utils:to_bin(FieldValue),
         sumo_internal:set_field(FieldName, Text, Acc);
       {float, FieldValue} ->
-        Float = sumo_store_utils:to_float(FieldValue),
+        Float = sumo_utils:to_float(FieldValue),
         sumo_internal:set_field(FieldName, Float, Acc);
       {string, FieldValue} ->
-        String = sumo_store_utils:to_list(FieldValue),
+        String = sumo_utils:to_list(FieldValue),
         sumo_internal:set_field(FieldName, String, Acc);
       _ ->
         Acc

@@ -1,5 +1,5 @@
-%%% Set of useful functions for all the stores
--module(sumo_store_utils).
+%%% Set of useful functions for the app
+-module(sumo_utils).
 
 -export([fields_from_doc/1]).
 -export([to_bin/1, to_atom/1, to_list/1, to_int/1, to_float/1]).

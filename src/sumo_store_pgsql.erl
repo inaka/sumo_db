@@ -371,13 +371,10 @@ stringify(Sql) -> binary_to_list(iolist_to_binary(Sql)).
 
 %% @private
 wakeup(Doc) ->
-  Fields = sumo_utils:fields_from_doc(Doc),
-  lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
-    case {FieldType, FieldValue} of
-      {string, FieldValue} ->
-        String = sumo_utils:to_list(FieldValue),
-        sumo_internal:set_field(FieldName, String, Acc);
-      _ ->
-        Acc
-    end
-  end, Doc, Fields).
+  sumo_utils:doc_transform(fun wakeup_fun/1, Doc).
+
+%% @private
+wakeup_fun({string, _, FieldValue}) ->
+  sumo_utils:to_list(FieldValue);
+wakeup_fun({_, _, FieldValue}) ->
+  FieldValue.

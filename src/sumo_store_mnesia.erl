@@ -333,33 +333,29 @@ result_to_doc(Result, Fields) ->
 
 %% @private
 sleep(Doc) ->
-  DTFields = sumo_utils:datetime_fields_from_doc(Doc),
-  lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
-    case {FieldType, sumo_utils:is_datetime(FieldValue)} of
-      {date, true} ->
-        sumo_internal:set_field(FieldName, {FieldValue, {0, 0, 0}}, Acc);
-      _ ->
-        Acc
-    end
-  end, Doc, DTFields).
+  sumo_utils:doc_transform(fun sleep_fun/1, Doc).
+
+%% @private
+sleep_fun({date, _, FieldValue}) ->
+  case sumo_utils:is_datetime(FieldValue) of
+    true -> {FieldValue, {0, 0, 0}};
+    _    -> FieldValue
+  end;
+sleep_fun({_, _, FieldValue}) ->
+  FieldValue.
 
 %% @private
 wakeup(Doc) ->
-  Fields = sumo_utils:fields_from_doc(Doc),
-  ConvertedFields = lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
-    case {FieldType, FieldValue} of
-      {date, {Date, _}} ->
-        sumo_internal:set_field(FieldName, Date, Acc);
-      {string, FieldValue} ->
-        String = sumo_utils:to_list(FieldValue),
-        sumo_internal:set_field(FieldName, String, Acc);
-      {binary, FieldValue} ->
-        Binary = sumo_utils:to_bin(FieldValue),
-        sumo_internal:set_field(FieldName, Binary, Acc);
-      {text, FieldValue} ->
-        Text = sumo_utils:to_bin(FieldValue),
-        sumo_internal:set_field(FieldName, Text, Acc);
-      _ ->
-        Acc
-    end
-  end, Doc, Fields).
+  sumo_utils:doc_transform(fun wakeup_fun/1, Doc).
+
+%% @private
+wakeup_fun({date, _, {Date, _} = _FieldValue}) ->
+  Date;
+wakeup_fun({string, _, FieldValue}) ->
+  sumo_utils:to_list(FieldValue);
+wakeup_fun({binary, _, FieldValue}) ->
+  sumo_utils:to_bin(FieldValue);
+wakeup_fun({text, _, FieldValue}) ->
+  sumo_utils:to_bin(FieldValue);
+wakeup_fun({_, _, FieldValue}) ->
+  FieldValue.

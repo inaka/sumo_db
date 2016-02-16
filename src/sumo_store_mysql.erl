@@ -487,15 +487,11 @@ hash(Clause) ->
 
 %% @private
 wakeup(Doc) ->
-  Fields = sumo_utils:fields_from_doc(Doc),
-  lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
-    case {FieldType, FieldValue} of
-      {float, 0} ->
-        sumo_internal:set_field(FieldName, 0.0, Acc);
-      {string, FieldValue} ->
-        String = sumo_utils:to_list(FieldValue),
-        sumo_internal:set_field(FieldName, String, Acc);
-      _ ->
-        Acc
-    end
-  end, Doc, Fields).
+  sumo_utils:doc_transform(fun wakeup_fun/1, Doc).
+
+%% @private
+wakeup_fun({float, _, 0}) -> 0.0;
+wakeup_fun({string, _, FieldValue}) ->
+  sumo_utils:to_list(FieldValue);
+wakeup_fun({_, _, FieldValue}) ->
+  FieldValue.

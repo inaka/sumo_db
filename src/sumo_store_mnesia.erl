@@ -64,7 +64,8 @@ persist(Doc, State) ->
       Id -> Id
     end,
 
-  Fields = sumo_internal:doc_fields(Doc),
+  Doc2 = sleep(Doc),
+  Fields = sumo_internal:doc_fields(Doc2),
   Schema = sumo_internal:get_schema(DocName),
   [IdField | NPFields] = schema_field_names(Schema),
   NPValues = [maps:get(K, Fields, undefined) || K <- NPFields],
@@ -164,7 +165,7 @@ find_by(DocName, Conditions, [], Limit, Offset, State) ->
     {atomic, Results} ->
       Schema = sumo_internal:get_schema(DocName),
       Fields = schema_field_names(Schema),
-      Docs = [result_to_doc(Result, Fields) || Result <- Results],
+      Docs = [wakeup(result_to_doc(Result, Fields)) || Result <- Results],
       {ok, Docs, State}
   end;
 find_by(_DocName, _Conditions, _SortFields, _Limit, _Offset, State) ->
@@ -237,6 +238,14 @@ new_id(FieldType) -> throw({unimplemented, FieldType}).
 build_match_spec(DocName, Condition) when not is_list(Condition) ->
   build_match_spec(DocName, [Condition]);
 build_match_spec(DocName, Conditions) ->
+  NewConditions = lists:foldl(fun(Condition, Acc) ->
+    NewCondition =
+      case Condition of
+        {FieldName, Op, Date = {_, _, _}} -> {FieldName, Op, {Date, {0, 0, 0}}};
+        _ -> Condition
+      end,
+    [NewCondition | Acc]
+  end, [], Conditions),
   Schema = sumo_internal:get_schema(DocName),
   Fields = schema_field_names(Schema),
   FieldsMap =
@@ -254,7 +263,7 @@ build_match_spec(DocName, Conditions) ->
   ValuesSorted = lists:sort(OrderingFun, maps:values(FieldsMap)),
   MatchHead = list_to_tuple([DocName | ValuesSorted]),
   Guard =
-    [condition_to_guard(Condition, FieldsMap) || Condition <- Conditions] ,
+    [condition_to_guard(Condition, FieldsMap) || Condition <- NewConditions] ,
   Result = '$_',
   [{MatchHead, Guard, [Result]}].
 
@@ -321,3 +330,36 @@ result_to_doc(Result, Fields) ->
       sumo_internal:set_field(Name, Value, Doc)
     end,
   lists:foldl(FoldFun, NewDoc, Pairs).
+
+%% @private
+sleep(Doc) ->
+  DTFields = sumo_utils:datetime_fields_from_doc(Doc),
+  lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
+    case {FieldType, sumo_utils:is_datetime(FieldValue)} of
+      {date, true} ->
+        sumo_internal:set_field(FieldName, {FieldValue, {0, 0, 0}}, Acc);
+      _ ->
+        Acc
+    end
+  end, Doc, DTFields).
+
+%% @private
+wakeup(Doc) ->
+  Fields = sumo_utils:fields_from_doc(Doc),
+  ConvertedFields = lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
+    case {FieldType, FieldValue} of
+      {date, {Date, _}} ->
+        sumo_internal:set_field(FieldName, Date, Acc);
+      {string, FieldValue} ->
+        String = sumo_utils:to_list(FieldValue),
+        sumo_internal:set_field(FieldName, String, Acc);
+      {binary, FieldValue} ->
+        Binary = sumo_utils:to_bin(FieldValue),
+        sumo_internal:set_field(FieldName, Binary, Acc);
+      {text, FieldValue} ->
+        Text = sumo_utils:to_bin(FieldValue),
+        sumo_internal:set_field(FieldName, Text, Acc);
+      _ ->
+        Acc
+    end
+  end, Doc, Fields).

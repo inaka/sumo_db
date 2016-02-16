@@ -245,6 +245,7 @@ build_mapping(MappingType, Fields) ->
 
 normalize_type(date) -> binary;
 normalize_type(datetime) -> binary;
+normalize_type(text) -> binary;
 normalize_type(Type) -> Type.
 
 normalize_fields(Doc) ->
@@ -254,6 +255,8 @@ normalize_fields(Doc) ->
                 maps:put(K, iso8601:format({FieldValue, {0, 0, 0}}), AccDoc);
             ({K, {{_, _, _}, {_, _, _}} = FieldValue}, AccDoc) ->
                 maps:put(K, iso8601:format(FieldValue), AccDoc);
+            ({K, FieldValue}, AccDoc) when is_list(FieldValue) ->
+                maps:put(K, list_to_binary(FieldValue), AccDoc);
             ({_K, _FieldValue}, AccDoc) ->
                 AccDoc
         end, Doc, FieldList).
@@ -272,5 +275,9 @@ denormalize_value(date, Value) ->
 denormalize_value(datetime, Value) ->
     DateTime = iso8601:parse(Value),
     DateTime;
+denormalize_value(string, Value) ->
+    sumo_utils:to_list(Value);
+denormalize_value(text, Value) ->
+    sumo_utils:to_bin(Value);
 denormalize_value(_Type, Value) ->
     Value.

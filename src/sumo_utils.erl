@@ -1,7 +1,7 @@
 %%% Set of useful functions for the app
 -module(sumo_utils).
 
--export([fields_from_doc/1]).
+-export([fields_from_doc/1, datetime_fields_from_doc/1, is_datetime/1]).
 -export([to_bin/1, to_atom/1, to_list/1, to_int/1, to_float/1]).
 
 -spec fields_from_doc(Doc::sumo_internal:doc()) -> [tuple()].
@@ -15,6 +15,31 @@ fields_from_doc(Doc) ->
     FieldValue = sumo_internal:get_field(FieldName, Doc),
     [{FieldName, FieldType, FieldValue} | Acc]
   end, [], SchemaFields).
+
+-spec datetime_fields_from_doc(Doc::sumo_internal:doc()) -> [tuple()].
+datetime_fields_from_doc(Doc) ->
+  DocName = sumo_internal:doc_name(Doc),
+  Schema = sumo_internal:get_schema(DocName),
+  SchemaFields = sumo_internal:schema_fields(Schema),
+  lists:foldl(fun(Field, Acc) ->
+    FieldType = sumo_internal:field_type(Field),
+    case FieldType of
+      T when T =:= datetime; T =:= date ->
+        FieldName = sumo_internal:field_name(Field),
+        FieldValue = sumo_internal:get_field(FieldName, Doc),
+        [{FieldName, FieldType, FieldValue} | Acc];
+     _ ->
+        Acc
+    end
+  end, [], SchemaFields).
+
+-spec is_datetime({tuple(), tuple()}) -> boolean().
+is_datetime({{_, _, _} = Date, {_, _, _}}) ->
+  calendar:valid_date(Date);
+is_datetime({_, _, _} = Date) ->
+  calendar:valid_date(Date);
+is_datetime(_) ->
+  false.
 
 -spec to_bin(Data::term()) -> binary().
 to_bin(Data) when is_integer(Data) ->

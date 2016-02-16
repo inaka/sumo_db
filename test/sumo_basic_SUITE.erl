@@ -115,16 +115,23 @@ find_all_module(Module) ->
   8 = length(sumo:find_all(Module)).
 
 find_by_module(Module) ->
-  ct:pal("find_by_module Module: ~p", [Module]),
   Results = sumo:find_by(Module, [{last_name, <<"D">>}]),
   2 = length(Results),
   SortFun = fun(A, B) -> Module:name(A) < Module:name(B) end,
   [First, Second | _] = lists:sort(SortFun, Results),
 
+  {Today, _} = calendar:universal_time(),
+
   "B" = to_str(Module:name(First)),
   "D" = to_str(Module:name(Second)),
   3 = Module:age(First),
   4 = Module:age(Second),
+  "D" = Module:last_name(First),
+  "" = Module:address(First),
+  Today = Module:birthdate(First),
+  0.0 = Module:height(First),
+  <<>> = Module:description(First),
+  {Today, _} = Module:created_at(First),
   % Check that it returns what we have inserted
   [LastPerson | _NothingElse] = sumo:find_by(Module, [{last_name, "LastName"}]),
   "Name" = Module:name(LastPerson),
@@ -134,6 +141,7 @@ find_by_module(Module) ->
   {2016, 2, 05} = Module:birthdate(LastPerson),
   1.75 = Module:height(LastPerson),
   <<"My description text">> = Module:description(LastPerson),
+  {Today, _} = Module:created_at(LastPerson),
 
   %% Check find_by ID
   [First1] = sumo:find_by(Module, [{id, Module:id(First)}]),

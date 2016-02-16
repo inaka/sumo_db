@@ -160,10 +160,9 @@ not_null_conditional(_Config) ->
 
 do_not_null_conditional(Module) ->
   ct:comment("not_null_conditional with ~p", [Module]),
-  [_, _, _] = sumo:find_by(Module, {age, 'not_null'}),
+  [_, _, _, _, _] = sumo:find_by(Module, {age, 'not_null'}),
 
-  [_] = sumo:find_by(Module, {address, 'not_null'}).
-
+  [_, _, _, _, _] = sumo:find_by(Module, {address, 'not_null'}).
 
 null_conditional(_Config) ->
   lists:foreach(
@@ -173,9 +172,9 @@ null_conditional(_Config) ->
 
 do_null_conditional(Module) ->
   ct:comment("null_conditional with ~p", [Module]),
-  [_, _] = sumo:find_by(Module, {age, 'null'}),
+  [] = sumo:find_by(Module, {age, 'null'}),
 
-  [_, _, _, _] = sumo:find_by(Module, {address, 'null'}).
+  [] = sumo:find_by(Module, {address, 'null'}).
 
 operators(_Config) ->
   lists:foreach(
@@ -185,11 +184,11 @@ operators(_Config) ->
 
 do_operators(Module) ->
   ct:comment("operators with ~p", [Module]),
-  [_, _] = sumo:find_by(Module,
-                        {'and', [{age, 'not_null'},
-                                 {age, '<', 100}
-                                ]
-                        }),
+  [_, _, _, _] = sumo:find_by(Module,
+                              {'and', [{age, 'not_null'},
+                                       {age, '<', 100}
+                                      ]
+                              }),
 
   [_] = sumo:find_by(Module,
                      {'and', [{age, 'not_null'},
@@ -210,29 +209,29 @@ do_operators(Module) ->
                      }),
 
 
-  [_] = sumo:find_by(Module,
-                     {'and', [{age, 'not_null'},
-                              {age, '<', 30}
-                             ]
-                     }),
-
-  [_, _] = sumo:find_by(Module,
-                        {'and', [{age, 'not_null'},
-                                 {age, '=<', 30}
-                                ]
-                        }),
-
   [_, _, _] = sumo:find_by(Module,
-                           {'or', [{age, 'null'},
-                                   {age, '==', 30}
-                                  ]
+                           {'and', [{age, 'not_null'},
+                                    {age, '<', 30}
+                                   ]
                            }),
 
-  [_, _] = sumo:find_by(Module,
-                        {'and', [{age, 'not_null'},
-                                 {age, '/=', 30}
-                                ]
-                        }),
+  [_, _, _, _] = sumo:find_by(Module,
+                              {'and', [{age, 'not_null'},
+                                       {age, '=<', 30}
+                                      ]
+                              }),
+
+  [_] = sumo:find_by(Module,
+                     {'or', [{age, 'null'},
+                             {age, '==', 30}
+                            ]
+                     }),
+
+  [_, _, _, _] = sumo:find_by(Module,
+                              {'and', [{age, 'not_null'},
+                                       {age, '/=', 30}
+                                      ]
+                              }),
 
   case lists:member(Module, sumo_test_utils:people_with_like()) of
     true ->
@@ -261,4 +260,4 @@ do_deeply_nested(Module) ->
                        {last_name, "Turing"}
                       ]
                },
-  [_, _, _] = sumo:find_by(Module, Conditions).
+  [_] = sumo:find_by(Module, Conditions).

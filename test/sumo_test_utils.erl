@@ -23,9 +23,7 @@ start_apps() ->
 
 -spec all_people() -> [atom()].
 all_people() ->
-  [Doc || {Doc, _Store} <- application:get_env(sumo_db, docs, [])] --
-  % Failing test people, missing fix.
-  [sumo_test_people_elasticsearch].
+  [Doc || {Doc, _Store} <- application:get_env(sumo_db, docs, [])].
 
 -spec people_with_conditional_logic() -> [atom()].
 people_with_conditional_logic() ->

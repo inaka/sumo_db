@@ -75,21 +75,21 @@ sumo_wakeup(Person) ->
 %%% Exported
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-new(Name, LastName) -> new(Name, LastName, undefined).
+new(Name, LastName) -> new(Name, LastName, 0).
 
-new(Name, LastName, Age) -> new(Name, LastName, Age, undefined).
+new(Name, LastName, Age) -> new(Name, LastName, Age, "").
 
 new(Name, LastName, Age, Address) ->
   {BirthDate, _} = calendar:universal_time(),
   new(Name, LastName, Age, Address, BirthDate).
 
 new(Name, LastName, Age, Address, BirthDate) ->
-  new(Name, LastName, Age, Address, BirthDate, undefined).
+  new(Name, LastName, Age, Address, BirthDate, 0.0).
 new(Name, LastName, Age, Address, BirthDate, Height) ->
-  new(Name, LastName, Age, Address, BirthDate, Height, undefined).
+  new(Name, LastName, Age, Address, BirthDate, Height, "").
 
 new(Name, LastName, Age, Address, BirthDate, Height, Description) ->
-  new(Name, LastName, Age, Address, BirthDate, Height, Description, undefined).
+  new(Name, LastName, Age, Address, BirthDate, Height, Description, <<>>).
 
 new(Name,
     LastName,

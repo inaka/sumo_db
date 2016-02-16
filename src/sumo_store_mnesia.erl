@@ -238,14 +238,7 @@ new_id(FieldType) -> throw({unimplemented, FieldType}).
 build_match_spec(DocName, Condition) when not is_list(Condition) ->
   build_match_spec(DocName, [Condition]);
 build_match_spec(DocName, Conditions) ->
-  NewConditions = lists:foldl(fun(Condition, Acc) ->
-    NewCondition =
-      case Condition of
-        {FieldName, Op, Date = {_, _, _}} -> {FieldName, Op, {Date, {0, 0, 0}}};
-        _ -> Condition
-      end,
-    [NewCondition | Acc]
-  end, [], Conditions),
+  NewConditions = transform_conditions(DocName, Conditions),
   Schema = sumo_internal:get_schema(DocName),
   Fields = schema_field_names(Schema),
   FieldsMap =
@@ -331,7 +324,23 @@ result_to_doc(Result, Fields) ->
     end,
   lists:foldl(FoldFun, NewDoc, Pairs).
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Private API.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 %% @private
+transform_conditions(DocName, Conditions) ->
+  sumo_utils:transform_conditions(
+    fun validate_date/1, DocName, Conditions, [date]).
+
+%% @private
+validate_date({FieldType, _, FieldValue}) ->
+  case {FieldType, sumo_utils:is_datetime(FieldValue)} of
+    {date, true} ->
+      {FieldValue, {0, 0, 0}}
+  end.
+
+% @private
 sleep(Doc) ->
   sumo_utils:doc_transform(fun sleep_fun/1, Doc).
 

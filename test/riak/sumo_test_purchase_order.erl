@@ -48,15 +48,15 @@
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
   sumo:new_schema(?MODULE,
-    [ sumo:new_field(id,         string,  [id, not_null])
-    , sumo:new_field(created_at, string,  [not_null])
-    , sumo:new_field(order_num,  string,  [not_null])
-    , sumo:new_field(po_date,    string,  [not_null])
-    , sumo:new_field(ship_to,    address, [not_null])
-    , sumo:new_field(bill_to,    address, [not_null])
-    , sumo:new_field(items,      items,   [not_null])
-    , sumo:new_field(currency,   string,  [not_null])
-    , sumo:new_field(total,      integer, [not_null])
+    [ sumo:new_field(id,         binary,   [id, not_null])
+    , sumo:new_field(created_at, datetime, [not_null])
+    , sumo:new_field(order_num,  binary,   [not_null])
+    , sumo:new_field(po_date,    datetime, [not_null])
+    , sumo:new_field(ship_to,    address,  [not_null])
+    , sumo:new_field(bill_to,    address,  [not_null])
+    , sumo:new_field(items,      items,    [not_null])
+    , sumo:new_field(currency,   binary,   [not_null])
+    , sumo:new_field(total,      integer,  [not_null])
     ]).
 
 -spec sumo_sleep(purchase_order()) -> sumo:doc().
@@ -98,7 +98,7 @@ sumo_wakeup(Doc) ->
 new(Id, OrderNum, Date, ShipTo, BillTo, Items, Currency, Total) ->
   #{
     id          => Id,
-    created_at  => rfc1123_date(),
+    created_at  => calendar:universal_time(),
     order_num   => OrderNum,
     po_date     => Date,
     ship_to     => ShipTo,

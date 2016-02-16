@@ -160,7 +160,7 @@ init_store() ->
   Item2 = sumo_test_purchase_order:new_item(<<"456">>, <<"p2">>, 2, 100, 200),
   Items = [Item1, Item2],
 
-  Date = iolist_to_binary(httpd_util:rfc1123_date(calendar:local_time())),
+  Date = calendar:universal_time(),
 
   PO1 = sumo_test_purchase_order:new(<<"ID1">>,  <<"O1">>, Date, Addr1, Addr1,
                                      Items, <<"USD">>, 300),

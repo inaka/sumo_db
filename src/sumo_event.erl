@@ -21,14 +21,13 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Exports.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% API
 -export([dispatch/2, dispatch/3]).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Code starts here.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%=============================================================================
+%%% API
+%%%=============================================================================
+
 %% @doc Dispatchs an event through gen_event:notify/2.
 -spec dispatch(sumo:schema_name(), term()) -> ok.
 dispatch(DocName, Event) ->
@@ -38,13 +37,14 @@ dispatch(DocName, Event) ->
 -spec dispatch(sumo:schema_name(), term(), term()) -> ok.
 dispatch(DocName, Event, Args) ->
   case get_event_manager(DocName) of
-    undefined -> ok;
+    undefined    -> ok;
     EventManager -> gen_event:notify(EventManager, {DocName, Event, Args})
   end.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Private API.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%=============================================================================
+%%% Internal functions
+%%%=============================================================================
+
 %% @doc Returns the name of the event manager configured for the given
 %% doc, or undefined.
 -spec get_event_manager(
@@ -53,9 +53,11 @@ dispatch(DocName, Event, Args) ->
 get_event_manager(DocName) ->
   {ok, Docs} = application:get_env(sumo_db, events),
   case Docs of
-    undefined -> undefined;
-    EventManagers -> case proplists:get_value(DocName, EventManagers) of
-      undefined -> undefined;
-      Name -> Name
-    end
+    undefined ->
+      undefined;
+    EventManagers ->
+      case proplists:get_value(DocName, EventManagers) of
+        undefined -> undefined;
+        Name      -> Name
+      end
   end.

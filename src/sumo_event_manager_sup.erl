@@ -24,11 +24,22 @@
 
 -behaviour(supervisor).
 
+%%% API
 -export([start_link/0]).
+
+%%% Supervisor callbacks
 -export([init/1]).
+
+%%%=============================================================================
+%%% API
+%%%=============================================================================
 
 -spec start_link() -> {ok, pid()} | {error, term()}.
 start_link() -> supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+
+%%%=============================================================================
+%%% Supervisor callbacks
+%%%=============================================================================
 
 -spec init(any()) ->
   {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
@@ -38,15 +49,13 @@ init([]) ->
   ManagersList = [manager(EventManager) || EventManager <- EventsManagers],
   {ok, {{one_for_one, 5, 10}, ManagersList}}.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% internal
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%=============================================================================
+%%% Internal functions
+%%%=============================================================================
 
 %% @private
 manager(EventManager) ->
-  #{ id => EventManager
-   , start => { gen_event
-              , start_link
-              , [{local, EventManager}]
-              }
-   }.
+  #{
+    id    => EventManager,
+    start => {gen_event, start_link, [{local, EventManager}]}
+  }.

@@ -2,19 +2,13 @@ PROJECT = sumo_db
 
 CONFIG ?= test/test.config
 
-DEPS = lager uuid emysql emongo tirerl epgsql worker_pool riakc iso8601
+DEPS = lager uuid worker_pool
 SHELL_DEPS = sync
 
-dep_sync = git https://github.com/rustyio/sync.git 9c78e7b
-dep_lager = git https://github.com/basho/lager.git 3.0.1
-dep_emysql = git https://github.com/inaka/Emysql.git 0.4.2
-dep_emongo = git https://github.com/inaka/emongo.git v0.2.1
-dep_tirerl = git https://github.com/inaka/tirerl 0278e0856c
-dep_epgsql = git https://github.com/epgsql/epgsql 2.0.0
+dep_sync        = git https://github.com/rustyio/sync.git      9c78e7b
+dep_lager       = git https://github.com/basho/lager.git       3.0.1
 dep_worker_pool = git https://github.com/inaka/worker_pool.git 1.0.4
-dep_riakc = git https://github.com/inaka/riak-erlang-client.git 2.1.1-R18
-dep_uuid = git https://github.com/okeuday/uuid.git 31f408f4ef
-dep_iso8601 = git https://github.com/zerotao/erlang_iso8601.git 0d14540
+dep_uuid        = git https://github.com/okeuday/uuid.git      31f408f4ef
 
 TEST_DEPS = mixer
 dep_mixer = git git://github.com/inaka/mixer.git 0.1.5
@@ -66,13 +60,3 @@ plt-all: PLT_APPS := $(ALL_TEST_DEPS_DIRS)
 plt-all: test-deps test-build-plt plt
 
 dialyze-all: app test-build-plt dialyze
-
-# Riak tests
-CT_SUITES_RIAK = nested_docs
-CT_OPTS_RIAK = -vvv -erl_args -config test/riak/riak_test.config
-
-riak_tests: test-build
-	mkdir -p logs/ ; \
-	$(gen_verbose) $(CT_RUN) -suite $(addsuffix _SUITE,$(CT_SUITES_RIAK)) $(CT_OPTS_RIAK)
-	rm -rf test/*beam
-

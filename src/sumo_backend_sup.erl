@@ -21,6 +21,8 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
+-behaviour(supervisor).
+
 -define(CLD(Name, Module, Options),
   { Name                                                           % Child Id
   , {Module, start_link, [Name, Options]}                          % Start Fun
@@ -31,24 +33,29 @@
   }
 ).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Exports.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% API
 -export([start_link/0]).
+
+%%% Supervisor callbacks
 -export([init/1]).
 
--behaviour(supervisor).
+%%%=============================================================================
+%%% API
+%%%=============================================================================
 
 -spec start_link() -> {ok, pid()} | {error, any()}.
 start_link() ->
   supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
+%%%=============================================================================
+%%% Supervisor callbacks
+%%%=============================================================================
+
 -spec init(any()) ->
   {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
 init([]) ->
   {ok, Backends} = application:get_env(sumo_db, storage_backends),
-  Children = lists:map(
-    fun({Name, Module, Options}) -> ?CLD(Name, Module, Options) end,
-    Backends
-  ),
-  {ok, { {one_for_one, 5, 10}, Children} }.
+  Children = lists:map(fun({Name, Module, Options}) ->
+    ?CLD(Name, Module, Options)
+  end, Backends),
+  {ok, {{one_for_one, 5, 10}, Children}}.

@@ -24,27 +24,34 @@
 -behaviour(gen_server).
 -define(SERVER, ?MODULE).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Exports.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %%% Public API.
--export([start_link/3]).
--export([create_schema/2]).
--export([persist/2]).
--export([delete_by/3, delete_all/2]).
--export([find_all/2, find_all/5, find_by/3, find_by/5, find_by/6]).
--export([call/4]).
-
-%%% Exports for gen_server
 -export([
-  init/1, handle_call/3, handle_cast/2, handle_info/2,
-  terminate/2, code_change/3
+  start_link/3,
+  create_schema/2,
+  persist/2,
+  delete_by/3,
+  delete_all/2,
+  find_all/2,
+  find_all/5,
+  find_by/3,
+  find_by/5,
+  find_by/6,
+  call/4
 ]).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Types.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% gen_server callbacks
+-export([
+  init/1,
+  handle_call/3,
+  handle_cast/2,
+  handle_info/2,
+  terminate/2,
+  code_change/3
+]).
+
+%%%=============================================================================
+%%% Types
+%%%=============================================================================
 
 -record(state, {
   handler = undefined:: module(),
@@ -53,52 +60,79 @@
 
 -type state() :: #state{}.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Callback
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%=============================================================================
+%%% Callbacks
+%%%=============================================================================
 
--type result(R, S) :: {ok, R, S} | {error, term(), S}.
--type result(S) :: {ok, S} | {error, term(), S}.
+-type result(R, S)    :: {ok, R, S} | {error, term(), S}.
+-type result(S)       :: {ok, S} | {error, term(), S}.
 -type affected_rows() :: unknown | non_neg_integer().
 
 -export_type([result/2, result/1, affected_rows/0]).
 
 -callback init(term()) -> {ok, term()}.
--callback persist(sumo_internal:doc(), State) ->
-            result(sumo_internal:doc(), State).
--callback delete_by(sumo:schema_name(), sumo:conditions(), State) ->
-            result(affected_rows(), State).
--callback delete_all(sumo:schema_name(), State) ->
-            result(affected_rows(), State).
--callback find_by(sumo:schema_name(), sumo:conditions(), State) ->
-            result([sumo_internal:doc()], State).
--callback find_by(sumo:schema_name(), sumo:conditions(), non_neg_integer(),
-                  non_neg_integer(), State) ->
-            result([sumo_internal:doc()], State).
--callback find_by(sumo:schema_name(), sumo:conditions(), sumo:sort(),
-                  non_neg_integer(), non_neg_integer(), State) ->
-            result([sumo_internal:doc()], State).
--callback find_all(sumo:schema_name(), State) ->
-            result([sumo_internal:doc()], State).
--callback find_all(sumo:schema_name(), sumo:sort(), non_neg_integer(),
-                   non_neg_integer(), State) ->
-            result([sumo_internal:doc()], State).
+
+-callback persist(Doc, State) -> Res when
+  Doc :: sumo_internal:doc(),
+  Res :: result(sumo_internal:doc(), State).
+
+-callback delete_by(Schema, Conditions, State) -> Res when
+  Schema     :: sumo:schema_name(),
+  Conditions :: sumo:conditions(),
+  Res        :: result(affected_rows(), State).
+
+-callback delete_all(Schema, State) -> Res when
+  Schema :: sumo:schema_name(),
+  Res    :: result(affected_rows(), State).
+
+-callback find_by(Schema, Conditions, State) -> Res when
+  Schema     :: sumo:schema_name(),
+  Conditions :: sumo:conditions(),
+  Res        :: result([sumo_internal:doc()], State).
+
+-callback find_by(Schema, Conditions, Limit, Offset, State) -> Res when
+  Schema     :: sumo:schema_name(),
+  Conditions :: sumo:conditions(),
+  Limit      :: non_neg_integer(),
+  Offset     :: non_neg_integer(),
+  Res        :: result([sumo_internal:doc()], State).
+
+-callback find_by(Schema, Conditions, Sort, Limit, Offset, State) -> Res when
+  Schema     :: sumo:schema_name(),
+  Conditions :: sumo:conditions(),
+  Sort       :: sumo:sort(),
+  Limit      :: non_neg_integer(),
+  Offset     :: non_neg_integer(),
+  Res        :: result([sumo_internal:doc()], State).
+
+-callback find_all(Schema, State) -> Res when
+  Schema :: sumo:schema_name(),
+  Res    :: result([sumo_internal:doc()], State).
+
+-callback find_all(Schema, Sort, Limit, Offset, State) -> Res when
+  Schema :: sumo:schema_name(),
+  Sort   :: sumo:sort(),
+  Limit  :: non_neg_integer(),
+  Offset :: non_neg_integer(),
+  Res    :: result([sumo_internal:doc()], State).
+
 -callback create_schema(sumo:schema(), State) -> result(State).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% External API.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%=============================================================================
+%%% API
+%%%=============================================================================
 
 %% @doc Starts and links a new process for the given store implementation.
 -spec start_link(atom(), module(), [term()]) -> {ok, pid()}.
 start_link(Name, Module, Options) ->
-  Poolsize        = proplists:get_value(workers, Options, 100),
+  PoolSize = proplists:get_value(workers, Options, 100),
   WPoolConfigOpts = application:get_env(sumo_db, wpool_opts, []),
-  WPoolOptions    = [ {overrun_warning, 5000}
-                    , {overrun_handler, {sumo_internal, report_overrun}}
-                    , {workers, Poolsize}
-                    , {worker, {?MODULE, [Module, Options]}}
-                    ],
+  WPoolOptions = [
+    {overrun_warning, 5000},
+    {overrun_handler, {sumo_internal, report_overrun}},
+    {workers, PoolSize},
+    {worker, {?MODULE, [Module, Options]}}
+  ],
   wpool:start_pool(Name, WPoolConfigOpts ++ WPoolOptions).
 
 %% @doc Creates the schema of the given docs in the given store name.
@@ -182,9 +216,9 @@ call(Name, DocName, Function, Args) ->
     wpool:default_strategy(),
     Timeout).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% gen_server stuff.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%=============================================================================
+%%% gen_server callbacks
+%%%=============================================================================
 
 %% @doc Called by start_link.
 %% @hidden
@@ -278,19 +312,19 @@ handle_call(
 
 %% @hidden
 -spec handle_cast(term(), state()) ->
-  {noreply, state()}
-  | {noreply, state(), non_neg_integer()}
-  | {noreply, state(), hibernate}
-  | {stop, term(), state()}.
+  {noreply, state()} |
+  {noreply, state(), non_neg_integer()} |
+  {noreply, state(), hibernate} |
+  {stop, term(), state()}.
 handle_cast(_Msg, State) ->
   {noreply, State}.
 
 %% @hidden
 -spec handle_info(term(), state()) ->
-  {noreply, state()}
-  | {noreply, state(), non_neg_integer()}
-  | {noreply, state(), hibernate}
-  | {stop, term(), state()}.
+  {noreply, state()} |
+  {noreply, state(), non_neg_integer()} |
+  {noreply, state(), hibernate} |
+  {stop, term(), state()}.
 handle_info(_Info, State) ->
   {noreply, State}.
 
@@ -300,7 +334,6 @@ terminate(_Reason, _State) ->
   ok.
 
 %% @hidden
--spec code_change(term(), state(), term()) ->
-  {ok, state()} | {error, term()}.
+-spec code_change(term(), state(), term()) -> {ok, state()} | {error, term()}.
 code_change(_OldVsn, State, _Extra) ->
   {ok, State}.

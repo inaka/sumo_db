@@ -23,50 +23,63 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Exports.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %%% API for doc/schema manipulation.
 -export([new_schema/2, new_field/3]).
 
 %%% API for schema fields manipulation.
--export([get_field/2, set_field/3, id_field_name/1, get_schema/1, field_is/2,
-         id_field_type/1]).
--export([field_name/1, field_type/1, field_attrs/1]).
+-export([
+  get_field/2,
+  set_field/3,
+  id_field_name/1,
+  get_schema/1,
+  field_is/2,
+  id_field_type/1,
+  field_name/1,
+  field_type/1,
+  field_attrs/1
+]).
 
 %%% API for store handling.
 -export([get_store/1]).
 
 %%% API for opaqueness
--export([wakeup/1, wakeup/2,
-         new_doc/1, new_doc/2,
-         doc_name/1, doc_fields/1,
-         schema_name/1, schema_fields/1]).
+-export([
+  wakeup/1,
+  wakeup/2,
+  new_doc/1,
+  new_doc/2,
+  doc_name/1,
+  doc_fields/1,
+  schema_name/1,
+  schema_fields/1
+]).
 
 %%% API for conditional logic.
 -export([check_operator/1]).
 
 -export([report_overrun/1]).
 
--opaque schema() :: #{name => atom(),
-                      fields => [field()]}.
+-opaque schema() :: #{
+  name   => atom(),
+  fields => [field()]
+}.
 
--opaque doc()    :: #{name => atom(),
-                      fields => sumo:doc()}.
+-opaque doc() :: #{
+  name => atom(),
+  fields => sumo:doc()
+}.
 
--opaque field()  :: #{name => atom(),
-                      type => atom(),
-                      attrs => sumo:field_attrs()}.
+-opaque field()  :: #{
+  name => atom(),
+  type => atom(),
+  attrs => sumo:field_attrs()
+}.
 
 -export_type([schema/0, doc/0, field/0]).
 
-
-%% Conditional Logic
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Code starts here.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%=============================================================================
+%%% API
+%%%=============================================================================
 
 %% @doc Returns the name of the schema
 -spec schema_name(schema()) -> sumo:schema_name().
@@ -140,12 +153,9 @@ id_field_type(DocName) ->
 
 %% @doc Returns field marked as ID for the given schema or doc name.
 get_id_field(_Schema = #{fields := Fields}) ->
-  hd(lists:filter(
-    fun(_Field = #{attrs := Attributes}) ->
-      length(lists:filter(fun(T) -> T =:= id end, Attributes)) > 0
-    end,
-    Fields
-  )).
+  hd(lists:filter(fun(_Field = #{attrs := Attributes}) ->
+    length(lists:filter(fun(T) -> T =:= id end, Attributes)) > 0
+  end, Fields)).
 
 %% @doc Returns the name of the given field.
 -spec field_name(field()) -> sumo:field_name().
@@ -175,23 +185,19 @@ new_doc(Name) ->
 %% @doc Returns a new doc.
 -spec new_doc(sumo:schema_name(), sumo:doc()) -> doc().
 new_doc(Name, Fields) ->
-  #{name => Name,
-    fields => Fields}.
+  #{name => Name, fields => Fields}.
 
 %% @doc Returns a new schema.
 -spec new_schema(sumo:schema_name(), [field()]) -> schema().
 new_schema(Name, Fields) ->
-  #{name => Name,
-    fields => Fields}.
+  #{name => Name, fields => Fields}.
 
 %% @doc Returns a new field of the given type and attributes.
 -spec new_field(
   sumo:field_name(), sumo:field_type(), sumo:field_attrs()
 ) -> field().
 new_field(Name, Type, Attributes) ->
-  #{name => Name,
-    type => Type,
-    attrs => Attributes}.
+  #{name => Name, type => Type, attrs => Attributes}.
 
 %% @doc Checks the operator is known, throws otherwise.
 -spec check_operator(sumo:operator()) -> ok.

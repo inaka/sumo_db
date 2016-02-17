@@ -64,7 +64,8 @@ persist(Doc, State) ->
       Id -> Id
     end,
 
-  Fields = sumo_internal:doc_fields(Doc),
+  Doc2 = sleep(Doc),
+  Fields = sumo_internal:doc_fields(Doc2),
   Schema = sumo_internal:get_schema(DocName),
   [IdField | NPFields] = schema_field_names(Schema),
   NPValues = [maps:get(K, Fields, undefined) || K <- NPFields],
@@ -164,7 +165,7 @@ find_by(DocName, Conditions, [], Limit, Offset, State) ->
     {atomic, Results} ->
       Schema = sumo_internal:get_schema(DocName),
       Fields = schema_field_names(Schema),
-      Docs = [result_to_doc(Result, Fields) || Result <- Results],
+      Docs = [wakeup(result_to_doc(Result, Fields)) || Result <- Results],
       {ok, Docs, State}
   end;
 find_by(_DocName, _Conditions, _SortFields, _Limit, _Offset, State) ->
@@ -237,14 +238,25 @@ new_id(FieldType) -> throw({unimplemented, FieldType}).
 build_match_spec(DocName, Condition) when not is_list(Condition) ->
   build_match_spec(DocName, [Condition]);
 build_match_spec(DocName, Conditions) ->
+  NewConditions = transform_conditions(DocName, Conditions),
   Schema = sumo_internal:get_schema(DocName),
   Fields = schema_field_names(Schema),
   FieldsMap =
     maps:from_list(
       [field_tuple(I, Fields) || I <- lists:seq(1, length(Fields))]),
-  MatchHead = list_to_tuple([DocName | lists:sort(maps:values(FieldsMap))]),
+  % The following ordering function avoids '$10' been added between
+  % '$1' and '$2' in the MatchHead list. Without this fix, this store
+  % would fail when trying to use `find_by` function.
+  OrderingFun =
+    fun(A, B) ->
+      "$" ++ ANumber = atom_to_list(A),
+      "$" ++ BNumber = atom_to_list(B),
+      list_to_integer(ANumber) =< list_to_integer(BNumber)
+    end,
+  ValuesSorted = lists:sort(OrderingFun, maps:values(FieldsMap)),
+  MatchHead = list_to_tuple([DocName | ValuesSorted]),
   Guard =
-    [condition_to_guard(Condition, FieldsMap) || Condition <- Conditions] ,
+    [condition_to_guard(Condition, FieldsMap) || Condition <- NewConditions] ,
   Result = '$_',
   [{MatchHead, Guard, [Result]}].
 
@@ -311,3 +323,48 @@ result_to_doc(Result, Fields) ->
       sumo_internal:set_field(Name, Value, Doc)
     end,
   lists:foldl(FoldFun, NewDoc, Pairs).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Private API.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% @private
+transform_conditions(DocName, Conditions) ->
+  sumo_utils:transform_conditions(
+    fun validate_date/1, DocName, Conditions, [date]).
+
+%% @private
+validate_date({FieldType, _, FieldValue}) ->
+  case {FieldType, sumo_utils:is_datetime(FieldValue)} of
+    {date, true} ->
+      {FieldValue, {0, 0, 0}}
+  end.
+
+% @private
+sleep(Doc) ->
+  sumo_utils:doc_transform(fun sleep_fun/1, Doc).
+
+%% @private
+sleep_fun({date, _, FieldValue}) ->
+  case sumo_utils:is_datetime(FieldValue) of
+    true -> {FieldValue, {0, 0, 0}};
+    _    -> FieldValue
+  end;
+sleep_fun({_, _, FieldValue}) ->
+  FieldValue.
+
+%% @private
+wakeup(Doc) ->
+  sumo_utils:doc_transform(fun wakeup_fun/1, Doc).
+
+%% @private
+wakeup_fun({date, _, {Date, _} = _FieldValue}) ->
+  Date;
+wakeup_fun({string, _, FieldValue}) ->
+  sumo_utils:to_list(FieldValue);
+wakeup_fun({binary, _, FieldValue}) ->
+  sumo_utils:to_bin(FieldValue);
+wakeup_fun({text, _, FieldValue}) ->
+  sumo_utils:to_bin(FieldValue);
+wakeup_fun({_, _, FieldValue}) ->
+  FieldValue.

@@ -257,7 +257,7 @@ find_by(DocName, Conditions, SortFields, Limit, Offset, State) ->
                    Fields = tuple_to_list(Row),
                    Pairs = lists:zip(ColumnNames, Fields),
                    NewDoc = sumo_internal:new_doc(DocName),
-                   lists:foldl(FoldFun, NewDoc, Pairs)
+                   wakeup(lists:foldl(FoldFun, NewDoc, Pairs))
                end,
       Docs = lists:map(RowFun, Rows),
       {ok, Docs, State};
@@ -368,3 +368,13 @@ create_index(_, _) ->
 %% @todo remove this once pgsql specs are fixed to support iodata and make
 %%       dialyzer happy
 stringify(Sql) -> binary_to_list(iolist_to_binary(Sql)).
+
+%% @private
+wakeup(Doc) ->
+  sumo_utils:doc_transform(fun wakeup_fun/1, Doc).
+
+%% @private
+wakeup_fun({string, _, FieldValue}) ->
+  sumo_utils:to_list(FieldValue);
+wakeup_fun({_, _, FieldValue}) ->
+  FieldValue.

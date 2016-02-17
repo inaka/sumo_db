@@ -426,7 +426,8 @@ get_docs(DocName, Name, Args, State) ->
 
 build_docs(DocName, #result_packet{rows = Rows, field_list = Fields}) ->
   FieldNames = [binary_to_atom(Field#field.name, utf8) || Field <- Fields],
-  [build_doc(sumo_internal:new_doc(DocName), FieldNames, Row) || Row <- Rows].
+  [wakeup(build_doc(sumo_internal:new_doc(DocName), FieldNames, Row)) ||
+   Row <- Rows].
 
 build_doc(Doc, [], []) -> Doc;
 build_doc(Doc, [FieldName|FieldNames], [{date, Value}|Values]) ->
@@ -483,3 +484,14 @@ hash(Clause) ->
   List = binary_to_list(Bin),
   Fun = fun(Num) -> string:right(integer_to_list(Num, 16), 2, $0) end,
   lists:flatmap(Fun, List).
+
+%% @private
+wakeup(Doc) ->
+  sumo_utils:doc_transform(fun wakeup_fun/1, Doc).
+
+%% @private
+wakeup_fun({float, _, 0}) -> 0.0;
+wakeup_fun({string, _, FieldValue}) ->
+  sumo_utils:to_list(FieldValue);
+wakeup_fun({_, _, FieldValue}) ->
+  FieldValue.

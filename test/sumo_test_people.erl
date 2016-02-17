@@ -8,7 +8,23 @@
          sumo_sleep/1
         ]).
 
--export([new/2, new/3, new/4, name/1, id/1, age/1, birthdate/1, created_at/1]).
+-export([new/2,
+         new/3,
+         new/4,
+         new/5,
+         new/6,
+         new/7,
+         new/8,
+         name/1,
+         last_name/1,
+         id/1,
+         age/1,
+         address/1,
+         birthdate/1,
+         created_at/1,
+         height/1,
+         description/1,
+         profile_image/1]).
 
 -record(person, {id :: integer(),
                  name :: string(),
@@ -16,7 +32,10 @@
                  age :: integer(),
                  address :: string(),
                  birthdate  :: calendar:date(),
-                 created_at :: calendar:datetime()}).
+                 created_at :: calendar:datetime(),
+                 height :: float(),
+                 description :: binary(),
+                 profile_image :: binary()}).
 
 -type person() :: #person{}.
 
@@ -32,7 +51,10 @@ sumo_sleep(Person) ->
     age => Person#person.age,
     address => Person#person.address,
     birthdate  => Person#person.birthdate,
-    created_at => Person#person.created_at}.
+    created_at => Person#person.created_at,
+    height => Person#person.height,
+    description => Person#person.description,
+    profile_image => Person#person.profile_image}.
 
 -spec sumo_wakeup(sumo:doc()) -> person().
 sumo_wakeup(Person) ->
@@ -43,28 +65,56 @@ sumo_wakeup(Person) ->
     age = maps:get(age, Person),
     address = maps:get(address, Person),
     birthdate  = maps:get(birthdate, Person),
-    created_at = maps:get(created_at, Person)
+    created_at = maps:get(created_at, Person),
+    height = maps:get(height, Person),
+    description = maps:get(description, Person),
+    profile_image = maps:get(profile_image, Person)
   }.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Exported
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-new(Name, LastName) -> new(Name, LastName, undefined).
+new(Name, LastName) -> new(Name, LastName, 0).
 
-new(Name, LastName, Age) -> new(Name, LastName, Age, undefined).
+new(Name, LastName, Age) -> new(Name, LastName, Age, "").
 
 new(Name, LastName, Age, Address) ->
-  Datetime = {Date, _} = calendar:universal_time(),
-  #person{name = Name,
-          last_name   = LastName,
-          age         = Age,
-          address     = Address,
-          birthdate   = Date,
-          created_at  = Datetime}.
+  {BirthDate, _} = calendar:universal_time(),
+  new(Name, LastName, Age, Address, BirthDate).
+
+new(Name, LastName, Age, Address, BirthDate) ->
+  new(Name, LastName, Age, Address, BirthDate, 0.0).
+new(Name, LastName, Age, Address, BirthDate, Height) ->
+  new(Name, LastName, Age, Address, BirthDate, Height, "").
+
+new(Name, LastName, Age, Address, BirthDate, Height, Description) ->
+  new(Name, LastName, Age, Address, BirthDate, Height, Description, <<>>).
+
+new(Name,
+    LastName,
+    Age,
+    Address,
+    BirthDate,
+    Height,
+    Description,
+    ProfileImage) ->
+  Datetime = calendar:universal_time(),
+  #person{name          = Name,
+          last_name     = LastName,
+          age           = Age,
+          address       = Address,
+          birthdate     = BirthDate,
+          created_at    = Datetime,
+          height        = Height,
+          description   = Description,
+          profile_image = ProfileImage}.
 
 name(Person) ->
   Person#person.name.
+
+last_name(Person) ->
+  Person#person.last_name.
 
 id(Person) ->
   Person#person.id.
@@ -72,8 +122,20 @@ id(Person) ->
 age(Person) ->
   Person#person.age.
 
+address(Person) ->
+  Person#person.address.
+
 birthdate(Person) ->
   Person#person.birthdate.
 
 created_at(Person) ->
   Person#person.created_at.
+
+height(Person) ->
+  Person#person.height.
+
+description(Person) ->
+  Person#person.description.
+
+profile_image(Person) ->
+  Person#person.profile_image.

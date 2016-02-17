@@ -90,9 +90,10 @@ delete_by(DocName, Conditions, #state{pool = Pool} = State) ->
     build_query(Conditions),
     [])),
 
+  Query = build_query(transform_conditions(DocName, Conditions)),
   ok = emongo:delete(Pool,
                      atom_to_list(DocName),
-                     build_query(Conditions)),
+                     Query),
   {ok, TotalDocsToBeDeleted, State}.
 
 
@@ -135,7 +136,7 @@ find_by(DocName,
                _  -> [{orderby, SortFields} | Options]
              end,
 
-  Query = build_query(translate_conditions(DocName, Conditions)),
+  Query = build_query(transform_conditions(DocName, Conditions)),
   Results = emongo:find(Pool,
                         atom_to_list(DocName),
                         Query,
@@ -294,104 +295,40 @@ like_to_regex(Like) ->
 
 %% @private
 sleep(Doc) ->
-  DTFields = datetime_fields_from_doc(Doc),
-  lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
-    case {FieldType, is_datetime(FieldValue)} of
-      {date, true} ->
-        sumo_internal:set_field(FieldName, {FieldValue, {0, 0, 0}}, Acc);
-      _ ->
-        Acc
-    end
-  end, Doc, DTFields).
+  sumo_utils:doc_transform(fun sleep_fun/1, Doc).
+
+%% @private
+sleep_fun({date, _, FieldValue}) ->
+  case sumo_utils:is_datetime(FieldValue) of
+    true -> {FieldValue, {0, 0, 0}};
+    _    -> FieldValue
+  end;
+sleep_fun({_, _, FieldValue}) ->
+  FieldValue.
 
 %% @private
 wakeup(Doc) ->
-  DTFields = datetime_fields_from_doc(Doc),
-  lists:foldl(fun({FieldName, FieldType, FieldValue}, Acc) ->
-    case {FieldType, FieldValue} of
-      {datetime, {_, _, _}} ->
-        DateTime = calendar:now_to_universal_time(FieldValue),
-        sumo_internal:set_field(FieldName, DateTime, Acc);
-      {date, {_, _, _}} ->
-        {Date, _} = calendar:now_to_universal_time(FieldValue),
-        sumo_internal:set_field(FieldName, Date, Acc);
-      _ ->
-        Acc
-    end
-  end, Doc, DTFields).
+  sumo_utils:doc_transform(fun wakeup_fun/1, Doc).
 
 %% @private
-datetime_fields_from_doc(Doc) ->
-  DocName = sumo_internal:doc_name(Doc),
-  Schema = sumo_internal:get_schema(DocName),
-  SchemaFields = sumo_internal:schema_fields(Schema),
-  lists:foldl(fun(Field, Acc) ->
-    FieldType = sumo_internal:field_type(Field),
-    case FieldType of
-      T when T =:= datetime; T =:= date ->
-        FieldName = sumo_internal:field_name(Field),
-        FieldValue = sumo_internal:get_field(FieldName, Doc),
-        [{FieldName, FieldType, FieldValue} | Acc];
-      _ ->
-        Acc
-    end
-  end, [], SchemaFields).
+wakeup_fun({datetime, _, {_, _, _} = FieldValue}) ->
+  calendar:now_to_universal_time(FieldValue);
+wakeup_fun({date, _, {_, _, _} = FieldValue}) ->
+  {Date, _} = calendar:now_to_universal_time(FieldValue),
+  Date;
+wakeup_fun({text, _, FieldValue}) ->
+  sumo_utils:to_bin(FieldValue);
+wakeup_fun({_, _, FieldValue}) ->
+  FieldValue.
 
 %% @private
-datetime_fields_from_docname(DocName) ->
-  Schema = sumo_internal:get_schema(DocName),
-  SchemaFields = sumo_internal:schema_fields(Schema),
-  lists:foldl(fun(Field, Acc) ->
-    FieldType = sumo_internal:field_type(Field),
-    case FieldType of
-      _ when FieldType =:= datetime; FieldType =:= date ->
-        FieldName = sumo_internal:field_name(Field),
-        [{FieldName, FieldType} | Acc];
-      _ ->
-        Acc
-    end
-  end, [], SchemaFields).
+transform_conditions(DocName, Conditions) ->
+  sumo_utils:transform_conditions(
+    fun validate_date/1, DocName, Conditions, [date, datetime]).
 
 %% @private
-is_datetime({{_, _, _} = Date, {_, _, _}}) ->
-  calendar:valid_date(Date);
-is_datetime({_, _, _} = Date) ->
-  calendar:valid_date(Date);
-is_datetime(_) ->
-  false.
-
-%% @private
-translate_conditions(DocName, Conditions) when is_list(Conditions) ->
-  DTFields = datetime_fields_from_docname(DocName),
-  lists:foldl(fun
-    ({K, V}, Acc) when K == 'and'; K == 'or' ->
-      [{K, translate_conditions(DocName, V)} | Acc];
-    ({'not', V}, Acc) ->
-      [NotCond] = translate_conditions(DocName, [V]),
-      [{'not', NotCond} | Acc];
-    ({K, V} = KV, Acc) ->
-      case lists:keyfind(K, 1, DTFields) of
-        {K, FieldType} ->
-          [{K, validate_date(V, FieldType)} | Acc];
-        false ->
-          [KV | Acc]
-      end;
-    ({K, Op, V} = KV, Acc) ->
-      case lists:keyfind(K, 1, DTFields) of
-        {K, FieldType} ->
-          [{K, Op, validate_date(V, FieldType)} | Acc];
-        false ->
-          [KV | Acc]
-      end;
-    (Cond, Acc) ->
-      [Cond | Acc]
-  end, [], Conditions);
-translate_conditions(DocName, Conditions) ->
-  translate_conditions(DocName, [Conditions]).
-
-%% @private
-validate_date(FieldValue, FieldType) ->
-  case {FieldType, is_datetime(FieldValue)} of
+validate_date({FieldType, _, FieldValue}) ->
+  case {FieldType, sumo_utils:is_datetime(FieldValue)} of
     {datetime, true} -> FieldValue;
     {date, true}     -> {FieldValue, {0, 0, 0}}
   end.

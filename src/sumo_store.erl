@@ -125,7 +125,7 @@
 %% @doc Starts and links a new process for the given store implementation.
 -spec start_link(atom(), module(), [term()]) -> {ok, pid()}.
 start_link(Name, Module, Options) ->
-  PoolSize = proplists:get_value(workers, Options, 100),
+  PoolSize = sumo_utils:keyfind(workers, Options, 100),
   WPoolConfigOpts = application:get_env(sumo_db, wpool_opts, []),
   WPoolOptions = [
     {overrun_warning, 5000},

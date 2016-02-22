@@ -56,7 +56,7 @@ get_event_manager(DocName) ->
     undefined ->
       undefined;
     EventManagers ->
-      case proplists:get_value(DocName, EventManagers) of
+      case sumo_utils:keyfind(DocName, EventManagers) of
         undefined -> undefined;
         Name      -> Name
       end

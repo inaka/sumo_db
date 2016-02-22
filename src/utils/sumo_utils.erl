@@ -7,6 +7,8 @@
   doc_transform/2,
   transform_conditions/4,
   is_datetime/1,
+  keyfind/2,
+  keyfind/3,
   to_bin/1,
   to_atom/1,
   to_list/1,
@@ -115,6 +117,21 @@ is_datetime({_, _, _} = Date) ->
   calendar:valid_date(Date);
 is_datetime(_) ->
   false.
+
+%% @equiv keyfind(Key, KVList, undefined)
+keyfind(Key, KVList) ->
+  keyfind(Key, KVList, undefined).
+
+-spec keyfind(Key, KVList, Default) -> Val | Default when
+  Key     :: term(),
+  KVList  :: [{Key, Val}],
+  Val     :: term(),
+  Default :: term().
+keyfind(Key, KVList, Default) ->
+  case lists:keyfind(Key, 1, KVList) of
+    {Key, Value} -> Value;
+    _            -> Default
+  end.
 
 -spec to_bin(Data :: term()) -> binary().
 to_bin(Data) when is_integer(Data) ->

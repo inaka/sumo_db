@@ -121,7 +121,7 @@ get_docs() ->
 %% Doc or DocName.
 -spec get_store(sumo:schema_name() | doc()) -> atom().
 get_store(DocName) when is_atom(DocName) ->
-  proplists:get_value(DocName, get_docs());
+  sumo_utils:keyfind(DocName, get_docs());
 
 get_store(_Doc = #{name := Name}) ->
   get_store(Name).

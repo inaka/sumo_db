@@ -13,7 +13,7 @@ dep_uuid        = git https://github.com/okeuday/uuid.git      31f408f4ef
 TEST_DEPS = mixer
 dep_mixer = git git://github.com/inaka/mixer.git 0.1.5
 
-CT_SUITES ?= conditional_logic sumo_basic sumo_config sumo_find sumo_events
+CT_SUITES ?= conditional_logic sumo_basic sumo_find sumo_events
 
 include erlang.mk
 

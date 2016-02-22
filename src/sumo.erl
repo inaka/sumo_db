@@ -92,8 +92,7 @@ get_docs() ->
 create_schema() ->
   lists:foreach(fun({DocName, Store}) ->
     create_schema(DocName, Store)
-  end, get_docs()),
-  ok.
+  end, get_docs()).
 
 %% @doc Returns 1 doc that matches the given Conditions.
 -spec find_one(schema_name(), conditions()) -> user_doc() | notfound.

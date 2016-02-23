@@ -26,11 +26,11 @@
          description/1,
          profile_image/1]).
 
--record(person, {id :: integer(),
-                 name :: string(),
-                 last_name :: string(),
+-record(person, {id :: integer() | binary(),
+                 name :: binary(),
+                 last_name :: binary(),
                  age :: integer(),
-                 address :: string(),
+                 address :: binary(),
                  birthdate  :: calendar:date(),
                  created_at :: calendar:datetime(),
                  height :: float(),
@@ -75,21 +75,21 @@ sumo_wakeup(Person) ->
 %%% Exported
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-new(Name, LastName) -> new(Name, LastName, 0).
+new(Name, LastName) -> new(Name, LastName, undefined).
 
-new(Name, LastName, Age) -> new(Name, LastName, Age, "").
+new(Name, LastName, Age) -> new(Name, LastName, Age, undefined).
 
 new(Name, LastName, Age, Address) ->
   {BirthDate, _} = calendar:universal_time(),
   new(Name, LastName, Age, Address, BirthDate).
 
 new(Name, LastName, Age, Address, BirthDate) ->
-  new(Name, LastName, Age, Address, BirthDate, 0.0).
+  new(Name, LastName, Age, Address, BirthDate, undefined).
 new(Name, LastName, Age, Address, BirthDate, Height) ->
-  new(Name, LastName, Age, Address, BirthDate, Height, "").
+  new(Name, LastName, Age, Address, BirthDate, Height, undefined).
 
 new(Name, LastName, Age, Address, BirthDate, Height, Description) ->
-  new(Name, LastName, Age, Address, BirthDate, Height, Description, <<>>).
+  new(Name, LastName, Age, Address, BirthDate, Height, Description, undefined).
 
 new(Name,
     LastName,

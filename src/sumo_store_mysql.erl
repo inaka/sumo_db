@@ -70,7 +70,7 @@ persist(Doc, State) ->
       undefined -> 0;
       Id        -> Id
     end,
-  NewDoc = sumo_internal:set_field(IdField, NewId, Doc),
+  NewDoc = sleep(sumo_internal:set_field(IdField, NewId, Doc)),
   % Needed because the queries will carry different number of arguments.
   Statement =
     case NewId of
@@ -486,12 +486,28 @@ hash(Clause) ->
   lists:flatmap(Fun, List).
 
 %% @private
+sleep(Doc) ->
+  sumo_utils:doc_transform(fun sleep_fun/1, Doc).
+
+%% @private
+sleep_fun({_, _, undefined}) ->
+  null;
+sleep_fun({_, _, FieldValue}) ->
+  FieldValue.
+
+%% @private
 wakeup(Doc) ->
   sumo_utils:doc_transform(fun wakeup_fun/1, Doc).
 
 %% @private
-wakeup_fun({float, _, 0}) -> 0.0;
+wakeup_fun({float, _, 0}) ->
+  0.0;
+%% Matches `text' type fields that were saved with `undefined' value and
+%% avoids being processed by the next clause that will return it as a
+%% binary (`<<"undefined">>') instead of atom as expected.
+wakeup_fun({_, _, undefined}) ->
+  undefined;
 wakeup_fun({string, _, FieldValue}) ->
-  sumo_utils:to_list(FieldValue);
+  sumo_utils:to_bin(FieldValue);
 wakeup_fun({_, _, FieldValue}) ->
   FieldValue.

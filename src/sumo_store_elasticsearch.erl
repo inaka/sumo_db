@@ -74,7 +74,8 @@ persist(Doc, #{index := Index, pool_name := PoolName} = State) ->
     IdField = sumo_internal:id_field_name(DocName),
     Id =  sumo_internal:get_field(IdField, Doc),
 
-    Fields = normalize_fields(sumo_internal:doc_fields(Doc)),
+    NewDoc = sleep(Doc),
+    Fields = sumo_internal:doc_fields(NewDoc),
 
     Doc1 =
         case Id of
@@ -139,7 +140,7 @@ find_by(DocName, Conditions, Limit, Offset,
     {ok, #{<<"hits">> := #{<<"hits">> := Results}}} =
         tirerl:search(PoolName, Index, Type, Query),
 
-    Fun = fun(Item) -> map_to_doc(DocName, Item) end,
+    Fun = fun(Item) -> wakeup(map_to_doc(DocName, Item)) end,
     Docs = lists:map(Fun, Results),
 
     {ok, Docs, State}.
@@ -196,13 +197,10 @@ create_schema(Schema, #{index := Index, pool_name := PoolName} = State) ->
 map_to_doc(DocName, Item) ->
     Values = maps:get(<<"_source">>, Item),
     IdField = sumo_internal:id_field_name(DocName),
-    Schema = sumo_internal:get_schema(DocName),
-    Fields = sumo_internal:schema_fields(Schema),
 
     Fun = fun (Key, Doc) ->
               FieldName = binary_to_atom(Key, utf8),
-              FieldType = get_field_type(FieldName, Fields),
-              Value = denormalize_value(FieldType, maps:get(Key, Values)),
+              Value = maps:get(Key, Values),
               sumo_internal:set_field(FieldName, Value, Doc)
           end,
     Keys = maps:keys(Values),
@@ -248,36 +246,34 @@ normalize_type(datetime) -> binary;
 normalize_type(text) -> binary;
 normalize_type(Type) -> Type.
 
-normalize_fields(Doc) ->
-    FieldList = maps:to_list(Doc),
-    lists:foldl(
-        fun ({K, {_, _, _} = FieldValue}, AccDoc) ->
-                maps:put(K, iso8601:format({FieldValue, {0, 0, 0}}), AccDoc);
-            ({K, {{_, _, _}, {_, _, _}} = FieldValue}, AccDoc) ->
-                maps:put(K, iso8601:format(FieldValue), AccDoc);
-            ({K, FieldValue}, AccDoc) when is_list(FieldValue) ->
-                maps:put(K, list_to_binary(FieldValue), AccDoc);
-            ({_K, _FieldValue}, AccDoc) ->
-                AccDoc
-        end, Doc, FieldList).
+%% @private
+sleep(Doc) ->
+    sumo_utils:doc_transform(fun sleep_fun/1, Doc).
 
-get_field_type(FieldName, Fields) ->
-    case [ sumo_internal:field_type(Field)
-          || Field <- Fields, sumo_internal:field_name(Field) == FieldName
-          ] of
-        [] -> undefined;
-        [FieldType | _] -> FieldType
-    end.
+%% @private
+sleep_fun({FieldType, _, FieldValue}) when FieldType =:= datetime;
+                                           FieldType =:= date ->
+    case {FieldType, sumo_utils:is_datetime(FieldValue)} of
+      {date, true}     -> iso8601:format({FieldValue, {0, 0, 0}});
+      {datetime, true} -> iso8601:format(FieldValue);
+      _                -> FieldValue
+    end;
+sleep_fun({_, _, undefined}) ->
+    null;
+sleep_fun({_, _, FieldValue}) ->
+    FieldValue.
 
-denormalize_value(date, Value) ->
-    {Date, _} = iso8601:parse(Value),
+%% @private
+wakeup(Doc) ->
+    sumo_utils:doc_transform(fun wakeup_fun/1, Doc).
+
+%% @private
+wakeup_fun({datetime, _, FieldValue}) ->
+    iso8601:parse(FieldValue);
+wakeup_fun({date, _, FieldValue}) ->
+    {Date, _} = iso8601:parse(FieldValue),
     Date;
-denormalize_value(datetime, Value) ->
-    DateTime = iso8601:parse(Value),
-    DateTime;
-denormalize_value(string, Value) ->
-    sumo_utils:to_list(Value);
-denormalize_value(text, Value) ->
-    sumo_utils:to_bin(Value);
-denormalize_value(_Type, Value) ->
-    Value.
+wakeup_fun({_, _, null}) ->
+    undefined;
+wakeup_fun({_, _, FieldValue}) ->
+    FieldValue.

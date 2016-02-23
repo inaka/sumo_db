@@ -118,7 +118,10 @@ is_datetime({_, _, _} = Date) ->
 is_datetime(_) ->
   false.
 
-%% @equiv keyfind(Key, KVList, undefined)
+-spec keyfind(Key, KVList) -> Val | undefined when
+  Key     :: term(),
+  KVList  :: [{Key, Val}],
+  Val     :: term().
 keyfind(Key, KVList) ->
   keyfind(Key, KVList, undefined).
 

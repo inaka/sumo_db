@@ -1,49 +1,19 @@
--module(sumo_find_SUITE).
+-module(sumo_find_test_helper).
 
-%% CT
--export([
-  all/0,
-  init_per_suite/1,
-  end_per_suite/1
-]).
-
-
-%% Test Cases
+%% Test Cases - Helpers
 -export([
   find_by_sort/1,
-  find_all_sort/1
-]).
-
--define(EXCLUDED_FUNS, [
-  all,
-  module_info,
-  init_per_suite,
-  end_per_suite
+  find_all_sort/1,
+  init_store/1
 ]).
 
 -type config() :: [{atom(), term()}].
 
 %%%=============================================================================
-%%% Common Test
+%%% Test Cases - Helpers
 %%%=============================================================================
 
--spec all() -> [atom()].
-all() -> [].
-
--spec init_per_suite(config()) -> config().
-init_per_suite(Config) ->
-  sumo_test_utils:start_apps(),
-  init_store(sumo_test_people_mnesia),
-  [{module, sumo_test_people_mnesia} | Config].
-
--spec end_per_suite(config()) -> config().
-end_per_suite(Config) ->
-  Config.
-
-%%%=============================================================================
-%%% Test Cases
-%%%=============================================================================
-
+-spec find_by_sort(config()) -> ok.
 find_by_sort(Config) ->
   {_, Module} = lists:keyfind(module, 1, Config),
 
@@ -60,8 +30,10 @@ find_by_sort(Config) ->
   "D" = Module:name(Second1),
 
   3 = length(
-    sumo:find_by(Module, [{age, '>', 2}, {age, '=<', 5}], 0, 0)).
+    sumo:find_by(Module, [{age, '>', 2}, {age, '=<', 5}], 0, 0)),
+  ok.
 
+-spec find_all_sort(config()) -> ok.
 find_all_sort( Config) ->
   {_, Module} = lists:keyfind(module, 1, Config),
 
@@ -78,12 +50,10 @@ find_all_sort( Config) ->
 
   [First2, Second2 | _] = sumo:find_all(Module, last_name, 0, 0),
   "E" = Module:name(First2),
-  "D" = Module:name(Second2).
+  "D" = Module:name(Second2),
+  ok.
 
-%%%=============================================================================
-%%% Internal functions
-%%%=============================================================================
-
+-spec init_store(module()) -> ok.
 init_store(Module) ->
   sumo:create_schema(Module),
   sumo:delete_all(Module),

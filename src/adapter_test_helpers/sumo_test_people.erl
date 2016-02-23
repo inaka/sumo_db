@@ -1,7 +1,5 @@
 -module(sumo_test_people).
 
--behavior(sumo_doc).
-
 %%% sumo_db callbacks
 -export([
   sumo_wakeup/1,
@@ -31,10 +29,10 @@
 
 -record(person, {
   id            :: integer() | binary(),
-  name          :: string(),
-  last_name     :: string(),
+  name          :: binary(),
+  last_name     :: binary(),
   age           :: integer(),
-  address       :: string(),
+  address       :: binary(),
   birthdate     :: calendar:date(),
   created_at    :: calendar:datetime(),
   height        :: float(),
@@ -80,24 +78,47 @@ sumo_wakeup(Person) ->
 %%% API
 %%%=============================================================================
 
+-spec new(binary(), binary()) -> person().
 new(Name, LastName) ->
   new(Name, LastName, 0).
 
+-spec new(binary(), binary(), integer()) -> person().
 new(Name, LastName, Age) ->
   new(Name, LastName, Age, "").
 
+-spec new(binary(), binary(), integer(), binary()) -> person().
 new(Name, LastName, Age, Address) ->
   {BirthDate, _} = calendar:universal_time(),
   new(Name, LastName, Age, Address, BirthDate).
 
+-spec new(
+  binary(), binary(), integer(), binary(), calendar:date()
+) -> person().
 new(Name, LastName, Age, Address, BirthDate) ->
   new(Name, LastName, Age, Address, BirthDate, 0.0).
+
+-spec new(
+  binary(), binary(), integer(), binary(), calendar:date(), float()
+) -> person().
 new(Name, LastName, Age, Address, BirthDate, Height) ->
   new(Name, LastName, Age, Address, BirthDate, Height, "").
 
+-spec new(
+  binary(), binary(), integer(), binary(), calendar:date(), float(), binary()
+) -> person().
 new(Name, LastName, Age, Address, BirthDate, Height, Description) ->
   new(Name, LastName, Age, Address, BirthDate, Height, Description, <<>>).
 
+-spec new(
+  binary(),
+  binary(),
+  integer(),
+  binary(),
+  calendar:date(),
+  float(),
+  binary(),
+  binary()
+) -> person().
 new(Name,
     LastName,
     Age,
@@ -118,32 +139,42 @@ new(Name,
     description   = Description,
     profile_image = ProfileImage}.
 
+-spec name(person()) -> binary().
 name(Person) ->
   Person#person.name.
 
+-spec last_name(person()) -> binary().
 last_name(Person) ->
   Person#person.last_name.
 
+-spec id(person()) -> binary().
 id(Person) ->
   Person#person.id.
 
+-spec age(person()) -> integer().
 age(Person) ->
   Person#person.age.
 
+-spec address(person()) -> binary().
 address(Person) ->
   Person#person.address.
 
+-spec birthdate(person()) -> calendar:date().
 birthdate(Person) ->
   Person#person.birthdate.
 
+-spec created_at(person()) -> calendar:datetime().
 created_at(Person) ->
   Person#person.created_at.
 
+-spec height(person()) -> float().
 height(Person) ->
   Person#person.height.
 
+-spec description(person()) -> binary().
 description(Person) ->
   Person#person.description.
 
+-spec profile_image(person()) -> binary().
 profile_image(Person) ->
   Person#person.profile_image.

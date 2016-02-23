@@ -48,7 +48,10 @@ init_per_suite(Config) ->
         sumo:persist(Module, Module:new(<<"John">>, <<"Doe">>, 30)),
         sumo:persist(Module, Module:new(<<"Jane Jr.">>, <<"Doe">>, 5)),
         sumo:persist(Module, Module:new(<<"Joe">>, <<"Armstrong">>)),
-        sumo:persist(Module, Module:new(<<"Alan">>, <<"Turing">>, 102, <<"Computer St.">>)),
+        sumo:persist(Module, Module:new(<<"Alan">>,
+                                        <<"Turing">>,
+                                        102,
+                                        <<"Computer St.">>)),
 
         sumo_test_utils:sleep_if_required(Module)
     end,

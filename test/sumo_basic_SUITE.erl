@@ -133,7 +133,8 @@ find_by_module(Module) ->
   undefined = Module:description(First),
   {Today, _} = Module:created_at(First),
   % Check that it returns what we have inserted
-  [LastPerson | _NothingElse] = sumo:find_by(Module, [{last_name, <<"LastName">>}]),
+  [LastPerson | _NothingElse] = sumo:find_by(Module,
+                                             [{last_name, <<"LastName">>}]),
   <<"Name">> = Module:name(LastPerson),
   <<"LastName">> = Module:last_name(LastPerson),
   3 = Module:age(LastPerson),

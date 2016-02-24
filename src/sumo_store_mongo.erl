@@ -282,13 +282,14 @@ build_query({Name, Value}) ->
   [{Name, Value}].
 
 like_to_regex(Like) ->
-  Bin = list_to_binary(Like),
+  Bin = sumo_utils:to_bin(Like),
+  LikeList = sumo_utils:to_list(Like),
   Regex0 = binary:replace(Bin, <<"%">>, <<".*">>, [global]),
-  Regex1 = case hd(Like) of
+  Regex1 = case hd(LikeList) of
              $% -> Regex0;
              _ -> <<"^", Regex0/binary>>
            end,
-  case lists:last(Like) of
+  case lists:last(LikeList) of
     $% -> Regex1;
     _ -> <<Regex1/binary, "$">>
   end.
@@ -316,6 +317,13 @@ wakeup_fun({datetime, _, {_, _, _} = FieldValue}) ->
 wakeup_fun({date, _, {_, _, _} = FieldValue}) ->
   {Date, _} = calendar:now_to_universal_time(FieldValue),
   Date;
+%% Matches `text' type fields that were saved with `undefined' value and
+%% avoids being processed by the next clause that will return it as a
+%% binary (`<<"undefined">>') instead of atom as expected.
+wakeup_fun({_, _, undefined}) ->
+  undefined;
+wakeup_fun({string, _, FieldValue}) ->
+  sumo_utils:to_bin(FieldValue);
 wakeup_fun({text, _, FieldValue}) ->
   sumo_utils:to_bin(FieldValue);
 wakeup_fun({_, _, FieldValue}) ->

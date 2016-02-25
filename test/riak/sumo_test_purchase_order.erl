@@ -27,7 +27,7 @@
     id          => binary(),
     created_at  => binary(),
     order_num   => binary(),
-    po_date     => binary(),
+    po_date     => calendar:datetime(),
     ship_to     => address(),
     bill_to     => address(),
     items       => items(),
@@ -52,9 +52,9 @@ sumo_schema() ->
     , sumo:new_field(created_at, datetime, [not_null])
     , sumo:new_field(order_num,  binary,   [not_null])
     , sumo:new_field(po_date,    datetime, [not_null])
-    , sumo:new_field(ship_to,    address,  [not_null])
-    , sumo:new_field(bill_to,    address,  [not_null])
-    , sumo:new_field(items,      items,    [not_null])
+    , sumo:new_field(ship_to,    binary,   [not_null])
+    , sumo:new_field(bill_to,    binary,   [not_null])
+    , sumo:new_field(items,      binary,   [not_null])
     , sumo:new_field(currency,   binary,   [not_null])
     , sumo:new_field(total,      integer,  [not_null])
     ]).
@@ -88,7 +88,7 @@ sumo_wakeup(Doc) ->
 -spec new(
   binary(),
   binary(),
-  binary(),
+  calendar:datetime(),
   address(),
   address(),
   items(),
@@ -124,7 +124,7 @@ order_num(#{order_num := Val}) ->
 order_num(PO, Val) ->
   maps:put(order_num, Val, PO).
 
--spec items(purchase_order()) -> item().
+-spec items(purchase_order()) -> items().
 items(#{items := Val}) ->
   Val.
 
@@ -140,6 +140,13 @@ currency(#{currency := Val}) ->
 currency(PO, Val) ->
   maps:put(currency, Val, PO).
 
+-spec new_address(Line1::binary(),
+                  Line2::binary(),
+                  City::binary(),
+                  State::binary(),
+                  ZipCode::binary(),
+                  Country::binary()) ->
+  address().
 new_address(Line1, Line2, City, State, ZipCode, Country) ->
   #{
     line1    => Line1,
@@ -150,6 +157,12 @@ new_address(Line1, Line2, City, State, ZipCode, Country) ->
     country  => Country
   }.
 
+-spec new_item(PartNum::binary(),
+               Name::binary(),
+               Quantity::pos_integer(),
+               UnitPrice::pos_integer(),
+               Price::pos_integer()) ->
+  item().
 new_item(PartNum, Name, Quantity, UnitPrice, Price) ->
   #{
     part_num      => PartNum,

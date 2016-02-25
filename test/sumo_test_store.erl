@@ -92,8 +92,8 @@ persist(Doc, State) ->
 %% sumo_store custom functions
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec takes_too_long(atom(), term()) ->
-                        [thoughtz_thoughtz:thought()].
+-spec takes_too_long(DocName::atom(), State::term()) ->
+  {ok, {docs, []}, term()}.
 takes_too_long(_DocName, State) ->
   timer:sleep(1000),
   {ok, {docs, []}, State}.

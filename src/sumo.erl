@@ -57,7 +57,9 @@
                      | {field_name(), operator(), field_value()}
                      | {field_name(), operator(), field_name()}.
 -type sort_order()  :: asc | desc.
--type sort()        :: field_name() | [{field_name(), sort_order()}].
+-type sort()        :: field_name()
+                     | {field_name(), sort_order()}
+                     | [{field_name(), sort_order()}].
 
 -export_type([schema_name/0, field_attr/0, field_attrs/0, field_type/0,
               field_name/0, field_value/0, doc/0, conditions/0,

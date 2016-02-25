@@ -16,10 +16,11 @@ dep_riakc = git https://github.com/inaka/riak-erlang-client.git 2.1.1-R18
 dep_uuid = git https://github.com/okeuday/uuid.git 31f408f4ef
 dep_iso8601 = git https://github.com/zerotao/erlang_iso8601.git 0d14540
 
-TEST_DEPS = mixer
-dep_mixer = git git://github.com/inaka/mixer.git 0.1.5
+TEST_DEPS = katana mixer
+dep_katana = git https://github.com/inaka/erlang-katana.git 0.2.22
+dep_mixer = git https://github.com/inaka/mixer.git 0.1.5
 
-CT_SUITES ?= conditional_logic sumo_basic sumo_config sumo_find sumo_events
+CT_SUITES ?= conditional_logic sumo_basic sumo_config sumo_find sumo_events sumo_meta
 
 include erlang.mk
 

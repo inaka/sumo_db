@@ -17,9 +17,13 @@ start_apps() ->
   {ok, _} = application:ensure_all_started(epgsql),
   {ok, _} = application:ensure_all_started(emongo),
   {ok, _} = application:ensure_all_started(tirerl),
-  mnesia:create_schema([node()]),
+  ok = case mnesia:create_schema([node()]) of
+    ok -> ok;
+    {error, {_Host, {already_exists, _Host}}} -> ok
+  end,
   {ok, _} = application:ensure_all_started(mnesia),
-  {ok, _} = application:ensure_all_started(sumo_db).
+  {ok, _} = application:ensure_all_started(sumo_db),
+  ok.
 
 -spec all_people() -> [atom()].
 all_people() ->

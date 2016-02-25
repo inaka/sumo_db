@@ -4,6 +4,7 @@
 
 %%% sumo_db callbacks
 -export([
+         sumo_schema/0,
          sumo_wakeup/1,
          sumo_sleep/1
         ]).
@@ -26,16 +27,27 @@
          description/1,
          profile_image/1]).
 
--record(person, {id :: integer() | binary(),
-                 name :: binary(),
-                 last_name :: binary(),
-                 age :: integer(),
-                 address :: binary(),
-                 birthdate  :: calendar:date(),
-                 created_at :: calendar:datetime(),
-                 height :: float(),
-                 description :: binary(),
-                 profile_image :: binary()}).
+-type id() :: integer() | binary().
+-type name() :: binary().
+-type last_name() :: binary().
+-type age() :: integer() | undefined.
+-type address() :: binary() | undefined.
+-type birthdate() :: calendar:date() | undefined.
+-type created_at() :: calendar:datetime().
+-type height() :: float() | undefined.
+-type description() :: binary() | undefined.
+-type profile_image() :: binary() | undefined.
+
+-record(person, {id :: id(),
+                 name :: name(),
+                 last_name :: last_name(),
+                 age :: age(),
+                 address :: address(),
+                 birthdate  :: birthdate(),
+                 created_at :: created_at(),
+                 height :: height(),
+                 description :: description(),
+                 profile_image :: profile_image()}).
 
 -type person() :: #person{}.
 
@@ -43,7 +55,10 @@
 %%% sumo_doc callbacks
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
--spec sumo_sleep(person()) -> sumo:doc().
+-spec sumo_schema() -> no_return().
+sumo_schema() -> throw(should_be_implemented_by_children).
+
+-spec sumo_sleep(Person::person()) -> sumo:doc().
 sumo_sleep(Person) ->
   #{id => Person#person.id,
     name => Person#person.name,
@@ -56,7 +71,7 @@ sumo_sleep(Person) ->
     description => Person#person.description,
     profile_image => Person#person.profile_image}.
 
--spec sumo_wakeup(sumo:doc()) -> person().
+-spec sumo_wakeup(Person::sumo:doc()) -> person().
 sumo_wakeup(Person) ->
   #person{
     id = maps:get(id, Person),
@@ -75,22 +90,67 @@ sumo_wakeup(Person) ->
 %%% Exported
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-new(Name, LastName) -> new(Name, LastName, undefined).
+-spec new(Name::name(),
+          LastName::last_name()) ->
+  person().
+new(Name, LastName) ->
+  new(Name, LastName, undefined).
 
-new(Name, LastName, Age) -> new(Name, LastName, Age, undefined).
+-spec new(Name::name(),
+          LastName::last_name(),
+          Age::age()) ->
+  person().
+new(Name, LastName, Age) ->
+  new(Name, LastName, Age, undefined).
 
+-spec new(Name::name(),
+          LastName::last_name(),
+          Age::age(),
+          Address::address()) ->
+  person().
 new(Name, LastName, Age, Address) ->
   {BirthDate, _} = calendar:universal_time(),
   new(Name, LastName, Age, Address, BirthDate).
 
+-spec new(Name::name(),
+          LastName::last_name(),
+          Age::age(),
+          Address::address(),
+          BirthDate::birthdate()) ->
+  person().
 new(Name, LastName, Age, Address, BirthDate) ->
   new(Name, LastName, Age, Address, BirthDate, undefined).
+
+-spec new(Name::name(),
+          LastName::last_name(),
+          Age::age(),
+          Address::address(),
+          BirthDate::birthdate(),
+          Height::height()) ->
+  person().
 new(Name, LastName, Age, Address, BirthDate, Height) ->
   new(Name, LastName, Age, Address, BirthDate, Height, undefined).
 
+-spec new(Name::name(),
+          LastName::last_name(),
+          Age::age(),
+          Address::address(),
+          BirthDate::birthdate(),
+          Height::height(),
+          Description::description()) ->
+  person().
 new(Name, LastName, Age, Address, BirthDate, Height, Description) ->
   new(Name, LastName, Age, Address, BirthDate, Height, Description, undefined).
 
+-spec new(Name::name(),
+          LastName::last_name(),
+          Age::age(),
+          Address::address(),
+          BirthDate::birthdate(),
+          Height::height(),
+          Description::description(),
+          ProfileImage::profile_image()) ->
+  person().
 new(Name,
     LastName,
     Age,
@@ -110,32 +170,42 @@ new(Name,
           description   = Description,
           profile_image = ProfileImage}.
 
+-spec name(Person::person()) -> name().
 name(Person) ->
   Person#person.name.
 
+-spec last_name(Person::person()) -> last_name().
 last_name(Person) ->
   Person#person.last_name.
 
+-spec id(Person::person()) -> id().
 id(Person) ->
   Person#person.id.
 
+-spec age(Person::person()) -> age().
 age(Person) ->
   Person#person.age.
 
+-spec address(Person::person()) -> address().
 address(Person) ->
   Person#person.address.
 
+-spec birthdate(Person::person()) -> birthdate().
 birthdate(Person) ->
   Person#person.birthdate.
 
+-spec created_at(Person::person()) -> created_at().
 created_at(Person) ->
   Person#person.created_at.
 
+-spec height(Person::person()) -> height().
 height(Person) ->
   Person#person.height.
 
+-spec description(Person::person()) -> description().
 description(Person) ->
   Person#person.description.
 
+-spec profile_image(Person::person()) -> profile_image().
 profile_image(Person) ->
   Person#person.profile_image.

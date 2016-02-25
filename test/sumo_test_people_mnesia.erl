@@ -2,6 +2,9 @@
 
 -behavior(sumo_doc).
 
+%% @todo remove this once mixer migrates specs better
+-dialyzer([no_behaviours]).
+
 -include_lib("mixer/include/mixer.hrl").
 -mixin([{sumo_test_people,
          [sumo_wakeup/1,

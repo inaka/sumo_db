@@ -228,11 +228,11 @@ find_by(DocName, Conditions, State) ->
 ) -> sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName, Conditions, Limit, Offset, State) when is_list(Conditions) ->
   IdField = sumo_internal:id_field_name(DocName),
-  %% If the key field is present in the conditions, we are looking for a
-  %% particular document. If not, it is a general query.
-  case lists:keyfind(IdField, 1, Conditions) of
-    {_K, Key} ->
-      find_by_id_field(DocName, Key, State);
+  %% If **ONLY** the key field is present in the conditions, we are looking
+  %% for a particular document. Otherwise, it is a general query.
+  case Conditions of
+    [{IdField, Value}] ->
+      find_by_id_field(DocName, Value, State);
     _ ->
       find_by_query(DocName, Conditions, Limit, Offset, State)
   end;

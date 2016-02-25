@@ -145,7 +145,11 @@ find_by_module(Module) ->
   {Today, _} = Module:created_at(LastPerson),
 
   %% Check find_by ID
-  [First1] = sumo:find_by(Module, [{id, Module:id(First)}]),
+  FirstId = Module:id(First),
+  [First1] = sumo:find_by(Module, [{id, FirstId}]),
+  [First1] = sumo:find_by(Module, [{last_name, <<"D">>},
+                                   {id, FirstId}]),
+  [] = sumo:find_by(Module, [{name, <<"NotB">>}, {id, FirstId}]),
   First1 = First,
   %% Check pagination
   Results1 = sumo:find_by(Module, [], 3, 1),

@@ -1,5 +1,39 @@
 # Change Log
 
+## [0.4.0](https://github.com/inaka/sumo_db/tree/0.4.0) (2016-02-26)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.13...0.4.0)
+
+**Fixed bugs:**
+
+- Remove extra fields from search results before wakeup [\#206](https://github.com/inaka/sumo_db/issues/206)
+- Get riak store to return the number of deleted rows in sumo:delete\_by\(\) [\#204](https://github.com/inaka/sumo_db/issues/204)
+- Allow Sumo Riak Store to use nullable fields [\#203](https://github.com/inaka/sumo_db/issues/203)
+- Riak is not correctly matching by id [\#192](https://github.com/inaka/sumo_db/issues/192)
+- Fix mongo store, broken after date/datetime general refactor [\#188](https://github.com/inaka/sumo_db/issues/188)
+- Sumo is not filtering by datetime fields correctly [\#219](https://github.com/inaka/sumo_db/pull/219) ([harenson](https://github.com/harenson))
+
+**Closed issues:**
+
+- `sumo\_basic\_SUITE` failing because its `init\_per\_testcase` fails [\#223](https://github.com/inaka/sumo_db/issues/223)
+- Move event dispatcher management inside [\#218](https://github.com/inaka/sumo_db/issues/218)
+- Add Meta Testing [\#211](https://github.com/inaka/sumo_db/issues/211)
+- Invalid Prepared Statements. [\#202](https://github.com/inaka/sumo_db/issues/202)
+- Sumo store have to work with other data types in the same way is doing date types persistence. [\#201](https://github.com/inaka/sumo_db/issues/201)
+- Quit using inaka's emongo and switch to the official one [\#184](https://github.com/inaka/sumo_db/issues/184)
+
+**Merged pull requests:**
+
+- \[\#192\] Make Riak store take care of every condition when building the query [\#231](https://github.com/inaka/sumo_db/pull/231) ([harenson](https://github.com/harenson))
+- \[Fix \#211\] Add meta testing and Fix dialyzer warnings [\#230](https://github.com/inaka/sumo_db/pull/230) ([harenson](https://github.com/harenson))
+- \[Fix \#203\] Fix null values for every store [\#229](https://github.com/inaka/sumo_db/pull/229) ([harenson](https://github.com/harenson))
+- \[Fix \#201\] Add checks for all sumo data types in tests [\#228](https://github.com/inaka/sumo_db/pull/228) ([harenson](https://github.com/harenson))
+- Cabol.222.fix riak to work with data types [\#227](https://github.com/inaka/sumo_db/pull/227) ([cabol](https://github.com/cabol))
+- \[Fix \#218\] Add event dispatch management [\#220](https://github.com/inaka/sumo_db/pull/220) ([harenson](https://github.com/harenson))
+- Tests for \#216 [\#217](https://github.com/inaka/sumo_db/pull/217) ([elbrujohalcon](https://github.com/elbrujohalcon))
+- Fixed issue UNIQUE constraint in sumo\_store\_pgsql [\#216](https://github.com/inaka/sumo_db/pull/216) ([antik486](https://github.com/antik486))
+- Upgrade erlang.mk and get the app to compile [\#215](https://github.com/inaka/sumo_db/pull/215) ([elbrujohalcon](https://github.com/elbrujohalcon))
+- Unified sumo\_db-riak-extras project with sumo\_db [\#213](https://github.com/inaka/sumo_db/pull/213) ([cabol](https://github.com/cabol))
+
 ## [0.3.13](https://github.com/inaka/sumo_db/tree/0.3.13) (2015-09-14)
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.12...0.3.13)
 
@@ -11,10 +45,12 @@
 
 **Closed issues:**
 
+- Version bump to 0.3.13 [\#197](https://github.com/inaka/sumo_db/issues/197)
 - Update sumo dependencies for OTP 18 compatibility  [\#195](https://github.com/inaka/sumo_db/issues/195)
 
 **Merged pull requests:**
 
+- Version Bump to 0.3.13 [\#198](https://github.com/inaka/sumo_db/pull/198) ([davecaos](https://github.com/davecaos))
 - \[Closes \#194\] Call wakeup after persisting document in riak [\#196](https://github.com/inaka/sumo_db/pull/196) ([jfacorro](https://github.com/jfacorro))
 - \[\#138\] Add node name to test-shell target [\#193](https://github.com/inaka/sumo_db/pull/193) ([jfacorro](https://github.com/jfacorro))
 - \[Closes \#164\] Fixed docstrings that were causing errors [\#191](https://github.com/inaka/sumo_db/pull/191) ([jfacorro](https://github.com/jfacorro))

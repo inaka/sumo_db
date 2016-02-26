@@ -1,6 +1,6 @@
 {application, sumo_db, [
   {description, "A simple persistance layer"},
-  {vsn, "0.3.13"},
+  {vsn, "0.4.0"},
   {id, "sumo_db"},
   {registered, []},
   {applications, [

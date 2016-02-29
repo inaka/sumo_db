@@ -10,10 +10,11 @@ dep_lager       = git https://github.com/basho/lager.git       3.0.1
 dep_worker_pool = git https://github.com/inaka/worker_pool.git 1.0.4
 dep_uuid        = git https://github.com/okeuday/uuid.git      31f408f4ef
 
-TEST_DEPS = mixer
+TEST_DEPS = katana_test mixer
+dep_katana_test = git https://github.com/inaka/katana-test.git 5491fba
 dep_mixer = git git://github.com/inaka/mixer.git 0.1.5
 
-CT_SUITES ?= conditional_logic sumo_basic sumo_events
+CT_SUITES ?= conditional_logic sumo_basic sumo_events sumo_meta
 
 include erlang.mk
 

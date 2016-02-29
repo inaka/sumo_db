@@ -2,7 +2,7 @@
 
 %%% sumo_db callbacks
 -export([
-  sumo_schema/1,
+  sumo_schema/0,
   sumo_wakeup/1,
   sumo_sleep/1
 ]).

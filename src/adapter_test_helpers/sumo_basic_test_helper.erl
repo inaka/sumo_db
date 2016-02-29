@@ -31,7 +31,7 @@ find(Config) ->
 find_all(Config) ->
   {_, Module} = lists:keyfind(module, 1, Config),
 
-  8 = length(sumo:find_all(Module)),
+  [_, _, _, _, _, _, _, _] = sumo:find_all(Module),
   ok.
 
 -spec find_by(config()) -> ok.
@@ -39,28 +39,29 @@ find_by(Config) ->
   {_, Module} = lists:keyfind(module, 1, Config),
 
   Results = sumo:find_by(Module, [{last_name, <<"D">>}]),
-  2 = length(Results),
+  [_, _] = Results,
   SortFun = fun(A, B) -> Module:name(A) < Module:name(B) end,
   [First, Second | _] = lists:sort(SortFun, Results),
 
   {Today, _} = calendar:universal_time(),
 
-  "B" = Module:name(First),
-  "D" = Module:name(Second),
+  <<"B">> = Module:name(First),
+  <<"D">> = Module:name(Second),
   3 = Module:age(First),
   4 = Module:age(Second),
-  "D" = Module:last_name(First),
-  "" = Module:address(First),
+  <<"D">> = Module:last_name(First),
+  undefined = Module:address(First),
   Today = Module:birthdate(First),
-  0.0 = Module:height(First),
-  <<>> = Module:description(First),
+  undefined = Module:height(First),
+  undefined = Module:description(First),
   {Today, _} = Module:created_at(First),
   % Check that it returns what we have inserted
-  [LastPerson | _NothingElse] = sumo:find_by(Module, [{last_name, "LastName"}]),
-  "Name" = Module:name(LastPerson),
-  "LastName" = Module:last_name(LastPerson),
+  [LastPerson | _NothingElse] = sumo:find_by(Module,
+                                             [{last_name, <<"LastName">>}]),
+  <<"Name">> = Module:name(LastPerson),
+  <<"LastName">> = Module:last_name(LastPerson),
   3 = Module:age(LastPerson),
-  "" = Module:address(LastPerson),
+  undefined = Module:address(LastPerson),
   {Date, _} = calendar:universal_time(),
   Date = Module:birthdate(LastPerson),
   1.75 = Module:height(LastPerson),
@@ -68,16 +69,20 @@ find_by(Config) ->
   {Today, _} = Module:created_at(LastPerson),
 
   %% Check find_by ID
-  [First1] = sumo:find_by(Module, [{id, Module:id(First)}]),
+  FirstId = Module:id(First),
+  [First1] = sumo:find_by(Module, [{id, FirstId}]),
+  [First1] = sumo:find_by(Module, [{last_name, <<"D">>},
+                                   {id, FirstId}]),
+  [] = sumo:find_by(Module, [{name, <<"NotB">>}, {id, FirstId}]),
   First1 = First,
   %% Check pagination
   Results1 = sumo:find_by(Module, [], 3, 1),
-  3 = length(Results1),
+  [_, _, _] = Results1,
 
   %% This test is #177 github issue related
-  8 = length(sumo:find_by(Module, [])),
+  [_, _, _, _, _, _, _, _] = sumo:find_by(Module, []),
   Robot = sumo:find_by(Module, [{name, <<"Model T-2000">>}]),
-  1 = length(Robot),
+  [_] = Robot,
   ok.
 
 -spec delete_all(config()) -> ok.
@@ -95,16 +100,14 @@ delete(Config) ->
   %% delete_by
   2 = sumo:delete_by(Module, [{last_name, <<"D">>}]),
   Results = sumo:find_by(Module, [{last_name, <<"D">>}]),
-
-  0 = length(Results),
+  [] = Results,
 
   %% delete
   [First | _ ] = All = sumo:find_all(Module),
   Id = Module:id(First),
   sumo:delete(Module, Id),
   NewAll = sumo:find_all(Module),
-
-  1 = length(All) - length(NewAll),
+  [_] = All -- NewAll,
   ok.
 
 -spec check_proper_dates(config()) -> ok.
@@ -142,6 +145,14 @@ init_store(Module) ->
   sumo:persist(Module, Module:new(<<"Model T-2000">>, <<"undefined">>, 7)),
 
   {Date, _} = calendar:universal_time(),
-  sumo:persist(Module, Module:new(
-    "Name", "LastName", 3, "", Date, 1.75, <<"description">>)),
+  sumo:persist(
+    Module,
+    Module:new(<<"Name">>,
+               <<"LastName">>,
+               3,
+               undefined,
+               Date,
+               1.75,
+               <<"description">>)
+  ),
   ok.

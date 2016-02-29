@@ -360,8 +360,13 @@ wakeup(Doc) ->
 %% @private
 wakeup_fun({date, _, {Date, _} = _FieldValue}) ->
   Date;
+%% Matches `text' type fields that were saved with `undefined' value and
+%% avoids being processed by the next clause that will return it as a
+%% binary (`<<"undefined">>') instead of atom as expected.
+wakeup_fun({_, _, undefined}) ->
+  undefined;
 wakeup_fun({string, _, FieldValue}) ->
-  sumo_utils:to_list(FieldValue);
+  sumo_utils:to_bin(FieldValue);
 wakeup_fun({binary, _, FieldValue}) ->
   sumo_utils:to_bin(FieldValue);
 wakeup_fun({text, _, FieldValue}) ->

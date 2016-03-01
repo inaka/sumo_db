@@ -42,7 +42,7 @@ all() ->
 
 -spec init_per_suite(config()) -> config().
 init_per_suite(Config) ->
-  sumo_test_utils:start_apps(),
+  ok = sumo_test_utils:start_apps(),
   [{module, sumo_test_people_mnesia} | Config].
 
 init_per_testcase(_, Config) ->

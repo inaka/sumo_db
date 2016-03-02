@@ -24,15 +24,14 @@
 
 -behaviour(supervisor).
 
--define(CLD(Name, Module, Options),
-  { Name
-  , {sumo_store, start_link, [Name, Module, Options]}
-  , permanent
-  , 5000
-  , worker
-  , [Module]
-  }
-).
+-define(CLD(Name, Module, Options), {
+  Name,
+  {sumo_store, start_link, [Name, Module, Options]},
+  permanent,
+  5000,
+  worker,
+  [Module]
+}).
 
 %%% API
 -export([start_link/0]).

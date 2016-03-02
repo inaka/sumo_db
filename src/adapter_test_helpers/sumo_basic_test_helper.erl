@@ -56,8 +56,8 @@ find_by(Config) ->
   undefined = Module:description(First),
   {Today, _} = Module:created_at(First),
   % Check that it returns what we have inserted
-  [LastPerson | _NothingElse] = sumo:find_by(Module,
-                                             [{last_name, <<"LastName">>}]),
+  [LastPerson | _NothingElse] =
+    sumo:find_by(Module, [{last_name, <<"LastName">>}]),
   <<"Name">> = Module:name(LastPerson),
   <<"LastName">> = Module:last_name(LastPerson),
   3 = Module:age(LastPerson),
@@ -71,8 +71,8 @@ find_by(Config) ->
   %% Check find_by ID
   FirstId = Module:id(First),
   [First1] = sumo:find_by(Module, [{id, FirstId}]),
-  [First1] = sumo:find_by(Module, [{last_name, <<"D">>},
-                                   {id, FirstId}]),
+  [First1] = sumo:find_by(
+    Module, [{last_name, <<"D">>}, {id, FirstId}]),
   [] = sumo:find_by(Module, [{name, <<"NotB">>}, {id, FirstId}]),
   First1 = First,
   %% Check pagination
@@ -147,12 +147,14 @@ init_store(Module) ->
   {Date, _} = calendar:universal_time(),
   sumo:persist(
     Module,
-    Module:new(<<"Name">>,
-               <<"LastName">>,
-               3,
-               undefined,
-               Date,
-               1.75,
-               <<"description">>)
+    Module:new(
+      <<"Name">>,
+      <<"LastName">>,
+      3,
+      undefined,
+      Date,
+      1.75,
+      <<"description">>
+    )
   ),
   ok.

@@ -22,7 +22,6 @@
 -license("Apache License 2.0").
 
 -behaviour(gen_server).
--define(SERVER, ?MODULE).
 
 %%% Public API.
 -export([
@@ -141,73 +140,101 @@ create_schema(Name, Schema) ->
   wpool:call(Name, {create_schema, Schema}).
 
 %% @doc Persist the given doc with the given store name.
--spec persist(
-  atom(), sumo_internal:doc()
-) -> {ok, sumo_internal:doc()} | {error, term()}.
+-spec persist(Name, Doc) -> Res when
+  Name :: atom(),
+  Doc  :: sumo_internal:doc(),
+  Res  :: {ok, sumo_internal:doc()} | {error, term()}.
 persist(Name, Doc) ->
   wpool:call(Name, {persist, Doc}).
 
 %% @doc Deletes the docs identified by the given conditions.
--spec delete_by(
-  atom(), sumo:schema_name(), sumo:conditions()
-) -> {ok, non_neg_integer()} | {error, term()}.
+-spec delete_by(Name, DocName, Conditions) -> Res when
+  Name       :: atom(),
+  DocName    :: sumo:schema_name(),
+  Conditions :: sumo:conditions(),
+  Res        :: {ok, non_neg_integer()} | {error, term()}.
 delete_by(Name, DocName, Conditions) ->
   wpool:call(Name, {delete_by, DocName, Conditions}).
 
 %% @doc Deletes all docs in the given store name.
--spec delete_all(
-  atom(), sumo:schema_name()
-) -> {ok, non_neg_integer()} | {error, term()}.
+-spec delete_all(Name, DocName) -> Res when
+  Name       :: atom(),
+  DocName    :: sumo:schema_name(),
+  Res        :: {ok, non_neg_integer()} | {error, term()}.
 delete_all(Name, DocName) ->
   wpool:call(Name, {delete_all, DocName}).
 
 %% @doc Returns all docs from the given store name.
--spec find_all(
-  atom(), sumo:schema_name()
-) -> {ok, [sumo_internal:doc()]} | {error, term()}.
+-spec find_all(Name, DocName) -> Res when
+  Name       :: atom(),
+  DocName    :: sumo:schema_name(),
+  Res        :: {ok, [sumo_internal:doc()]} | {error, term()}.
 find_all(Name, DocName) ->
   wpool:call(Name, {find_all, DocName}).
 
-%% @doc Returns Limit docs starting at Offset from the given store name,
+%% @doc
+%% Returns Limit docs starting at Offset from the given store name,
 %% ordered by OrderField. OrderField may be 'undefined'.
--spec find_all(
-  atom(), sumo:schema_name(), sumo:sort(),
-  non_neg_integer(), non_neg_integer()
-) -> {ok, [sumo_internal:doc()]} | {error, term()}.
+%% @end
+-spec find_all(Name, DocName, SortFields, Limit, Offset) -> Res when
+  Name       :: atom(),
+  DocName    :: sumo:schema_name(),
+  SortFields :: sumo:sort(),
+  Limit      :: non_neg_integer(),
+  Offset     :: non_neg_integer(),
+  Res        :: {ok, [sumo_internal:doc()]} | {error, term()}.
 find_all(Name, DocName, SortFields, Limit, Offset) ->
   wpool:call(Name, {find_all, DocName, SortFields, Limit, Offset}).
 
-%% @doc Finds documents that match the given conditions in the given
+%% @doc
+%% Finds documents that match the given conditions in the given
 %% store name.
--spec find_by(
-  atom(), sumo:schema_name(), sumo:conditions()
-) -> {ok, [sumo_internal:doc()]} | {error, term()}.
+%% @end
+-spec find_by(Name, DocName, Conditions) -> Res when
+  Name       :: atom(),
+  DocName    :: sumo:schema_name(),
+  Conditions :: sumo:conditions(),
+  Res        :: {ok, [sumo_internal:doc()]} | {error, term()}.
 find_by(Name, DocName, Conditions) ->
   wpool:call(Name, {find_by, DocName, Conditions}).
 
-%% @doc Finds documents that match the given conditions in the given
+%% @doc
+%% Finds documents that match the given conditions in the given
 %% store name.
--spec find_by(
-  atom(), sumo:schema_name(), sumo:conditions(),
-  non_neg_integer(), non_neg_integer()
-) -> {ok, [sumo_internal:doc()]} | {error, term()}.
+%% @end
+-spec find_by(Name, DocName, Conditions, Limit, Offset) -> Res when
+  Name       :: atom(),
+  DocName    :: sumo:schema_name(),
+  Conditions :: sumo:conditions(),
+  Limit      :: non_neg_integer(),
+  Offset     :: non_neg_integer(),
+  Res        :: {ok, [sumo_internal:doc()]} | {error, term()}.
 find_by(Name, DocName, Conditions, Limit, Offset) ->
   wpool:call(Name, {find_by, DocName, Conditions, Limit, Offset}).
 
-%% @doc Finds documents that match the given conditions in the given
+%% @doc
+%% Finds documents that match the given conditions in the given
 %% store name.
--spec find_by(
-  atom(), sumo:schema_name(), sumo:conditions(),
-  sumo:sort(), non_neg_integer(), non_neg_integer()
-) -> {ok, [sumo_internal:doc()]} | {error, term()}.
+%% @end
+-spec find_by(Name, DocName, Conditions, SortFields, Limit, Offset) -> Res when
+  Name       :: atom(),
+  DocName    :: sumo:schema_name(),
+  Conditions :: sumo:conditions(),
+  SortFields :: sumo:sort(),
+  Limit      :: non_neg_integer(),
+  Offset     :: non_neg_integer(),
+  Res        :: {ok, [sumo_internal:doc()]} | {error, term()}.
 find_by(Name, DocName, Conditions, SortFields, Limit, Offset) ->
   wpool:call(Name, {find_by, DocName, Conditions, SortFields, Limit, Offset}).
 
 
 %% @doc Calls a custom function in the given store name.
--spec call(
-  atom(), sumo:schema_name(), atom(), [term()]
-) -> ok | {ok, term()} | {error, term()}.
+-spec call(Name, DocName, Function, Args) -> Res when
+  Name     :: atom(),
+  DocName  :: sumo:schema_name(),
+  Function :: atom(),
+  Args     :: [term()],
+  Res      :: ok | {ok, term()} | {error, term()}.
 call(Name, DocName, Function, Args) ->
   {ok, Timeout} = application:get_env(sumo_db, query_timeout),
   wpool:call(

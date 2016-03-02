@@ -21,21 +21,30 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Exports.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 %%% API for doc/schema manipulation.
--export([new_schema/2, new_field/3, new_field/2]).
+-export([
+  new_schema/2,
+  new_field/3,
+  new_field/2]).
 
 %%% API for schema creation.
--export([create_schema/0, create_schema/1, create_schema/2]).
+-export([
+  create_schema/0,
+  create_schema/1,
+  create_schema/2]).
 
 %%% API for standard CRUD functions.
--export([persist/2, delete/2, delete_by/2, delete_all/1]).
--export([find/2, find_all/1, find_all/4]).
--export([find_by/2, find_by/4, find_by/5, find_one/2]).
--export([call/2, call/3]).
+-export([
+  persist/2,
+  delete/2,
+  delete_by/2,
+  delete_all/1,
+  find/2,
+  find_all/1, find_all/4,
+  find_by/2, find_by/4, find_by/5,
+  find_one/2,
+  call/2, call/3
+]).
 
 %%% Types
 -type schema_name() :: atom().
@@ -54,9 +63,9 @@
                        {field_name(), operator(), field_value()} |
                        {field_name(), operator(), field_name()}.
 -type sort_order()  :: asc | desc.
--type sort()        :: field_name()
-                     | {field_name(), sort_order()}
-                     | [{field_name(), sort_order()}].
+-type sort()        :: field_name() |
+                       {field_name(), sort_order()} |
+                       [{field_name(), sort_order()}].
 -type schema()      :: sumo_internal:schema().
 -type field()       :: sumo_internal:field().
 -type user_doc()    :: term().
@@ -119,8 +128,12 @@ find_all(DocName) ->
   end.
 
 %% @doc Returns Limit docs from the given store, starting at offset.
--spec find_all(schema_name(), sort(), non_neg_integer(), non_neg_integer()) ->
-  [user_doc()].
+-spec find_all(DocName, SortFields0, Limit, Offset) -> Res when
+  DocName     :: schema_name(),
+  SortFields0 :: sort(),
+  Limit       :: non_neg_integer(),
+  Offset      :: non_neg_integer(),
+  Res         :: [user_doc()].
 find_all(DocName, SortFields0, Limit, Offset) ->
   SortFields = normalize_sort_fields(SortFields0),
   Store = sumo_internal:get_store(DocName),
@@ -155,8 +168,10 @@ find_by(DocName, Conditions, Limit, Offset) ->
     Error      -> throw(Error)
   end.
 
-%% @doc Returns Limit number of docs that match Conditions, starting at
+%% @doc
+%% Returns Limit number of docs that match Conditions, starting at
 %% offset Offset.
+%% @end
 -spec find_by(DocName, Conditions, SortFields, Limit, Offset) -> Res when
   DocName    :: schema_name(),
   Conditions :: conditions(),
@@ -235,8 +250,10 @@ delete_by(DocName, Conditions) ->
 create_schema(DocName) ->
   create_schema(DocName, sumo_internal:get_store(DocName)).
 
-%% @doc Creates the schema for the docs of type DocName using the given
+%% @doc
+%% Creates the schema for the docs of type DocName using the given
 %% store.
+%% @end
 -spec create_schema(schema_name(), atom()) -> ok.
 create_schema(DocName, Store) ->
   case sumo_store:create_schema(Store, sumo_internal:get_schema(DocName)) of
@@ -280,11 +297,13 @@ new_field(Name, Type) ->
 %%% Internal functions
 %%%=============================================================================
 
+%% @private
 docs_wakeup(DocName, Docs) ->
   lists:map(fun(Doc) ->
     sumo_internal:wakeup(DocName, Doc)
   end, Docs).
 
+%% @private
 normalize_sort_fields(FieldName) when is_atom(FieldName) ->
   [{FieldName, asc}];
 normalize_sort_fields({Name, Order}) ->

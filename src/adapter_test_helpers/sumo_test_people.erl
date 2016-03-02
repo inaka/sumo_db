@@ -93,64 +93,78 @@ sumo_wakeup(Person) ->
 %%% API
 %%%=============================================================================
 
--spec new(Name::name(), LastName::last_name()) ->
-  person().
+-spec new(Name, LastName) -> Person when
+  Name         :: name(),
+  LastName     :: last_name(),
+  Person       :: person().
 new(Name, LastName) ->
   new(Name, LastName, undefined).
 
--spec new(Name::name(), LastName::last_name(), Age::age()) ->
-  person().
+-spec new(Name, LastName, Age) -> Person when
+  Name         :: name(),
+  LastName     :: last_name(),
+  Age          :: age(),
+  Person       :: person().
 new(Name, LastName, Age) ->
   new(Name, LastName, Age, undefined).
 
--spec new(Name::name(),
-          LastName::last_name(),
-          Age::age(),
-          Address::address()) ->
-  person().
+-spec new(Name, LastName, Age, Address) -> Person when
+  Name         :: name(),
+  LastName     :: last_name(),
+  Age          :: age(),
+  Address      :: address(),
+  Person       :: person().
 new(Name, LastName, Age, Address) ->
   {BirthDate, _} = calendar:universal_time(),
   new(Name, LastName, Age, Address, BirthDate).
 
--spec new(Name::name(),
-          LastName::last_name(),
-          Age::age(),
-          Address::address(),
-          BirthDate::birthdate()) ->
-  person().
+-spec new(Name, LastName, Age, Address, BirthDate) -> Person when
+  Name         :: name(),
+  LastName     :: last_name(),
+  Age          :: age(),
+  Address      :: address(),
+  BirthDate    :: birthdate(),
+  Person       :: person().
 new(Name, LastName, Age, Address, BirthDate) ->
   new(Name, LastName, Age, Address, BirthDate, undefined).
 
--spec new(Name::name(),
-          LastName::last_name(),
-          Age::age(),
-          Address::address(),
-          BirthDate::birthdate(),
-          Height::height()) ->
-  person().
+-spec new(Name, LastName, Age, Address, BirthDate, Height) -> Person when
+  Name         :: name(),
+  LastName     :: last_name(),
+  Age          :: age(),
+  Address      :: address(),
+  BirthDate    :: birthdate(),
+  Height       :: height(),
+  Person       :: person().
 new(Name, LastName, Age, Address, BirthDate, Height) ->
   new(Name, LastName, Age, Address, BirthDate, Height, undefined).
 
--spec new(Name::name(),
-          LastName::last_name(),
-          Age::age(),
-          Address::address(),
-          BirthDate::birthdate(),
-          Height::height(),
-          Description::description()) ->
-  person().
+-spec new(
+  Name, LastName, Age, Address, BirthDate, Height, Description
+) -> Person when
+  Name         :: name(),
+  LastName     :: last_name(),
+  Age          :: age(),
+  Address      :: address(),
+  BirthDate    :: birthdate(),
+  Height       :: height(),
+  Description  :: description(),
+  Person       :: person().
 new(Name, LastName, Age, Address, BirthDate, Height, Description) ->
   new(Name, LastName, Age, Address, BirthDate, Height, Description, undefined).
 
--spec new(Name::name(),
-          LastName::last_name(),
-          Age::age(),
-          Address::address(),
-          BirthDate::birthdate(),
-          Height::height(),
-          Description::description(),
-          ProfileImage::profile_image()) ->
-  person().
+-spec new(
+  Name, LastName, Age, Address, BirthDate, Height, Description, ProfileImage
+) -> Person when
+  Name         :: name(),
+  LastName     :: last_name(),
+  Age          :: age(),
+  Address      :: address(),
+  BirthDate    :: birthdate(),
+  Height       :: height(),
+  Description  :: description(),
+  ProfileImage :: profile_image(),
+  Person       :: person().
 new(Name,
     LastName,
     Age,
@@ -160,15 +174,17 @@ new(Name,
     Description,
     ProfileImage) ->
   Datetime = calendar:universal_time(),
-  #person{name          = Name,
-          last_name     = LastName,
-          age           = Age,
-          address       = Address,
-          birthdate     = BirthDate,
-          created_at    = Datetime,
-          height        = Height,
-          description   = Description,
-          profile_image = ProfileImage}.
+  #person{
+    name          = Name,
+    last_name     = LastName,
+    age           = Age,
+    address       = Address,
+    birthdate     = BirthDate,
+    created_at    = Datetime,
+    height        = Height,
+    description   = Description,
+    profile_image = ProfileImage
+  }.
 
 -spec name(Person::person()) -> name().
 name(Person) ->

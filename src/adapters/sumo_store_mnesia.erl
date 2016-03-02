@@ -22,29 +22,29 @@
 -license("Apache License 2.0").
 
 -behavior(sumo_store).
-%-ignore_xref([{uuid, get_v4, 0}, {uuid, uuid_to_string, 2}]).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Exports.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% API
+-export([
+  init/1,
+  create_schema/2,
+  persist/2,
+  delete_by/3,
+  delete_all/2,
+  find_all/2, find_all/5,
+  find_by/3, find_by/5, find_by/6
+]).
 
-%% Public API.
--export([init/1]).
--export([create_schema/2]).
--export([persist/2]).
--export([delete_by/3, delete_all/2]).
--export([find_all/2, find_all/5, find_by/3, find_by/5, find_by/6]).
+%%%=============================================================================
+%%% Types
+%%%=============================================================================
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Types.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -type option() ::
   disc_copies | ram_copies | majority | snmp | storage_properties.
 -type state() :: #{default_options => [{option(), term()}]}.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% External API.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%=============================================================================
+%%% API
+%%%=============================================================================
 
 -spec init(term()) -> {ok, state()}.
 init(Options) ->
@@ -58,11 +58,10 @@ persist(Doc, State) ->
   DocName = sumo_internal:doc_name(Doc),
   IdField = sumo_internal:id_field_name(DocName),
   Id = sumo_internal:get_field(IdField, Doc),
-  NewId =
-    case Id of
-      undefined -> new_id(DocName, sumo_internal:id_field_type(DocName));
-      Id -> Id
-    end,
+  NewId = case Id of
+    undefined -> new_id(DocName, sumo_internal:id_field_type(DocName));
+    Id        -> Id
+  end,
 
   Doc2 = sleep(Doc),
   Fields = sumo_internal:doc_fields(Doc2),
@@ -83,12 +82,11 @@ persist(Doc, State) ->
   sumo_store:result(sumo_store:affected_rows(), state()).
 delete_by(DocName, Conditions, State) ->
   MatchSpec = build_match_spec(DocName, Conditions),
-  Transaction =
-    fun() ->
-      Items = mnesia:select(DocName, MatchSpec),
-      lists:foreach(fun mnesia:delete_object/1, Items),
-      length(Items)
-    end,
+  Transaction = fun() ->
+    Items = mnesia:select(DocName, MatchSpec),
+    lists:foreach(fun mnesia:delete_object/1, Items),
+    length(Items)
+  end,
   case mnesia:transaction(Transaction) of
     {aborted, Reason} ->
       {error, Reason, State};
@@ -112,12 +110,13 @@ delete_all(DocName, State) ->
 find_all(DocName, State) ->
   find_all(DocName, [], 0, 0, State).
 
--spec find_all(sumo:schema_name(),
-               term(),
-               non_neg_integer(),
-               non_neg_integer(),
-               state()) ->
-  sumo_store:result([sumo_internal:doc()], state()).
+-spec find_all(
+  sumo:schema_name(),
+  term(),
+  non_neg_integer(),
+  non_neg_integer(),
+  state()
+) -> sumo_store:result([sumo_internal:doc()], state()).
 find_all(DocName, SortFields, Limit, Offset, State) ->
   find_by(DocName, [], SortFields, Limit, Offset, State).
 
@@ -126,39 +125,39 @@ find_all(DocName, SortFields, Limit, Offset, State) ->
 find_by(DocName, Conditions, State) ->
   find_by(DocName, Conditions, [], 0, 0, State).
 
--spec find_by(sumo:schema_name(),
-              sumo:conditions(),
-              non_neg_integer(),
-              non_neg_integer(),
-              state()) ->
-  sumo_store:result([sumo_internal:doc()], state()).
+-spec find_by(
+  sumo:schema_name(),
+  sumo:conditions(),
+  non_neg_integer(),
+  non_neg_integer(),
+  state()
+) -> sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName, Conditions, Limit, Offset, State) ->
   find_by(DocName, Conditions, [], Limit, Offset, State).
 
--spec find_by(sumo:schema_name(),
-              sumo:conditions(),
-              term(),
-              non_neg_integer(),
-              non_neg_integer(),
-              state()) ->
-  sumo_store:result([sumo_internal:doc()], state()).
+-spec find_by(
+  sumo:schema_name(),
+  sumo:conditions(),
+  term(),
+  non_neg_integer(),
+  non_neg_integer(),
+  state()
+) -> sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName, Conditions, [], Limit, Offset, State) ->
   MatchSpec = build_match_spec(DocName, Conditions),
   Transaction0 = fun() -> mnesia:select(DocName, MatchSpec) end,
-  TransactionL =
-    fun() ->
-      case mnesia:select(DocName, MatchSpec, Offset + Limit, read) of
-        {ManyItems, _Cont} ->
-          lists:sublist(ManyItems, Offset + 1, Limit);
-        '$end_of_table' ->
-          []
-      end
-    end,
-  Transaction =
-    case Limit of
-      0 -> Transaction0;
-      Limit -> TransactionL
-    end,
+  TransactionL = fun() ->
+    case mnesia:select(DocName, MatchSpec, Offset + Limit, read) of
+      {ManyItems, _Cont} ->
+        lists:sublist(ManyItems, Offset + 1, Limit);
+      '$end_of_table' ->
+        []
+    end
+  end,
+  Transaction = case Limit of
+    0 -> Transaction0;
+    Limit -> TransactionL
+  end,
   case mnesia:transaction(Transaction) of
     {aborted, Reason} ->
       {error, Reason, State};
@@ -176,28 +175,31 @@ create_schema(Schema, #{default_options := DefaultOptions} = State) ->
   Name = sumo_internal:schema_name(Schema),
   Fields = schema_fields(Schema),
   Attributes = [sumo_internal:field_name(Field) || Field <- Fields],
-  Indexes =
-    [   sumo_internal:field_name(Field)
-     || Field <- Fields
-      , lists:member(index, sumo_internal:field_attrs(Field))
-    ],
+  Indexes = [
+    sumo_internal:field_name(Field)
+    || Field <- Fields, lists:member(index, sumo_internal:field_attrs(Field))
+  ],
 
-  Options =
-    [ {attributes, Attributes}
-    , {index, Indexes}
+  Options = [
+    {attributes, Attributes},
+    {index, Indexes}
     | DefaultOptions
-    ],
+  ],
 
   case mnesia:create_table(Name, Options) of
-    {atomic, ok} -> {ok, State};
+    {atomic, ok}                      -> {ok, State};
     {aborted, {already_exists, Name}} -> {ok, State};
-    {aborted, Reason} -> {error, Reason, State}
+    {aborted, Reason}                 -> {error, Reason, State}
   end.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Private API.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%=============================================================================
+%%% Internal functions
+%%%=============================================================================
+
+%% @private
 parse(Options) -> parse(Options, []).
+
+%% @private
 parse([], Acc) -> Acc;
 parse([{disc_copies, here} | Options], Acc) ->
   parse(Options, [{disc_copies, [node()]} | Acc]);
@@ -220,52 +222,54 @@ parse([{storage_properties, Props} | Options], Acc) ->
 parse([_IgnoredOption | Options], Acc) ->
   parse(Options, Acc).
 
+%% @private
 new_id(DocName, FieldType) ->
   NewId = new_id(FieldType),
   case mnesia:dirty_read(DocName, NewId) of
     [] -> NewId;
-    _ -> new_id(DocName, FieldType)
+    _  -> new_id(DocName, FieldType)
   end.
 
-new_id(string) -> uuid:uuid_to_string(uuid:get_v4(), standard);
-new_id(binary) -> uuid:uuid_to_string(uuid:get_v4(), binary_standard);
-new_id(text) -> uuid:uuid_to_string(uuid:get_v4(), binary_nodash);
-new_id(integer) -> <<Id:128>> = uuid:get_v4(), Id;
-new_id(float) -> <<Id:128>> = uuid:get_v4(), Id * 1.0;
+%% @private
+new_id(string)    -> uuid:uuid_to_string(uuid:get_v4(), standard);
+new_id(binary)    -> uuid:uuid_to_string(uuid:get_v4(), binary_standard);
+new_id(text)      -> uuid:uuid_to_string(uuid:get_v4(), binary_nodash);
+new_id(integer)   -> <<Id:128>> = uuid:get_v4(), Id;
+new_id(float)     -> <<Id:128>> = uuid:get_v4(), Id * 1.0;
 new_id(FieldType) -> throw({unimplemented, FieldType}).
 
 %% @doc http://www.erlang.org/doc/apps/erts/match_spec.html
+%% @private
 build_match_spec(DocName, Condition) when not is_list(Condition) ->
   build_match_spec(DocName, [Condition]);
 build_match_spec(DocName, Conditions) ->
   NewConditions = transform_conditions(DocName, Conditions),
   Schema = sumo_internal:get_schema(DocName),
   Fields = schema_field_names(Schema),
-  FieldsMap =
-    maps:from_list(
-      [field_tuple(I, Fields) || I <- lists:seq(1, length(Fields))]),
+  FieldsMap = maps:from_list(
+    [field_tuple(I, Fields) || I <- lists:seq(1, length(Fields))]),
   % The following ordering function avoids '$10' been added between
   % '$1' and '$2' in the MatchHead list. Without this fix, this store
   % would fail when trying to use `find_by` function.
-  OrderingFun =
-    fun(A, B) ->
-      "$" ++ ANumber = atom_to_list(A),
-      "$" ++ BNumber = atom_to_list(B),
-      list_to_integer(ANumber) =< list_to_integer(BNumber)
-    end,
+  OrderingFun = fun(A, B) ->
+    "$" ++ ANumber = atom_to_list(A),
+    "$" ++ BNumber = atom_to_list(B),
+    list_to_integer(ANumber) =< list_to_integer(BNumber)
+  end,
   ValuesSorted = lists:sort(OrderingFun, maps:values(FieldsMap)),
   MatchHead = list_to_tuple([DocName | ValuesSorted]),
   Guard =
-    [condition_to_guard(Condition, FieldsMap) || Condition <- NewConditions] ,
+    [condition_to_guard(Condition, FieldsMap) || Condition <- NewConditions],
   Result = '$_',
   [{MatchHead, Guard, [Result]}].
 
+%% @private
 field_tuple(I, Fields) ->
   FieldName = lists:nth(I, Fields),
-  FieldWildcard =
-    list_to_atom([$$ | integer_to_list(I)]),
+  FieldWildcard = list_to_atom([$$ | integer_to_list(I)]),
   {FieldName, FieldWildcard}.
 
+%% @private
 condition_to_guard({'and', [Expr1]}, FieldsMap) ->
   condition_to_guard(Expr1, FieldsMap);
 condition_to_guard({'and', [Expr1 | Exprs]}, FieldsMap) ->
@@ -296,37 +300,36 @@ condition_to_guard({Name, 'not_null'}, FieldsMap) ->
 condition_to_guard({Name, Value}, FieldsMap) ->
   condition_to_guard({Name, '==', Value}, FieldsMap).
 
+%% @private
 check_operator(like) -> throw({unsupported_operator, like});
-check_operator(Op) -> sumo_internal:check_operator(Op).
+check_operator(Op)   -> sumo_internal:check_operator(Op).
 
+%% @private
 schema_field_names(Schema) ->
   [sumo_internal:field_name(Field) || Field <- schema_fields(Schema)].
 
+%% @private
 schema_fields(Schema) ->
   place_id_first(sumo_internal:schema_fields(Schema)).
 
+%% @private
 place_id_first(Fields) ->
   place_id_first(Fields, []).
 place_id_first([], Acc) -> lists:reverse(Acc);
 place_id_first([Field|Fields], Acc) ->
   case lists:member(id, sumo_internal:field_attrs(Field)) of
-    true -> [Field|lists:reverse(Acc)] ++ Fields;
+    true  -> [Field|lists:reverse(Acc)] ++ Fields;
     false -> place_id_first(Fields, [Field|Acc])
   end.
 
+%% @private
 result_to_doc(Result, Fields) ->
   [DocName | Values] = tuple_to_list(Result),
   NewDoc = sumo_internal:new_doc(DocName),
   Pairs = lists:zip(Fields, Values),
-  FoldFun =
-    fun({Name, Value}, Doc) ->
-      sumo_internal:set_field(Name, Value, Doc)
-    end,
-  lists:foldl(FoldFun, NewDoc, Pairs).
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% Private API.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  lists:foldl(fun({Name, Value}, Doc) ->
+    sumo_internal:set_field(Name, Value, Doc)
+  end, NewDoc, Pairs).
 
 %% @private
 transform_conditions(DocName, Conditions) ->

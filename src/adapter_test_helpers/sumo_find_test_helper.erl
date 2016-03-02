@@ -22,11 +22,10 @@ find_by_sort(Config) ->
   <<"B">> = Module:name(First),
   <<"D">> = Module:name(Second),
 
-  [First1, Second1 | _] = sumo:find_by(Module,
-                                       [{age, '>', 2}, {age, '=<', 5}],
-                                       {age, desc},
-                                       0,
-                                       0),
+  [First1, Second1 | _] = sumo:find_by(
+    Module,
+    [{age, '>', 2}, {age, '=<', 5}],
+    {age, desc}, 0, 0),
   <<"C">> = Module:name(First1),
   <<"D">> = Module:name(Second1),
 
@@ -41,10 +40,8 @@ find_all_sort( Config) ->
   <<"F">> = Module:name(First),
   <<"E">> = Module:name(Second),
 
-  [First1, Second1 | _] = sumo:find_all(Module,
-                                        [{last_name, desc}, {age, asc}],
-                                        0,
-                                        0),
+  [First1, Second1 | _] = sumo:find_all(
+    Module, [{last_name, desc}, {age, asc}], 0, 0),
   <<"F">> = Module:name(First1),
   <<"A">> = Module:name(Second1),
 

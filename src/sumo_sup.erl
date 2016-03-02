@@ -44,13 +44,12 @@ start_link() -> supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 -spec init(any()) ->
   {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
 init([]) ->
-  {ok, {
-    {one_for_one, 5, 10},
-    [ sup(sumo_backend_sup)
-    , sup(sumo_store_sup)
-    , sup(sumo_event_manager_sup)
-    ]
-  }}.
+  Specs = [
+    sup(sumo_backend_sup),
+    sup(sumo_store_sup),
+    sup(sumo_event_manager_sup)
+  ],
+  {ok, {{one_for_one, 5, 10}, Specs}}.
 
 %% @private
 sup(I) -> {I, {I, start_link, []}, permanent, infinity, supervisor, [I]}.

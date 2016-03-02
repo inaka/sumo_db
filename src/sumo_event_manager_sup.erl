@@ -55,7 +55,5 @@ init([]) ->
 
 %% @private
 manager(EventManager) ->
-  #{
-    id    => EventManager,
-    start => {gen_event, start_link, [{local, EventManager}]}
-  }.
+  #{id    => EventManager,
+    start => {gen_event, start_link, [{local, EventManager}]}}.

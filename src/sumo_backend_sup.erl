@@ -23,15 +23,14 @@
 
 -behaviour(supervisor).
 
--define(CLD(Name, Module, Options),
-  { Name                                                           % Child Id
-  , {Module, start_link, [Name, Options]}                          % Start Fun
-  , permanent                                                      % Restart
-  , 5000                                                           % Shutdown
-  , worker                                                         % Type
-  , [Module]                                                       % Modules
-  }
-).
+-define(CLD(Name, Module, Options), {
+  Name,                                  % Child Id
+  {Module, start_link, [Name, Options]}, % Start Fun
+  permanent,                             % Restart
+  5000,                                  % Shutdown
+  worker,                                % Type
+  [Module]                               % Modules
+}).
 
 %%% API
 -export([start_link/0]).

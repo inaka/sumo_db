@@ -16,6 +16,7 @@
   new/6,
   new/7,
   new/8,
+  new/9,
   name/1,
   last_name/1,
   id/1,
@@ -25,7 +26,8 @@
   created_at/1,
   height/1,
   description/1,
-  profile_image/1
+  profile_image/1,
+  weird_field/1
 ]).
 
 -type id()            :: integer() | binary().
@@ -38,6 +40,7 @@
 -type height()        :: float() | undefined.
 -type description()   :: binary() | undefined.
 -type profile_image() :: binary() | undefined.
+-type weird_field()   :: term().
 
 -record(person, {
   id            :: id(),
@@ -49,7 +52,8 @@
   created_at    :: created_at(),
   height        :: height(),
   description   :: description(),
-  profile_image :: profile_image()
+  profile_image :: profile_image(),
+  weird_field   :: weird_field()
 }).
 
 -type person() :: #person{}.
@@ -61,7 +65,7 @@
 -spec sumo_schema() -> no_return().
 sumo_schema() -> throw(should_be_implemented_by_children).
 
--spec sumo_sleep(Person::person()) -> sumo:doc().
+-spec sumo_sleep(Person :: person()) -> sumo:doc().
 sumo_sleep(Person) ->
   #{id            => Person#person.id,
     name          => Person#person.name,
@@ -72,9 +76,10 @@ sumo_sleep(Person) ->
     created_at    => Person#person.created_at,
     height        => Person#person.height,
     description   => Person#person.description,
-    profile_image => Person#person.profile_image}.
+    profile_image => Person#person.profile_image,
+    weird_field   => Person#person.weird_field}.
 
--spec sumo_wakeup(Person::sumo:doc()) -> person().
+-spec sumo_wakeup(Person :: sumo:doc()) -> person().
 sumo_wakeup(Person) ->
   #person{
     id            = maps:get(id, Person),
@@ -86,7 +91,8 @@ sumo_wakeup(Person) ->
     created_at    = maps:get(created_at, Person),
     height        = maps:get(height, Person),
     description   = maps:get(description, Person),
-    profile_image = maps:get(profile_image, Person)
+    profile_image = maps:get(profile_image, Person),
+    weird_field   = maps:get(weird_field, Person)
   }.
 
 %%%=============================================================================
@@ -94,62 +100,62 @@ sumo_wakeup(Person) ->
 %%%=============================================================================
 
 -spec new(Name, LastName) -> Person when
-  Name         :: name(),
-  LastName     :: last_name(),
-  Person       :: person().
+  Name     :: name(),
+  LastName :: last_name(),
+  Person   :: person().
 new(Name, LastName) ->
   new(Name, LastName, undefined).
 
 -spec new(Name, LastName, Age) -> Person when
-  Name         :: name(),
-  LastName     :: last_name(),
-  Age          :: age(),
-  Person       :: person().
+  Name     :: name(),
+  LastName :: last_name(),
+  Age      :: age(),
+  Person   :: person().
 new(Name, LastName, Age) ->
   new(Name, LastName, Age, undefined).
 
 -spec new(Name, LastName, Age, Address) -> Person when
-  Name         :: name(),
-  LastName     :: last_name(),
-  Age          :: age(),
-  Address      :: address(),
-  Person       :: person().
+  Name     :: name(),
+  LastName :: last_name(),
+  Age      :: age(),
+  Address  :: address(),
+  Person   :: person().
 new(Name, LastName, Age, Address) ->
   {BirthDate, _} = calendar:universal_time(),
   new(Name, LastName, Age, Address, BirthDate).
 
 -spec new(Name, LastName, Age, Address, BirthDate) -> Person when
-  Name         :: name(),
-  LastName     :: last_name(),
-  Age          :: age(),
-  Address      :: address(),
-  BirthDate    :: birthdate(),
-  Person       :: person().
+  Name      :: name(),
+  LastName  :: last_name(),
+  Age       :: age(),
+  Address   :: address(),
+  BirthDate :: birthdate(),
+  Person    :: person().
 new(Name, LastName, Age, Address, BirthDate) ->
   new(Name, LastName, Age, Address, BirthDate, undefined).
 
 -spec new(Name, LastName, Age, Address, BirthDate, Height) -> Person when
-  Name         :: name(),
-  LastName     :: last_name(),
-  Age          :: age(),
-  Address      :: address(),
-  BirthDate    :: birthdate(),
-  Height       :: height(),
-  Person       :: person().
+  Name      :: name(),
+  LastName  :: last_name(),
+  Age       :: age(),
+  Address   :: address(),
+  BirthDate :: birthdate(),
+  Height    :: height(),
+  Person    :: person().
 new(Name, LastName, Age, Address, BirthDate, Height) ->
   new(Name, LastName, Age, Address, BirthDate, Height, undefined).
 
 -spec new(
   Name, LastName, Age, Address, BirthDate, Height, Description
 ) -> Person when
-  Name         :: name(),
-  LastName     :: last_name(),
-  Age          :: age(),
-  Address      :: address(),
-  BirthDate    :: birthdate(),
-  Height       :: height(),
-  Description  :: description(),
-  Person       :: person().
+  Name        :: name(),
+  LastName    :: last_name(),
+  Age         :: age(),
+  Address     :: address(),
+  BirthDate   :: birthdate(),
+  Height      :: height(),
+  Description :: description(),
+  Person      :: person().
 new(Name, LastName, Age, Address, BirthDate, Height, Description) ->
   new(Name, LastName, Age, Address, BirthDate, Height, Description, undefined).
 
@@ -165,6 +171,26 @@ new(Name, LastName, Age, Address, BirthDate, Height, Description) ->
   Description  :: description(),
   ProfileImage :: profile_image(),
   Person       :: person().
+new(Name, LastName, Age, Address, BirthDate,
+    Height, Description, ProfileImage) ->
+  new(
+    Name, LastName, Age, Address, BirthDate, Height,
+    Description, ProfileImage, undefined).
+
+-spec new(
+  Name, LastName, Age, Address, BirthDate, Height,
+  Description, ProfileImage, WeirdField
+) -> Person when
+  Name         :: name(),
+  LastName     :: last_name(),
+  Age          :: age(),
+  Address      :: address(),
+  BirthDate    :: birthdate(),
+  Height       :: height(),
+  Description  :: description(),
+  ProfileImage :: profile_image(),
+  WeirdField   :: weird_field(),
+  Person       :: person().
 new(Name,
     LastName,
     Age,
@@ -172,7 +198,8 @@ new(Name,
     BirthDate,
     Height,
     Description,
-    ProfileImage) ->
+    ProfileImage,
+    WeirdField) ->
   Datetime = calendar:universal_time(),
   #person{
     name          = Name,
@@ -183,45 +210,50 @@ new(Name,
     created_at    = Datetime,
     height        = Height,
     description   = Description,
-    profile_image = ProfileImage
+    profile_image = ProfileImage,
+    weird_field   = WeirdField
   }.
 
--spec name(Person::person()) -> name().
+-spec name(Person :: person()) -> name().
 name(Person) ->
   Person#person.name.
 
--spec last_name(Person::person()) -> last_name().
+-spec last_name(Person :: person()) -> last_name().
 last_name(Person) ->
   Person#person.last_name.
 
--spec id(Person::person()) -> id().
+-spec id(Person :: person()) -> id().
 id(Person) ->
   Person#person.id.
 
--spec age(Person::person()) -> age().
+-spec age(Person :: person()) -> age().
 age(Person) ->
   Person#person.age.
 
--spec address(Person::person()) -> address().
+-spec address(Person :: person()) -> address().
 address(Person) ->
   Person#person.address.
 
--spec birthdate(Person::person()) -> birthdate().
+-spec birthdate(Person :: person()) -> birthdate().
 birthdate(Person) ->
   Person#person.birthdate.
 
--spec created_at(Person::person()) -> created_at().
+-spec created_at(Person :: person()) -> created_at().
 created_at(Person) ->
   Person#person.created_at.
 
--spec height(Person::person()) -> height().
+-spec height(Person :: person()) -> height().
 height(Person) ->
   Person#person.height.
 
--spec description(Person::person()) -> description().
+-spec description(Person :: person()) -> description().
 description(Person) ->
   Person#person.description.
 
--spec profile_image(Person::person()) -> profile_image().
+-spec profile_image(Person :: person()) -> profile_image().
 profile_image(Person) ->
   Person#person.profile_image.
+
+-spec weird_field(Person :: person()) -> weird_field().
+weird_field(Person) ->
+  Person#person.weird_field.

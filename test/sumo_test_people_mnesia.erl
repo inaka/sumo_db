@@ -17,6 +17,7 @@
     new/6,
     new/7,
     new/8,
+    new/9,
     name/1,
     last_name/1,
     id/1,
@@ -26,15 +27,16 @@
     created_at/1,
     height/1,
     description/1,
-    profile_image/1
+    profile_image/1,
+    weird_field/1
   ]}
 ]).
 
 -export([sumo_schema/0]).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%=============================================================================
 %%% sumo_doc callbacks
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%=============================================================================
 
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
@@ -48,6 +50,7 @@ sumo_schema() ->
     sumo:new_field(created_at,    datetime),
     sumo:new_field(height,        float),
     sumo:new_field(description,   text),
-    sumo:new_field(profile_image, binary)
+    sumo:new_field(profile_image, binary),
+    sumo:new_field(weird_field,   custom)
   ],
   sumo:new_schema(?MODULE, Fields).

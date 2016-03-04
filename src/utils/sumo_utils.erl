@@ -1,4 +1,4 @@
-%%% Set of useful functions for the app
+%%% @doc Set of useful functions for the app
 -module(sumo_utils).
 
 %%% API

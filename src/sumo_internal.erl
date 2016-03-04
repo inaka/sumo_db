@@ -65,13 +65,13 @@
 }.
 
 -opaque doc() :: #{
-  name => atom(),
+  name   => atom(),
   fields => sumo:doc()
 }.
 
 -opaque field()  :: #{
-  name => atom(),
-  type => atom(),
+  name  => atom(),
+  type  => atom(),
   attrs => sumo:field_attrs()
 }.
 

@@ -66,6 +66,8 @@ find_by(Config) ->
   Date = Module:birthdate(LastPerson),
   1.75 = Module:height(LastPerson),
   <<"description">> = Module:description(LastPerson),
+  <<"profile_image">> = Module:profile_image(LastPerson),
+  <<"weird_field">> = Module:weird_field(LastPerson),
   {Today, _} = Module:created_at(LastPerson),
 
   %% Check find_by ID
@@ -154,7 +156,9 @@ init_store(Module) ->
       undefined,
       Date,
       1.75,
-      <<"description">>
+      <<"description">>,
+      <<"profile_image">>,
+      <<"weird_field">>
     )
   ),
   ok.

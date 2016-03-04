@@ -52,7 +52,7 @@
                        {length, integer()}.
 -type field_attrs() :: [field_attr()].
 -type field_type()  :: integer | string | binary | text | float |
-                       date | datetime.
+                       date | datetime | custom.
 -type field_name()  :: atom().
 -type field_value() :: term().
 -type operator()    :: '<' | '>' | '==' | '=<' | '>=' | '/=' | 'like'.

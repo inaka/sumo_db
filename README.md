@@ -1,6 +1,7 @@
 [![Stories in Ready](https://badge.waffle.io/inaka/sumo_db.png?label=ready&title=Ready)](https://waffle.io/inaka/sumo_db)
 # sumo_db
 
+
 ## About
 
 This is a work in progress. There's also [an article][sumo-article] about
@@ -10,6 +11,7 @@ provide some basic information on how to get started.
 **sumo_db** aims to ease db access for erlang applications. It offers a very
 simple persistance layer capable of interacting with different db's, while
 offering a consistent api to your code.
+
 
 ## Contact Us
 
@@ -21,6 +23,7 @@ If you find any **bugs** or have a **problem** while using this library, please
 
 And you can check all of our open-source projects at
 [inaka.github.io](http://inaka.github.io)
+
 
 ## Overview
 
@@ -51,6 +54,7 @@ And you can check all of our open-source projects at
  `[{age, desc}, {name, asc}]]` will sort descendently by `age` and ascendently
   by `name`.
 
+
 ## Backends, Stores and Repositories modules
 
 These three concepts have a specific meaning in the context of sumo_db.
@@ -65,12 +69,20 @@ These three concepts have a specific meaning in the context of sumo_db.
  repository for each entity that's defined in it. The repository is the module
  that bridges the model and the store.
 
+
+## Implementing an Adapter
+
+TO implement an adapter, you must implement two behaviors: `sumo_backend` and
+`sumo_store`.
+
+
 ## Example
 
 See: [**examples/blog**][example-blog] for a full example. To run it, while
 being in the top level directory:
 
     make all blog
+
 
 ## Running Tests
 
@@ -90,68 +102,12 @@ To run tests successfully, you need to follow these steps first:
     to access that DB. For more information visit [MongoDB Tutorial](http://docs.mongodb.org/manual/tutorial).
 > - For **Riak** please follow instructions below ([<i class="icon-refresh"></i> Riak](#riak)).
 
-## Riak
-
-### Install Riak
-
-To install/upgrade **Riak** please follow the instructions in this link:
-[Installing and Upgrading Riak](http://docs.basho.com/riak/latest/ops/building/installing).
-
-### Initial Configurations
-
-Due to the fact that **Riak** comes with default configuration, we need to
-change some parameters required by `sumo_db`.
-
-**Riak** has a main configuration file `riak.conf`, which you can find into
-your installation path `$YOUR_INSTALL_PATH/etc/riak.conf`.
-
-> **Note:** For more information check this link [Configuration Files](http://docs.basho.com/riak/latest/ops/advanced/configs/configuration-files).
-
-First parameter to change is the default **Riak** backend from **Bitcask** to
-**LevelDB**. This change also enables the use of [Riak Secondary Indexes](http://docs.basho.com/riak/latest/ops/advanced/configs/secondary-index/).
-
-    storage_backend = leveldb
-
-Then proceed to enable search capabilities:
-
-    search = on
-
-> **Note:** For more information check this link [Riak Search Settings](http://docs.basho.com/riak/latest/ops/advanced/configs/search/).
-
-### Configuring Riak Data Types and Search
-
-First, let's create and activate a bucket type simply called maps that is set up
-to store Riak maps:
-
-    $ riak-admin bucket-type create maps '{"props":{"datatype":"map"}}'
-    $ riak-admin bucket-type activate maps
-
-Now, let's create a search index called `sumo_test_index` using the default
-schema:
-
-    $ curl -XPUT $RIAK_HOST/search/index/sumo_test_index \
-        -H 'Content-Type: application/json' \
-        -d '{"schema":"_yz_default"}'
-
-With our index created, we can associate our new `sumo_test_index` index with
-our `maps` bucket type:
-
-    $ riak-admin bucket-type update maps '{"props":{"search_index":"sumo_test_index"}}'
-
-Now we can start working with **Riak** from `sumo_db`.
-
-> **Note:** For more information check this link [Riak Data Types and Search](http://docs.basho.com/riak/latest/dev/search/search-data-types/#Maps-Example).
-
-## SQL Extras
-
-Aaron Spiegel has written some extra utilities for the SQL backend, which may be found at:
-
-[https://github.com/spiegela/sumo_db-sql-extras](https://github.com/spiegela/sumo_db-sql-extras)
 
 ## Change Log
 
 All notable changes to this project will be documented in the
 [CHANGELOG.md](CHANGELOG.md).
+
 
 ## Contributors
 

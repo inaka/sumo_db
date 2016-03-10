@@ -21,35 +21,37 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
--type field() :: string() | atom().
--type condition() ::
-  {'and', [condition()]} | {'or', [condition()]} | {field(), term()}.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Exports.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Public API.
 -export([i/2, u/3, d/2]).
 -export([s/7, s_count/4]).
 
 -export([
-         values_conditions/1,
-         where_clause/1,
-         where_clause/2,
-         where_clause/3,
-         order_by_clause/1,
-         order_by_clause/2
-        ]).
+  values_conditions/1,
+  where_clause/1,
+  where_clause/2,
+  where_clause/3,
+  order_by_clause/1,
+  order_by_clause/2
+]).
 
 -export([
-         escape/1,
-         slot_numbered/1,
-         slot_question/1
-        ]).
+  escape/1,
+  slot_numbered/1,
+  slot_question/1
+]).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Public API.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%=============================================================================
+%%% Types
+%%%=============================================================================
+
+-type field() :: string() | atom().
+-type condition() ::
+  {'and', [condition()]} | {'or', [condition()]} | {field(), term()}.
+
+%%%=============================================================================
+%%% Public API
+%%%=============================================================================
+
 %% @doc Returns number of results, useful for pagination.
 -spec s_count(
   string(), [field()], condition(), string()
@@ -83,13 +85,9 @@ s(TableName, SelectFields, Conditions, ExtraWhere, Page, PageSize, OrderBy) ->
 %% @doc INSERT.
 -spec i(atom() | string(), proplists:proplist()) -> {iodata(), [term()]}.
 i(TableName, Proplist) ->
-  {Fields, Values, Args} = lists:foldr(
-    fun({K, V}, {Fs, Vs, Args}) ->
-      {[escape(K)|Fs], [V|Vs], ["?"|Args]}
-    end,
-    {[], [], []},
-    Proplist
-  ),
+  {Fields, Values, Args} = lists:foldr(fun({K, V}, {Fs, Vs, Args}) ->
+    {[escape(K)|Fs], [V|Vs], ["?"|Args]}
+  end, {[], [], []}, Proplist),
   {
     [
      "INSERT INTO ", escape(TableName), " (", string:join(Fields, ", "), ") ",
@@ -104,13 +102,9 @@ i(TableName, Proplist) ->
 ) -> {iodata(), [term()], [term()]}.
 u(TableName, UpdateFields, Conditions) ->
   {_Select, Where, WValues} = form_select_query([], Conditions, ""),
-  {UFields, UValues} = lists:foldr(
-    fun({K, V}, {Fs, Vs}) ->
-      {[escape(K) ++ "=?"|Fs], [V|Vs]}
-    end,
-    {[], []},
-    UpdateFields
-  ),
+  {UFields, UValues} = lists:foldr(fun({K, V}, {Fs, Vs}) ->
+    {[escape(K) ++ "=?"|Fs], [V|Vs]}
+  end, {[], []}, UpdateFields),
   Update = string:join(UFields, ","),
   {["UPDATE ", escape(TableName), " SET ", Update, " WHERE ", Where],
    UValues,
@@ -123,13 +117,10 @@ d(TableName, Conditions) ->
   {_Select, Where, WValues} = form_select_query([], Conditions, ""),
   {["DELETE FROM ", escape(TableName), " WHERE ", Where], WValues}.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Private API.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%=============================================================================
+%%% Query generator
+%%%=============================================================================
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Query generator.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 -spec escape(field()) -> string().
 escape(Field) when is_atom(Field) ->
   escape(atom_to_list(Field));
@@ -161,28 +152,26 @@ values_conditions(Expr) ->
 values_conditions(Exprs, Acc) when is_list(Exprs) ->
   lists:foldl(fun values_conditions/2, Acc, Exprs);
 values_conditions({LogicalOp, Exprs}, {Values, CleanExprs, Count})
-  when (LogicalOp == 'and')
-       or (LogicalOp == 'or')
-       or (LogicalOp == 'not') ->
+    when (LogicalOp == 'and') or (LogicalOp == 'or') or (LogicalOp == 'not') ->
   {NewValues, NewCleanExprs, NewCount} =
     values_conditions(Exprs, {Values, [], Count}),
   {NewValues,
    [{LogicalOp, lists:reverse(NewCleanExprs)} | CleanExprs],
    NewCount};
 values_conditions({Name, Op, Value}, {Values, CleanExprs, Count})
-  when not is_atom(Value) ->
+    when not is_atom(Value) ->
   sumo_internal:check_operator(Op),
   {[Value | Values],
    [{Name, Op, {'?', Count}} | CleanExprs],
    Count + 1};
 values_conditions({Name1, Op, Name2}, {Values, CleanExprs, Count})
-  when is_atom(Name2) ->
+    when is_atom(Name2) ->
   sumo_internal:check_operator(Op),
   {Values,
    [{Name1, Op, Name2} | CleanExprs],
    Count};
 values_conditions({Name, Value}, {Values, CleanExprs, Count})
-  when Value =/= 'null', Value =/= 'not_null' ->
+    when Value =/= 'null', Value =/= 'not_null' ->
   {[Value | Values],
    [{Name, {'?', Count}} | CleanExprs],
    Count + 1};
@@ -258,7 +247,7 @@ order_by_clause(SortFields) ->
 -spec order_by_clause([{atom(), sumo:sort_order()}], fun()) -> iolist().
 order_by_clause(SortFields, EscapeFun) ->
   ClauseFun = fun({Name, SortOrder}) ->
-                  [EscapeFun(atom_to_list(Name)), " ", atom_to_list(SortOrder)]
-              end,
+    [EscapeFun(atom_to_list(Name)), " ", atom_to_list(SortOrder)]
+  end,
   Clauses = lists:map(ClauseFun, SortFields),
   [" ORDER BY ", interpose(", ", Clauses)].

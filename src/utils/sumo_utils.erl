@@ -1,4 +1,4 @@
-%%% Set of useful functions for the app
+%%% @doc Set of useful functions for the app
 -module(sumo_utils).
 
 %%% API
@@ -7,6 +7,8 @@
   doc_transform/2,
   transform_conditions/4,
   is_datetime/1,
+  keyfind/2,
+  keyfind/3,
   to_bin/1,
   to_atom/1,
   to_list/1,
@@ -14,9 +16,9 @@
   to_float/1
 ]).
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% API
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%=============================================================================
+%%% API
+%%%=============================================================================
 
 -spec doc_transform(Fun, Doc1) -> Doc2 when
   Fun    :: fun((DocSum) -> sumo:field_value()),
@@ -115,6 +117,24 @@ is_datetime({_, _, _} = Date) ->
   calendar:valid_date(Date);
 is_datetime(_) ->
   false.
+
+-spec keyfind(Key, KVList) -> Val | undefined when
+  Key     :: term(),
+  KVList  :: [{Key, Val}],
+  Val     :: term().
+keyfind(Key, KVList) ->
+  keyfind(Key, KVList, undefined).
+
+-spec keyfind(Key, KVList, Default) -> Val | Default when
+  Key     :: term(),
+  KVList  :: [{Key, Val}],
+  Val     :: term(),
+  Default :: term().
+keyfind(Key, KVList, Default) ->
+  case lists:keyfind(Key, 1, KVList) of
+    {Key, Value} -> Value;
+    _            -> Default
+  end.
 
 -spec to_bin(Data :: term()) -> binary().
 to_bin(Data) when is_integer(Data) ->

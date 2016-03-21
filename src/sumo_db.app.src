@@ -14,5 +14,12 @@
   ]},
   {modules, []},
   {mod, {sumo_app, []}},
-  {env, []}
+  {env, []},
+  {maintainers,["Inaka"]},
+  {licenses,["Apache 2.0"]},
+  {links,[ {"Github", "https://github.com/inaka/sumo_db"},
+           {"Docs", "http://inaka.github.io/sumo_db/"},
+           {"Example", "https://github.com/inaka/sumo_db/tree/master/examples/blog"}
+         ]},
+  {build_tools,["erlang.mk", "rebar"]}
 ]}.

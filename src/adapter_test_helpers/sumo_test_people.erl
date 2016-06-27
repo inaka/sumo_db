@@ -30,7 +30,7 @@
   weird_field/1
 ]).
 
--type id()            :: integer() | binary().
+-type id()            :: integer() | binary() | undefined.
 -type name()          :: binary().
 -type last_name()     :: binary().
 -type age()           :: integer() | undefined.

@@ -15,3 +15,4 @@ erl_crash.dump
 sumo_db.d
 _build/
 rebar.lock
+*_plt

@@ -84,24 +84,18 @@ being in the top level directory:
     make all blog
 
 
+## Running Dialyzer
+
+```
+$ rebar3 dialyzer
+```
+
+
 ## Running Tests
 
-To run tests successfully, you need to follow these steps first:
-
- * Start the database engines: **MySQL**, **PostgreSQL**, **MongoDB** and
- **ElasticSearch**
-
- * For **MySQL**, **PostgreSQL** and **MongoDB**, you need to:
-    - Create an user (or use defaults) and configure it on `test/test.config`
-      file.
-    - Create test database `sumo_test` on each DB.
-
-> **Note:**
-
-> - For **MongoDB** you first create the test database and then create an user
-    to access that DB. For more information visit [MongoDB Tutorial](http://docs.mongodb.org/manual/tutorial).
-> - For **Riak** please follow instructions below ([<i class="icon-refresh"></i> Riak](#riak)).
-
+```
+$ rebar3 ct
+```
 
 ## Change Log
 

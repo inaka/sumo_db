@@ -77,12 +77,12 @@ get(Key, Vote) when is_atom(Key), is_list(Vote) ->
 %% sumo behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Part of the sumo_doc behavior.
--spec sumo_wakeup(sumo:doc()) -> vote().
+-spec sumo_wakeup(sumo:model()) -> vote().
 sumo_wakeup(Data) ->
   maps:to_list(Data).
 
 %% @doc Part of the sumo_doc behavior.
--spec sumo_sleep(vote()) -> sumo:doc().
+-spec sumo_sleep(vote()) -> sumo:model().
 sumo_sleep(Vote) ->
   maps:from_list(Vote).
 

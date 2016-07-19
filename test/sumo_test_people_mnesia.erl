@@ -53,4 +53,4 @@ sumo_schema() ->
     sumo:new_field(profile_image, binary),
     sumo:new_field(weird_field,   custom)
   ],
-  sumo:new_schema(?MODULE, Fields).
+  sumo:new_schema(people, Fields).

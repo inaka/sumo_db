@@ -92,12 +92,12 @@ set(Key, Value, Author) when is_atom(Key), is_list(Author) ->
 %% sumo behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Part of the sumo_doc behavior.
--spec sumo_wakeup(sumo:doc()) -> author().
+-spec sumo_wakeup(sumo:model()) -> author().
 sumo_wakeup(Data) ->
   maps:to_list(Data).
 
 %% @doc Part of the sumo_doc behavior.
--spec sumo_sleep(author()) -> sumo:doc().
+-spec sumo_sleep(author()) -> sumo:model().
 sumo_sleep(Author) ->
   maps:from_list(Author).
 

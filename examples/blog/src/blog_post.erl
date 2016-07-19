@@ -98,12 +98,12 @@ set(Key, Value, Post) when is_atom(Key), is_list(Post) ->
 %% sumo behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Part of the sumo_doc behavior.
--spec sumo_wakeup(sumo:doc()) -> post().
+-spec sumo_wakeup(sumo:model()) -> post().
 sumo_wakeup(Data) ->
   maps:to_list(Data).
 
 %% @doc Part of the sumo_doc behavior.
--spec sumo_sleep(post()) -> sumo:doc().
+-spec sumo_sleep(post()) -> sumo:model().
 sumo_sleep(Post) ->
   maps:from_list(Post).
 

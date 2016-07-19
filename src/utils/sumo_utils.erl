@@ -119,9 +119,9 @@ is_datetime(_) ->
   false.
 
 -spec keyfind(Key, KVList) -> Val | undefined when
-  Key     :: term(),
-  KVList  :: [{Key, Val}],
-  Val     :: term().
+  Key    :: term(),
+  KVList :: [{Key, Val}],
+  Val    :: term().
 keyfind(Key, KVList) ->
   keyfind(Key, KVList, undefined).
 

@@ -40,12 +40,15 @@
 ]).
 
 %%% API for store handling.
--export([get_store/1]).
+-export([
+  get_store/1,
+  get_doc_module/1,
+  get_doc_props/1
+]).
 
 %%% API for opaqueness
 -export([
   wakeup/1,
-  wakeup/2,
   new_doc/1,
   new_doc/2,
   doc_name/1,
@@ -66,7 +69,8 @@
 
 -opaque doc() :: #{
   name   => atom(),
-  fields => sumo:doc()
+  module => module(),
+  fields => sumo:model()
 }.
 
 -opaque field()  :: #{
@@ -96,20 +100,16 @@ schema_fields(Schema) ->
 doc_name(Doc) ->
   maps:get(name, Doc, undefined).
 
--spec doc_fields(doc()) -> sumo:doc().
+-spec doc_fields(doc()) -> sumo:model().
 doc_fields(Doc) ->
   maps:get(fields, Doc, []).
 
 %% @doc Wakes up the document
 -spec wakeup(doc()) -> sumo:user_doc().
 wakeup(Doc) ->
-  wakeup(doc_name(Doc), Doc).
-
-%% @doc Wakes up the document
--spec wakeup(module(), doc()) -> sumo:user_doc().
-wakeup(DocName, Doc) ->
+  Module = get_doc_module(Doc),
   Fields = maps:get(fields, Doc, []),
-  DocName:sumo_wakeup(Fields).
+  Module:sumo_wakeup(Fields).
 
 %% @doc Returns all the configured docs.
 -spec get_docs() -> [{atom(), atom()}].
@@ -117,19 +117,36 @@ get_docs() ->
   {ok, Docs} = application:get_env(sumo_db, docs),
   Docs.
 
-%% @doc Returns the process name that handles persistence for the given
-%% Doc or DocName.
+%% @doc
+%% Returns the process name that handles persistence for the given
+%% `Doc' or `DocName'.
+%% @end
 -spec get_store(sumo:schema_name() | doc()) -> atom().
 get_store(DocName) when is_atom(DocName) ->
-  sumo_utils:keyfind(DocName, get_docs());
-
+  {_, Store, _} = lists:keyfind(DocName, 1, get_docs()),
+  Store;
 get_store(_Doc = #{name := Name}) ->
   get_store(Name).
+
+-spec get_doc_module(sumo:schema_name() | doc()) -> atom().
+get_doc_module(DocName) when is_atom(DocName) ->
+  maps:get(module, get_doc_props(DocName), DocName);
+get_doc_module(_Doc = #{module := Module}) ->
+  Module.
+
+-spec get_doc_props(sumo:schema_name() | doc()) -> map().
+get_doc_props(DocName) when is_atom(DocName) ->
+  ct:log(" ---> ~p", [{DocName, get_docs()}]),
+  {_, _, Props} = lists:keyfind(DocName, 1, get_docs()),
+  Props;
+get_doc_props(_Doc = #{name := Name}) ->
+  get_doc_props(Name).
 
 %% @doc Returns the schema for a given DocName.
 -spec get_schema(sumo:schema_name()) -> schema().
 get_schema(DocName) ->
-  DocName:sumo_schema().
+  Module = get_doc_module(DocName),
+  Module:sumo_schema().
 
 %% @doc Returns the value of a field from a sumo_doc.
 -spec get_field(sumo:field_name(), doc()) -> sumo:field_value().
@@ -183,9 +200,9 @@ new_doc(Name) ->
   new_doc(Name, #{}).
 
 %% @doc Returns a new doc.
--spec new_doc(sumo:schema_name(), sumo:doc()) -> doc().
+-spec new_doc(sumo:schema_name(), sumo:model()) -> doc().
 new_doc(Name, Fields) ->
-  #{name => Name, fields => Fields}.
+  #{name => Name, module => get_doc_module(Name), fields => Fields}.
 
 %% @doc Returns a new schema.
 -spec new_schema(sumo:schema_name(), [field()]) -> schema().

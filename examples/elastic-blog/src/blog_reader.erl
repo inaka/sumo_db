@@ -88,12 +88,12 @@ set(Key, Value, Reader) when is_atom(Key), is_list(Reader) ->
 %% sumo behavior follows.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Part of the sumo_doc behavior.
--spec sumo_wakeup(sumo:doc()) -> reader().
+-spec sumo_wakeup(sumo:model()) -> reader().
 sumo_wakeup(Data) ->
   maps:to_list(Data).
 
 %% @doc Part of the sumo_doc behavior.
--spec sumo_sleep(reader()) -> sumo:doc().
+-spec sumo_sleep(reader()) -> sumo:model().
 sumo_sleep(Reader) ->
   maps:from_list(Reader).
 

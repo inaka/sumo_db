@@ -53,8 +53,8 @@
 %%%=============================================================================
 
 -record(state, {
-  handler = undefined:: module(),
-  handler_state = undefined:: any()
+  handler       = undefined :: module(),
+  handler_state = undefined :: any()
 }).
 
 -type state() :: #state{}.

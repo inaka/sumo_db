@@ -58,7 +58,7 @@
 
 -type field_attrs() :: [field_attr()].
 
--type field_type() :: integer | string | binary | text | float
+-type field_type() :: integer | float | string | binary
                     | date | datetime | custom.
 
 -type field_name() :: atom().

@@ -52,8 +52,10 @@ init(Options) ->
   DefaultOptions = parse(Options),
   {ok, #{default_options => DefaultOptions}}.
 
--spec persist(sumo_internal:doc(), state()) ->
-  sumo_store:result(sumo_internal:doc(), state()).
+-spec persist(Doc, State) -> Response when
+  Doc      :: sumo_internal:doc(),
+  State    :: state(),
+  Response :: sumo_store:result(sumo_internal:doc(), state()).
 persist(Doc, State) ->
   %% Set the real id, replacing undefined by 0 so it is auto-generated
   DocName = sumo_internal:doc_name(Doc),
@@ -233,7 +235,6 @@ new_id(DocName, FieldType) ->
 %% @private
 new_id(string)    -> uuid:uuid_to_string(uuid:get_v4(), standard);
 new_id(binary)    -> uuid:uuid_to_string(uuid:get_v4(), binary_standard);
-new_id(text)      -> uuid:uuid_to_string(uuid:get_v4(), binary_nodash);
 new_id(integer)   -> <<Id:128>> = uuid:get_v4(), Id;
 new_id(float)     -> <<Id:128>> = uuid:get_v4(), Id * 1.0;
 new_id(FieldType) -> throw({unimplemented, FieldType}).
@@ -366,16 +367,9 @@ wakeup(Doc) ->
 %% @private
 wakeup_fun({date, _, {Date, _} = _FieldValue}) ->
   Date;
-%% Matches `text' type fields that were saved with `undefined' value and
-%% avoids being processed by the next clause that will return it as a
-%% binary (`<<"undefined">>') instead of atom as expected.
 wakeup_fun({_, _, undefined}) ->
   undefined;
 wakeup_fun({string, _, FieldValue}) ->
-  sumo_utils:to_bin(FieldValue);
-wakeup_fun({binary, _, FieldValue}) ->
-  sumo_utils:to_bin(FieldValue);
-wakeup_fun({text, _, FieldValue}) ->
   sumo_utils:to_bin(FieldValue);
 wakeup_fun({_, _, FieldValue}) ->
   FieldValue.

@@ -20,11 +20,8 @@
 %%%-------------------------------------------------------------------
 -module(sumo_config).
 
--behaviour(gen_server).
-
 %% API
 -export([
-  start_link/0,
   get_docs/0,
   get_doc/1,
   get_store/1,
@@ -32,27 +29,11 @@
   get_prop_value/2
 ]).
 
-%% gen_server callbacks
--export([
-  init/1,
-  handle_call/3,
-  handle_cast/2,
-  handle_info/2,
-  terminate/2,
-  code_change/3
-]).
-
--type state() :: term().
-
 -type doc_config() :: {DocName :: atom(), Store :: atom(), Props :: map()}.
 
 %%%===================================================================
 %%% API
 %%%===================================================================
-
--spec start_link() -> {ok, pid()} | ignore | {error, Reason :: term()}.
-start_link() ->
-  gen_server:start_link({local, ?MODULE}, ?MODULE, [], []).
 
 -spec get_docs() -> [doc_config()].
 get_docs() ->
@@ -76,47 +57,6 @@ get_props(DocName) ->
 -spec get_prop_value(atom(), atom()) -> term().
 get_prop_value(DocName, Prop) ->
   maps:get(Prop, get_props(DocName), undefined).
-
-%%%===================================================================
-%%% gen_server callbacks
-%%%===================================================================
-
-%% @hidden
--spec init(Args :: term()) -> {ok, term()}.
-init([]) ->
-  Docs = application:get_env(sumo_db, docs, []),
-  ?MODULE = ets:new(?MODULE, [
-    public,
-    named_table,
-    {read_concurrency, true}
-  ]),
-  true = ets:insert(?MODULE, Docs),
-  {ok, #{}}.
-
-%% @hidden
--spec handle_call(term(), _, state()) -> {reply, term(), state()}.
-handle_call(_Request, _From, State) ->
-  {reply, ok, State}.
-
-%% @hidden
--spec handle_cast(term(), state()) -> {noreply, state()}.
-handle_cast(_Request, State) ->
-  {noreply, State}.
-
-%% @hidden
--spec handle_info(term(), state()) -> {noreply, state()}.
-handle_info(_Info, State) ->
-  {noreply, State}.
-
-%% @hidden
--spec terminate(term(), state()) -> ok.
-terminate(_Reason, _State) ->
-  ok.
-
-%% @hidden
--spec code_change(term(), state(), term()) -> {ok, state()}.
-code_change(_OldVsn, State, _Extra) ->
-  {ok, State}.
 
 %%%===================================================================
 %%% Internal functions

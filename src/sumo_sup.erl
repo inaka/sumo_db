@@ -35,7 +35,8 @@
 %%%=============================================================================
 
 -spec start_link() -> {ok, pid()} | {error, term()}.
-start_link() -> supervisor:start_link({local, ?MODULE}, ?MODULE, []).
+start_link() ->
+  supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 
 %%%=============================================================================
 %%% Supervisor callbacks
@@ -44,11 +45,11 @@ start_link() -> supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 -spec init(any()) ->
   {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
 init([]) ->
+  ok = init_config_table(),
   Specs = [
     sup(sumo_backend_sup),
     sup(sumo_store_sup),
-    sup(sumo_event_manager_sup),
-    worker(sumo_config)
+    sup(sumo_event_manager_sup)
   ],
   {ok, {{one_for_one, 5, 10}, Specs}}.
 
@@ -56,4 +57,12 @@ init([]) ->
 sup(I) -> {I, {I, start_link, []}, permanent, infinity, supervisor, [I]}.
 
 %% @private
-worker(I) -> {I, {I, start_link, []}, permanent, infinity, worker, [I]}.
+init_config_table() ->
+  Docs = application:get_env(sumo_db, docs, []),
+  sumo_config = ets:new(sumo_config, [
+    protected,
+    named_table,
+    {read_concurrency, true}
+  ]),
+  true = ets:insert(sumo_config, Docs),
+  ok.

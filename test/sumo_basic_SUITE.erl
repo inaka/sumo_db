@@ -43,12 +43,12 @@ all() ->
 -spec init_per_suite(config()) -> config().
 init_per_suite(Config) ->
   ok = sumo_test_utils:start_apps(),
-  [{module, sumo_test_people_mnesia} | Config].
+  [{name, people} | Config].
 
 -spec init_per_testcase(atom(), config()) -> config().
 init_per_testcase(_, Config) ->
-  {_, Module} = lists:keyfind(module, 1, Config),
-  sumo_basic_test_helper:init_store(Module),
+  {_, Name} = lists:keyfind(name, 1, Config),
+  sumo_basic_test_helper:init_store(Name),
   Config.
 
 -spec end_per_suite(config()) -> config().

@@ -23,15 +23,6 @@
 
 -behaviour(supervisor).
 
--define(CLD(Name, Module, Options), {
-  Name,                                  % Child Id
-  {Module, start_link, [Name, Options]}, % Start Fun
-  permanent,                             % Restart
-  5000,                                  % Shutdown
-  worker,                                % Type
-  [Module]                               % Modules
-}).
-
 %%% API
 -export([start_link/0]).
 
@@ -50,11 +41,23 @@ start_link() ->
 %%% Supervisor callbacks
 %%%=============================================================================
 
--spec init(any()) ->
-  {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
+-spec init(any()) -> {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
 init([]) ->
   {ok, Backends} = application:get_env(sumo_db, storage_backends),
   Children = lists:map(fun({Name, Module, Options}) ->
-    ?CLD(Name, Module, Options)
+    child_spec(Name, Module, Options)
   end, Backends),
   {ok, {{one_for_one, 5, 10}, Children}}.
+
+%%%=============================================================================
+%%% Internal functions
+%%%=============================================================================
+
+%% @private
+child_spec(Name, Module, Options) ->
+  {Name,
+   {Module, start_link, [Name, Options]},
+   permanent,
+   5000,
+   worker,
+   [Module]}.

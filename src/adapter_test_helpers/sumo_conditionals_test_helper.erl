@@ -21,36 +21,36 @@
 
 -spec dates(config()) -> ok.
 dates(Config) ->
-  {_, Module} = lists:keyfind(module, 1, Config),
-  ct:comment("dates with ~p", [Module]),
+  {_, Name} = lists:keyfind(name, 1, Config),
+  ct:comment("dates with ~p", [Name]),
 
-  [_, _, _, _, _] = sumo:find_all(Module),
+  [_, _, _, _, _] = sumo:find_all(Name),
 
   Now = {Today, _} = calendar:universal_time(),
 
-  [] = sumo:find_by(Module, [{birthdate, '>', Today}]),
-  [_, _, _, _, _] = sumo:find_by(Module, [{birthdate, '==', Today}]),
-  [_, _, _, _, _] = sumo:find_by(Module, [{birthdate, '=<', Today}]),
-  [] = sumo:find_by(Module, [{created_at, '>', Now}]),
-  [_, _, _, _, _] = sumo:find_by(Module, [{created_at, '=<', Now}]),
+  [] = sumo:find_by(Name, [{birthdate, '>', Today}]),
+  [_, _, _, _, _] = sumo:find_by(Name, [{birthdate, '==', Today}]),
+  [_, _, _, _, _] = sumo:find_by(Name, [{birthdate, '=<', Today}]),
+  [] = sumo:find_by(Name, [{created_at, '>', Now}]),
+  [_, _, _, _, _] = sumo:find_by(Name, [{created_at, '=<', Now}]),
   ok.
 
 -spec backward_compatibility(config()) -> ok.
 backward_compatibility(Config) ->
-  {_, Module} = lists:keyfind(module, 1, Config),
-  ct:comment("backward_compatibility with ~p", [Module]),
+  {_, Name} = lists:keyfind(name, 1, Config),
+  ct:comment("backward_compatibility with ~p", [Name]),
 
-  [_, _, _, _, _] = sumo:find_all(Module),
-  [_, _, _] = sumo:find_by(Module, [{last_name, <<"Doe">>}]),
-  [_] = sumo:find_by(Module, [{name, <<"Jane">>}, {last_name, <<"Doe">>}]),
+  [_, _, _, _, _] = sumo:find_all(Name),
+  [_, _, _] = sumo:find_by(Name, [{last_name, <<"Doe">>}]),
+  [_] = sumo:find_by(Name, [{name, <<"Jane">>}, {last_name, <<"Doe">>}]),
   ok.
 
 -spec or_conditional(config()) -> ok.
 or_conditional(Config) ->
-  {_, Module} = lists:keyfind(module, 1, Config),
-  ct:comment("or_conditional with ~p", [Module]),
+  {_, Name} = lists:keyfind(name, 1, Config),
+  ct:comment("or_conditional with ~p", [Name]),
 
-  [_, _, _] = sumo:find_by(Module,
+  [_, _, _] = sumo:find_by(Name,
     {'or', [
       {name, <<"John">>},
       {name, <<"Joe">>},
@@ -58,7 +58,7 @@ or_conditional(Config) ->
     ]}
   ),
 
-  [_, _] = sumo:find_by(Module, [
+  [_, _] = sumo:find_by(Name, [
     {last_name, <<"Doe">>},
     {'or', [
       {name, <<"Jane">>},
@@ -69,10 +69,10 @@ or_conditional(Config) ->
 
 -spec and_conditional(config()) -> ok.
 and_conditional(Config) ->
-  {_, Module} = lists:keyfind(module, 1, Config),
-  ct:comment("and_conditional with ~p", [Module]),
+  {_, Name} = lists:keyfind(name, 1, Config),
+  ct:comment("and_conditional with ~p", [Name]),
 
-  [] = sumo:find_by(Module,
+  [] = sumo:find_by(Name,
     {'and', [
       {name, <<"John">>},
       {name, <<"Joe">>},
@@ -80,7 +80,7 @@ and_conditional(Config) ->
     ]}
   ),
 
-  [_, _] = sumo:find_by(Module,
+  [_, _] = sumo:find_by(Name,
     {'and', [
       {last_name, <<"Doe">>},
       {'or', [
@@ -93,77 +93,77 @@ and_conditional(Config) ->
 
 -spec not_null_conditional(config()) -> ok.
 not_null_conditional(Config) ->
-  {_, Module} = lists:keyfind(module, 1, Config),
-  ct:comment("not_null_conditional with ~p", [Module]),
+  {_, Name} = lists:keyfind(name, 1, Config),
+  ct:comment("not_null_conditional with ~p", [Name]),
 
-  [_, _, _] = sumo:find_by(Module, {age, 'not_null'}),
-  [_] = sumo:find_by(Module, {address, 'not_null'}),
+  [_, _, _] = sumo:find_by(Name, {age, 'not_null'}),
+  [_] = sumo:find_by(Name, {address, 'not_null'}),
   ok.
 
 -spec null_conditional(config()) -> ok.
 null_conditional(Config) ->
-  {_, Module} = lists:keyfind(module, 1, Config),
-  ct:comment("null_conditional with ~p", [Module]),
+  {_, Name} = lists:keyfind(name, 1, Config),
+  ct:comment("null_conditional with ~p", [Name]),
 
-  [_, _] = sumo:find_by(Module, {age, 'null'}),
-  [_, _, _, _] = sumo:find_by(Module, {address, 'null'}),
+  [_, _] = sumo:find_by(Name, {age, 'null'}),
+  [_, _, _, _] = sumo:find_by(Name, {address, 'null'}),
   ok.
 
 -spec operators(config()) -> ok.
 operators(Config) ->
-  {_, Module} = lists:keyfind(module, 1, Config),
-  ct:comment("operators with ~p", [Module]),
+  {_, Name} = lists:keyfind(name, 1, Config),
+  ct:comment("operators with ~p", [Name]),
 
-  [_, _] = sumo:find_by(Module,
+  [_, _] = sumo:find_by(Name,
     {'and', [
       {age, 'not_null'},
       {age, '<', 100}
     ]}
   ),
 
-  [_] = sumo:find_by(Module,
+  [_] = sumo:find_by(Name,
     {'and', [
       {age, 'not_null'},
       {age, '>', 100}
     ]}
   ),
 
-  [] = sumo:find_by(Module,
+  [] = sumo:find_by(Name,
     {'and', [
       {age, 'not_null'},
       {age, '>', 102}
     ]}
   ),
 
-  [_] = sumo:find_by(Module,
+  [_] = sumo:find_by(Name,
     {'and', [
       {age, 'not_null'},
       {age, '>=', 102}
     ]}
   ),
 
-  [_] = sumo:find_by(Module,
+  [_] = sumo:find_by(Name,
     {'and', [
       {age, 'not_null'},
       {age, '<', 30}
     ]}
   ),
 
-  [_, _] = sumo:find_by(Module,
+  [_, _] = sumo:find_by(Name,
     {'and', [
       {age, 'not_null'},
       {age, '=<', 30}
     ]}
   ),
 
-  [_, _, _] = sumo:find_by(Module,
+  [_, _, _] = sumo:find_by(Name,
     {'or', [
       {age, 'null'},
       {age, '==', 30}
     ]}
   ),
 
-  [_, _] = sumo:find_by(Module,
+  [_, _] = sumo:find_by(Name,
     {'and', [
       {age, 'not_null'},
       {age, '/=', 30}
@@ -172,10 +172,10 @@ operators(Config) ->
 
   case sumo_utils:keyfind(people_with_like, Config, false) of
     true ->
-      [_, _, _, _] = sumo:find_by(Module, {name, 'like', <<"J%">>}),
-      [_, _] = sumo:find_by(Module, {'and', [{name, 'like', <<"Ja%">>}]}),
-      [_] = sumo:find_by(Module, {name, 'like', <<"A%">>}),
-      [_, _] = sumo:find_by(Module, {name, 'like', <<"%n">>}),
+      [_, _, _, _] = sumo:find_by(Name, {name, 'like', <<"J%">>}),
+      [_, _] = sumo:find_by(Name, {'and', [{name, 'like', <<"Ja%">>}]}),
+      [_] = sumo:find_by(Name, {name, 'like', <<"A%">>}),
+      [_, _] = sumo:find_by(Name, {name, 'like', <<"%n">>}),
       ok;
     false ->
       ok
@@ -183,8 +183,8 @@ operators(Config) ->
 
 -spec deeply_nested(config()) -> ok.
 deeply_nested(Config) ->
-  {_, Module} = lists:keyfind(module, 1, Config),
-  ct:comment("deeply_nested with ~p", [Module]),
+  {_, Name} = lists:keyfind(name, 1, Config),
+  ct:comment("deeply_nested with ~p", [Name]),
 
   Conditions =
     {'or', [
@@ -195,18 +195,19 @@ deeply_nested(Config) ->
       {age, 'null'},
       {last_name, <<"Turing">>}
     ]},
-  [_, _, _] = sumo:find_by(Module, Conditions),
+  [_, _, _] = sumo:find_by(Name, Conditions),
   ok.
 
--spec init_store(module()) -> ok.
-init_store(Module) ->
-  sumo:create_schema(Module),
-  sumo:delete_all(Module),
+-spec init_store(atom()) -> ok.
+init_store(Name) ->
+  sumo:create_schema(Name),
+  Module = sumo_config:get_prop_value(Name, module),
+  sumo:delete_all(Name),
 
-  sumo:persist(Module, Module:new(<<"Jane">>, <<"Doe">>)),
-  sumo:persist(Module, Module:new(<<"John">>, <<"Doe">>, 30)),
-  sumo:persist(Module, Module:new(<<"Jane Jr.">>, <<"Doe">>, 5)),
-  sumo:persist(Module, Module:new(<<"Joe">>, <<"Armstrong">>)),
-  sumo:persist(Module, Module:new(
+  sumo:persist(Name, Module:new(<<"Jane">>, <<"Doe">>)),
+  sumo:persist(Name, Module:new(<<"John">>, <<"Doe">>, 30)),
+  sumo:persist(Name, Module:new(<<"Jane Jr.">>, <<"Doe">>, 5)),
+  sumo:persist(Name, Module:new(<<"Joe">>, <<"Armstrong">>)),
+  sumo:persist(Name, Module:new(
     <<"Alan">>, <<"Turing">>, 102, <<"Computer St.">>)),
   ok.

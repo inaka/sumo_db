@@ -65,7 +65,7 @@
 -spec sumo_schema() -> no_return().
 sumo_schema() -> throw(should_be_implemented_by_children).
 
--spec sumo_sleep(Person :: person()) -> sumo:doc().
+-spec sumo_sleep(Person :: person()) -> sumo:model().
 sumo_sleep(Person) ->
   #{id            => Person#person.id,
     name          => Person#person.name,
@@ -79,7 +79,7 @@ sumo_sleep(Person) ->
     profile_image => Person#person.profile_image,
     weird_field   => Person#person.weird_field}.
 
--spec sumo_wakeup(Person :: sumo:doc()) -> person().
+-spec sumo_wakeup(Person :: sumo:model()) -> person().
 sumo_wakeup(Person) ->
   #person{
     id            = maps:get(id, Person),

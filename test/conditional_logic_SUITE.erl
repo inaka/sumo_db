@@ -43,8 +43,8 @@ all() ->
 -spec init_per_suite(config()) -> config().
 init_per_suite(Config) ->
   sumo_test_utils:start_apps(),
-  sumo_conditionals_test_helper:init_store(sumo_test_people_mnesia),
-  [{module, sumo_test_people_mnesia} | Config].
+  sumo_conditionals_test_helper:init_store(people),
+  [{name, people} | Config].
 
 -spec end_per_suite(config()) -> config().
 end_per_suite(Config) ->

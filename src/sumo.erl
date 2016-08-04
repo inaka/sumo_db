@@ -140,7 +140,7 @@ find(DocName, Id) ->
 %% @doc Returns all docs from the given store.
 -spec find_all(schema_name()) -> [user_doc()].
 find_all(DocName) ->
-  case sumo_store:find_all(sumo_internal:get_store(DocName), DocName) of
+  case sumo_store:find_all(sumo_config:get_store(DocName), DocName) of
     {ok, Docs} -> docs_wakeup(Docs);
     Error      -> throw(Error)
   end.
@@ -154,7 +154,7 @@ find_all(DocName) ->
   Res         :: [user_doc()].
 find_all(DocName, SortFields0, Limit, Offset) ->
   SortFields = normalize_sort_fields(SortFields0),
-  Store = sumo_internal:get_store(DocName),
+  Store = sumo_config:get_store(DocName),
   case sumo_store:find_all(Store, DocName, SortFields, Limit, Offset) of
     {ok, Docs} -> docs_wakeup(Docs);
     Error      -> throw(Error)
@@ -163,7 +163,7 @@ find_all(DocName, SortFields0, Limit, Offset) ->
 %% @doc Returns *all* docs that match Conditions.
 -spec find_by(schema_name(), conditions()) -> [user_doc()].
 find_by(DocName, Conditions) ->
-  Store = sumo_internal:get_store(DocName),
+  Store = sumo_config:get_store(DocName),
   case sumo_store:find_by(Store, DocName, Conditions) of
     {ok, Docs} -> docs_wakeup(Docs);
     Error      -> throw(Error)
@@ -180,7 +180,7 @@ find_by(DocName, Conditions) ->
   Offset     :: non_neg_integer(),
   Res        :: [user_doc()].
 find_by(DocName, Conditions, Limit, Offset) ->
-  Store = sumo_internal:get_store(DocName),
+  Store = sumo_config:get_store(DocName),
   case sumo_store:find_by(Store, DocName, Conditions, Limit, Offset) of
     {ok, Docs} -> docs_wakeup(Docs);
     Error      -> throw(Error)
@@ -199,7 +199,7 @@ find_by(DocName, Conditions, Limit, Offset) ->
   Res        :: [user_doc()].
 find_by(DocName, Conditions, SortFields, Limit, Offset) ->
   NormalizedSortFields = normalize_sort_fields(SortFields),
-  Store = sumo_internal:get_store(DocName),
+  Store = sumo_config:get_store(DocName),
   case sumo_store:find_by(
       Store, DocName, Conditions, NormalizedSortFields, Limit, Offset) of
     {ok, Docs} -> docs_wakeup(Docs);
@@ -210,13 +210,13 @@ find_by(DocName, Conditions, SortFields, Limit, Offset) ->
 -spec persist(schema_name(), UserDoc) -> UserDoc.
 persist(DocName, State) ->
   IdField = sumo_internal:id_field_name(DocName),
-  Module = sumo_internal:get_doc_module(DocName),
+  Module = sumo_config:get_prop_value(DocName, module),
   DocMap = Module:sumo_sleep(State),
   EventName = case maps:get(IdField, DocMap, undefined) of
     undefined -> created;
     _         -> updated
   end,
-  Store = sumo_internal:get_store(DocName),
+  Store = sumo_config:get_store(DocName),
   case sumo_store:persist(Store, sumo_internal:new_doc(DocName, DocMap)) of
     {ok, NewDoc} ->
       Ret = sumo_internal:wakeup(NewDoc),
@@ -229,7 +229,7 @@ persist(DocName, State) ->
 %% @doc Deletes all docs of type DocName.
 -spec delete_all(schema_name()) -> non_neg_integer().
 delete_all(DocName) ->
-  Store = sumo_internal:get_store(DocName),
+  Store = sumo_config:get_store(DocName),
   case sumo_store:delete_all(Store, DocName) of
     {ok, NumRows} ->
       case NumRows > 0 of
@@ -253,7 +253,7 @@ delete(DocName, Id) ->
 %% @doc Deletes the doc identified by Conditions.
 -spec delete_by(schema_name(), conditions()) -> non_neg_integer().
 delete_by(DocName, Conditions) ->
-  Store = sumo_internal:get_store(DocName),
+  Store = sumo_config:get_store(DocName),
   case sumo_store:delete_by(Store, DocName, Conditions) of
     {ok, 0} ->
       0;
@@ -267,7 +267,7 @@ delete_by(DocName, Conditions) ->
 %% @doc Creates the schema for the docs of type DocName.
 -spec create_schema(schema_name()) -> ok.
 create_schema(DocName) ->
-  create_schema(DocName, sumo_internal:get_store(DocName)).
+  create_schema(DocName, sumo_config:get_store(DocName)).
 
 %% @doc
 %% Creates the schema for the docs of type `DocName' using the given `Store'.
@@ -290,7 +290,7 @@ call(DocName, Function) ->
 %% @doc Calls the given custom function of a store with the given args.
 -spec call(schema_name(), atom(), [term()]) -> term().
 call(DocName, Function, Args) ->
-  Store = sumo_internal:get_store(DocName),
+  Store = sumo_config:get_store(DocName),
   case sumo_store:call(Store, DocName, Function, Args) of
     {ok, {docs, Docs}} -> docs_wakeup(Docs);
     {ok, {raw, Value}} -> Value

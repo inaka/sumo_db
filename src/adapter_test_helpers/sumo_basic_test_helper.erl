@@ -20,7 +20,7 @@
 -spec find(config()) -> ok.
 find(Config) ->
   {_, Name} = lists:keyfind(name, 1, Config),
-  Module = sumo_internal:get_doc_module(Name),
+  Module = sumo_config:get_prop_value(Name, module),
 
   [First, Second | _] = sumo:find_all(Name),
   First = sumo:find(Name, Module:id(First)),
@@ -38,7 +38,7 @@ find_all(Config) ->
 -spec find_by(config()) -> ok.
 find_by(Config) ->
   {_, Name} = lists:keyfind(name, 1, Config),
-  Module = sumo_internal:get_doc_module(Name),
+  Module = sumo_config:get_prop_value(Name, module),
 
   Results = sumo:find_by(Name, [{last_name, <<"D">>}]),
   [_, _] = Results,
@@ -100,7 +100,7 @@ delete_all(Config) ->
 -spec delete(config()) -> ok.
 delete(Config) ->
   {_, Name} = lists:keyfind(name, 1, Config),
-  Module = sumo_internal:get_doc_module(Name),
+  Module = sumo_config:get_prop_value(Name, module),
 
   %% delete_by
   2 = sumo:delete_by(Name, [{last_name, <<"D">>}]),
@@ -118,7 +118,7 @@ delete(Config) ->
 -spec check_proper_dates(config()) -> ok.
 check_proper_dates(Config) ->
   {_, Name} = lists:keyfind(name, 1, Config),
-  Module = sumo_internal:get_doc_module(Name),
+  Module = sumo_config:get_prop_value(Name, module),
 
   [P0] = sumo:find_by(Name, [{name, <<"A">>}]),
   P1 = sumo:find(Name, Module:id(P0)),
@@ -140,7 +140,7 @@ check_proper_dates(Config) ->
 -spec init_store(atom()) -> ok.
 init_store(Name) ->
   sumo:create_schema(Name),
-  Module = sumo_internal:get_doc_module(Name),
+  Module = sumo_config:get_prop_value(Name, module),
   sumo:delete_all(Name),
 
   sumo:persist(Name, Module:new(<<"A">>, <<"E">>, 6)),

@@ -47,9 +47,13 @@ init([]) ->
   Specs = [
     sup(sumo_backend_sup),
     sup(sumo_store_sup),
-    sup(sumo_event_manager_sup)
+    sup(sumo_event_manager_sup),
+    worker(sumo_config)
   ],
   {ok, {{one_for_one, 5, 10}, Specs}}.
 
 %% @private
 sup(I) -> {I, {I, start_link, []}, permanent, infinity, supervisor, [I]}.
+
+%% @private
+worker(I) -> {I, {I, start_link, []}, permanent, infinity, worker, [I]}.

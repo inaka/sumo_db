@@ -201,7 +201,7 @@ deeply_nested(Config) ->
 -spec init_store(atom()) -> ok.
 init_store(Name) ->
   sumo:create_schema(Name),
-  Module = sumo_internal:get_doc_module(Name),
+  Module = sumo_config:get_prop_value(Name, module),
   sumo:delete_all(Name),
 
   sumo:persist(Name, Module:new(<<"Jane">>, <<"Doe">>)),

@@ -42,14 +42,14 @@
 sumo_schema() ->
   Fields = [
     sumo:new_field(id,            integer, [id, auto_increment]),
-    sumo:new_field(name,          string, [{length, 255}, not_null, unique]),
-    sumo:new_field(last_name,     string, [{length, 255}, not_null]),
+    sumo:new_field(name,          string),
+    sumo:new_field(last_name,     string),
     sumo:new_field(age,           integer),
-    sumo:new_field(address,       string, [{length, 255}]),
+    sumo:new_field(address,       string),
     sumo:new_field(birthdate,     date),
     sumo:new_field(created_at,    datetime),
     sumo:new_field(height,        float),
-    sumo:new_field(description,   text),
+    sumo:new_field(description,   string),
     sumo:new_field(profile_image, binary),
     sumo:new_field(weird_field,   custom)
   ],

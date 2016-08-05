@@ -13,14 +13,10 @@
     new/2,
     new/3,
     new/4,
-    new/5,
-    new/6,
-    new/7,
-    new/8,
-    new/9,
+    from_map/1,
+    id/1,
     name/1,
     last_name/1,
-    id/1,
     age/1,
     address/1,
     birthdate/1,
@@ -28,7 +24,9 @@
     height/1,
     description/1,
     profile_image/1,
-    weird_field/1
+    weird_field1/1,
+    weird_field2/1,
+    weird_field3/1
   ]}
 ]).
 
@@ -41,7 +39,7 @@
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
   Fields = [
-    sumo:new_field(id,            integer, [id, auto_increment]),
+    sumo:new_field(id,            integer, [id]),
     sumo:new_field(name,          string),
     sumo:new_field(last_name,     string),
     sumo:new_field(age,           integer),
@@ -51,6 +49,8 @@ sumo_schema() ->
     sumo:new_field(height,        float),
     sumo:new_field(description,   string),
     sumo:new_field(profile_image, binary),
-    sumo:new_field(weird_field,   custom)
+    sumo:new_field(weird_field1,  custom, [{type, term}]),
+    sumo:new_field(weird_field2,  custom, [{type, list}]),
+    sumo:new_field(weird_field3,  custom, [{type, map}])
   ],
   sumo:new_schema(people, Fields).

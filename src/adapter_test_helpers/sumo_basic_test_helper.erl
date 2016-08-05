@@ -57,6 +57,10 @@ find_by(Config) ->
   undefined = Module:height(First),
   undefined = Module:description(First),
   {Today, _} = Module:created_at(First),
+  true = Module:weird_field1(First),
+  undefined = Module:weird_field2(First),
+  undefined = Module:weird_field3(First),
+
   % Check that it returns what we have inserted
   [LastPerson | _NothingElse] = sumo:find_by(Name, [
     {last_name, <<"LastName">>}
@@ -70,7 +74,12 @@ find_by(Config) ->
   1.75 = Module:height(LastPerson),
   <<"description">> = Module:description(LastPerson),
   <<"profile_image">> = Module:profile_image(LastPerson),
-  <<"weird_field">> = Module:weird_field(LastPerson),
+  {mytuple, false, 1, "2", <<"3">>} = Module:weird_field1(LastPerson),
+  [1, true, <<"hi">>, 1.1] = Module:weird_field2(LastPerson),
+  #{a := 1,
+    b := [1, "2", <<"3">>],
+    <<"c">> := false
+  } = Module:weird_field3(LastPerson),
   {Today, _} = Module:created_at(LastPerson),
 
   %% Check find_by ID
@@ -143,27 +152,34 @@ init_store(Name) ->
   Module = sumo_config:get_prop_value(Name, module),
   sumo:delete_all(Name),
 
+  DT = {Date, _} = calendar:universal_time(),
+
   sumo:persist(Name, Module:new(<<"A">>, <<"E">>, 6)),
-  sumo:persist(Name, Module:new(<<"B">>, <<"D">>, 3)),
+  sumo:persist(Name, Module:from_map(#{
+    name         => <<"B">>,
+    last_name    => <<"D">>,
+    age          => 3,
+    birthdate    => Date,
+    created_at   => DT,
+    weird_field1 => true
+  })),
   sumo:persist(Name, Module:new(<<"C">>, <<"C">>, 5)),
   sumo:persist(Name, Module:new(<<"D">>, <<"D">>, 4)),
   sumo:persist(Name, Module:new(<<"E">>, <<"A">>, 2)),
   sumo:persist(Name, Module:new(<<"F">>, <<"E">>, 1)),
   sumo:persist(Name, Module:new(<<"Model T-2000">>, <<"undefined">>, 7)),
 
-  {Date, _} = calendar:universal_time(),
-  sumo:persist(
-    Name,
-    Module:new(
-      <<"Name">>,
-      <<"LastName">>,
-      3,
-      undefined,
-      Date,
-      1.75,
-      <<"description">>,
-      <<"profile_image">>,
-      <<"weird_field">>
-    )
-  ),
+  sumo:persist(Name, Module:from_map(#{
+    name          => <<"Name">>,
+    last_name     => <<"LastName">>,
+    age           => 3,
+    birthdate     => Date,
+    created_at    => DT,
+    height        => 1.75,
+    description   => <<"description">>,
+    profile_image => <<"profile_image">>,
+    weird_field1  => {mytuple, false, 1, "2", <<"3">>},
+    weird_field2  => [1, true, <<"hi">>, 1.1],
+    weird_field3  => #{a => 1, b => [1, "2", <<"3">>], <<"c">> => false}
+  })),
   ok.

@@ -24,6 +24,7 @@
     height/1,
     description/1,
     profile_image/1,
+    is_blocked/1,
     weird_field1/1,
     weird_field2/1,
     weird_field3/1
@@ -49,6 +50,7 @@ sumo_schema() ->
     sumo:new_field(height,        float),
     sumo:new_field(description,   string),
     sumo:new_field(profile_image, binary),
+    sumo:new_field(is_blocked,    boolean),
     sumo:new_field(weird_field1,  custom, [{type, term}]),
     sumo:new_field(weird_field2,  custom, [{type, list}]),
     sumo:new_field(weird_field3,  custom, [{type, map}])

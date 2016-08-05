@@ -23,6 +23,7 @@
   height/1,
   description/1,
   profile_image/1,
+  is_blocked/1,
   weird_field1/1,
   weird_field2/1,
   weird_field3/1
@@ -51,6 +52,7 @@
   height        :: height(),
   description   :: description(),
   profile_image :: profile_image(),
+  is_blocked    :: boolean(),
   weird_field1  :: weird_field(),
   weird_field2  :: weird_field(),
   weird_field3  :: weird_field()
@@ -77,6 +79,7 @@ sumo_sleep(Person) ->
     height        => Person#person.height,
     description   => Person#person.description,
     profile_image => Person#person.profile_image,
+    is_blocked    => Person#person.is_blocked,
     weird_field1  => Person#person.weird_field1,
     weird_field2  => Person#person.weird_field2,
     weird_field3  => Person#person.weird_field3}.
@@ -94,6 +97,7 @@ sumo_wakeup(Person) ->
     height        = maps:get(height, Person),
     description   = maps:get(description, Person),
     profile_image = maps:get(profile_image, Person),
+    is_blocked    = maps:get(is_blocked, Person),
     weird_field1  = maps:get(weird_field1, Person),
     weird_field2  = maps:get(weird_field2, Person),
     weird_field3  = maps:get(weird_field3, Person)
@@ -148,6 +152,7 @@ from_map(Map) ->
     height        = maps:get(height, Map, undefined),
     description   = maps:get(description, Map, undefined),
     profile_image = maps:get(profile_image, Map, undefined),
+    is_blocked    = maps:get(is_blocked, Map, false),
     weird_field1  = maps:get(weird_field1, Map, undefined),
     weird_field2  = maps:get(weird_field2, Map, undefined),
     weird_field3  = maps:get(weird_field3, Map, undefined)
@@ -192,6 +197,10 @@ description(Person) ->
 -spec profile_image(Person :: person()) -> profile_image().
 profile_image(Person) ->
   Person#person.profile_image.
+
+-spec is_blocked(Person :: person()) -> boolean().
+is_blocked(Person) ->
+  Person#person.is_blocked.
 
 -spec weird_field1(Person :: person()) -> weird_field().
 weird_field1(Person) ->

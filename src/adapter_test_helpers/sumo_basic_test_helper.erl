@@ -57,6 +57,7 @@ find_by(Config) ->
   undefined = Module:height(First),
   undefined = Module:description(First),
   {Today, _} = Module:created_at(First),
+  false = Module:is_blocked(First),
   true = Module:weird_field1(First),
   undefined = Module:weird_field2(First),
   undefined = Module:weird_field3(First),
@@ -74,6 +75,7 @@ find_by(Config) ->
   1.75 = Module:height(LastPerson),
   <<"description">> = Module:description(LastPerson),
   <<"profile_image">> = Module:profile_image(LastPerson),
+  true = Module:is_blocked(LastPerson),
   {mytuple, false, 1, "2", <<"3">>} = Module:weird_field1(LastPerson),
   [1, true, <<"hi">>, 1.1] = Module:weird_field2(LastPerson),
   #{a := 1,
@@ -178,6 +180,7 @@ init_store(Name) ->
     height        => 1.75,
     description   => <<"description">>,
     profile_image => <<"profile_image">>,
+    is_blocked    => true,
     weird_field1  => {mytuple, false, 1, "2", <<"3">>},
     weird_field2  => [1, true, <<"hi">>, 1.1],
     weird_field3  => #{a => 1, b => [1, "2", <<"3">>], <<"c">> => false}

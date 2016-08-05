@@ -12,12 +12,8 @@
   new/2,
   new/3,
   new/4,
-  new/5,
-  new/6,
-  new/7,
-  new/8,
-  new/9,
   name/1,
+  from_map/1,
   last_name/1,
   id/1,
   age/1,
@@ -27,20 +23,22 @@
   height/1,
   description/1,
   profile_image/1,
-  weird_field/1
+  weird_field1/1,
+  weird_field2/1,
+  weird_field3/1
 ]).
 
 -type id()            :: integer() | binary() | undefined.
--type name()          :: binary().
--type last_name()     :: binary().
+-type name()          :: binary() | undefined.
+-type last_name()     :: binary() | undefined.
 -type age()           :: integer() | undefined.
 -type address()       :: binary() | undefined.
 -type birthdate()     :: calendar:date() | undefined.
--type created_at()    :: calendar:datetime().
+-type created_at()    :: calendar:datetime() | undefined.
 -type height()        :: float() | undefined.
 -type description()   :: binary() | undefined.
 -type profile_image() :: binary() | undefined.
--type weird_field()   :: term().
+-type weird_field()   :: term() | undefined.
 
 -record(person, {
   id            :: id(),
@@ -53,7 +51,9 @@
   height        :: height(),
   description   :: description(),
   profile_image :: profile_image(),
-  weird_field   :: weird_field()
+  weird_field1  :: weird_field(),
+  weird_field2  :: weird_field(),
+  weird_field3  :: weird_field()
 }).
 
 -type person() :: #person{}.
@@ -77,7 +77,9 @@ sumo_sleep(Person) ->
     height        => Person#person.height,
     description   => Person#person.description,
     profile_image => Person#person.profile_image,
-    weird_field   => Person#person.weird_field}.
+    weird_field1  => Person#person.weird_field1,
+    weird_field2  => Person#person.weird_field2,
+    weird_field3  => Person#person.weird_field3}.
 
 -spec sumo_wakeup(Person :: sumo:model()) -> person().
 sumo_wakeup(Person) ->
@@ -92,7 +94,9 @@ sumo_wakeup(Person) ->
     height        = maps:get(height, Person),
     description   = maps:get(description, Person),
     profile_image = maps:get(profile_image, Person),
-    weird_field   = maps:get(weird_field, Person)
+    weird_field1  = maps:get(weird_field1, Person),
+    weird_field2  = maps:get(weird_field2, Person),
+    weird_field3  = maps:get(weird_field3, Person)
   }.
 
 %%%=============================================================================
@@ -122,96 +126,31 @@ new(Name, LastName, Age) ->
   Person   :: person().
 new(Name, LastName, Age, Address) ->
   {BirthDate, _} = calendar:universal_time(),
-  new(Name, LastName, Age, Address, BirthDate).
-
--spec new(Name, LastName, Age, Address, BirthDate) -> Person when
-  Name      :: name(),
-  LastName  :: last_name(),
-  Age       :: age(),
-  Address   :: address(),
-  BirthDate :: birthdate(),
-  Person    :: person().
-new(Name, LastName, Age, Address, BirthDate) ->
-  new(Name, LastName, Age, Address, BirthDate, undefined).
-
--spec new(Name, LastName, Age, Address, BirthDate, Height) -> Person when
-  Name      :: name(),
-  LastName  :: last_name(),
-  Age       :: age(),
-  Address   :: address(),
-  BirthDate :: birthdate(),
-  Height    :: height(),
-  Person    :: person().
-new(Name, LastName, Age, Address, BirthDate, Height) ->
-  new(Name, LastName, Age, Address, BirthDate, Height, undefined).
-
--spec new(
-  Name, LastName, Age, Address, BirthDate, Height, Description
-) -> Person when
-  Name        :: name(),
-  LastName    :: last_name(),
-  Age         :: age(),
-  Address     :: address(),
-  BirthDate   :: birthdate(),
-  Height      :: height(),
-  Description :: description(),
-  Person      :: person().
-new(Name, LastName, Age, Address, BirthDate, Height, Description) ->
-  new(Name, LastName, Age, Address, BirthDate, Height, Description, undefined).
-
--spec new(
-  Name, LastName, Age, Address, BirthDate, Height, Description, ProfileImage
-) -> Person when
-  Name         :: name(),
-  LastName     :: last_name(),
-  Age          :: age(),
-  Address      :: address(),
-  BirthDate    :: birthdate(),
-  Height       :: height(),
-  Description  :: description(),
-  ProfileImage :: profile_image(),
-  Person       :: person().
-new(Name, LastName, Age, Address, BirthDate,
-    Height, Description, ProfileImage) ->
-  new(
-    Name, LastName, Age, Address, BirthDate, Height,
-    Description, ProfileImage, undefined).
-
--spec new(
-  Name, LastName, Age, Address, BirthDate, Height,
-  Description, ProfileImage, WeirdField
-) -> Person when
-  Name         :: name(),
-  LastName     :: last_name(),
-  Age          :: age(),
-  Address      :: address(),
-  BirthDate    :: birthdate(),
-  Height       :: height(),
-  Description  :: description(),
-  ProfileImage :: profile_image(),
-  WeirdField   :: weird_field(),
-  Person       :: person().
-new(Name,
-    LastName,
-    Age,
-    Address,
-    BirthDate,
-    Height,
-    Description,
-    ProfileImage,
-    WeirdField) ->
   Datetime = calendar:universal_time(),
+  from_map(#{
+    name       => Name,
+    last_name  => LastName,
+    age        => Age,
+    address    => Address,
+    birthdate  => BirthDate,
+    created_at => Datetime
+  }).
+
+-spec from_map(map()) -> person().
+from_map(Map) ->
   #person{
-    name          = Name,
-    last_name     = LastName,
-    age           = Age,
-    address       = Address,
-    birthdate     = BirthDate,
-    created_at    = Datetime,
-    height        = Height,
-    description   = Description,
-    profile_image = ProfileImage,
-    weird_field   = WeirdField
+    name          = maps:get(name, Map, undefined),
+    last_name     = maps:get(last_name, Map, undefined),
+    age           = maps:get(age, Map, undefined),
+    address       = maps:get(address, Map, undefined),
+    birthdate     = maps:get(birthdate, Map, undefined),
+    created_at    = maps:get(created_at, Map, undefined),
+    height        = maps:get(height, Map, undefined),
+    description   = maps:get(description, Map, undefined),
+    profile_image = maps:get(profile_image, Map, undefined),
+    weird_field1  = maps:get(weird_field1, Map, undefined),
+    weird_field2  = maps:get(weird_field2, Map, undefined),
+    weird_field3  = maps:get(weird_field3, Map, undefined)
   }.
 
 -spec name(Person :: person()) -> name().
@@ -254,6 +193,14 @@ description(Person) ->
 profile_image(Person) ->
   Person#person.profile_image.
 
--spec weird_field(Person :: person()) -> weird_field().
-weird_field(Person) ->
-  Person#person.weird_field.
+-spec weird_field1(Person :: person()) -> weird_field().
+weird_field1(Person) ->
+  Person#person.weird_field1.
+
+-spec weird_field2(Person :: person()) -> weird_field().
+weird_field2(Person) ->
+  Person#person.weird_field2.
+
+-spec weird_field3(Person :: person()) -> weird_field().
+weird_field3(Person) ->
+  Person#person.weird_field3.

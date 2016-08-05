@@ -21,11 +21,14 @@
 %%%=============================================================================
 
 -spec doc_transform(Fun, Doc1) -> Doc2 when
-  Fun    :: fun((DocSum, Attrs) -> sumo:field_value()),
-  DocSum :: {sumo:field_type(), sumo:field_name(), sumo:field_value()},
-  Attrs  :: sumo:field_attrs(),
-  Doc1   :: sumo_internal:doc(),
-  Doc2   :: sumo_internal:doc().
+  Fun         :: fun((FieldType, FieldName, Value1, FieldAttrs) -> Value2),
+  FieldType   :: sumo:field_type(),
+  FieldName   :: sumo:field_name(),
+  Value1      :: sumo:field_value(),
+  FieldAttrs  :: sumo:field_attrs(),
+  Value2      :: sumo:field_value(),
+  Doc1        :: sumo_internal:doc(),
+  Doc2        :: sumo_internal:doc().
 doc_transform(Fun, Doc) ->
   DocName = sumo_internal:doc_name(Doc),
   Schema = sumo_internal:get_schema(DocName),
@@ -35,7 +38,7 @@ doc_transform(Fun, Doc) ->
     FieldName = sumo_internal:field_name(Field),
     FieldValue = sumo_internal:get_field(FieldName, Doc),
     FieldAttrs = sumo_internal:field_attrs(Field),
-    NewValue = Fun({FieldType, FieldName, FieldValue}, FieldAttrs),
+    NewValue = Fun(FieldType, FieldName, FieldValue, FieldAttrs),
     sumo_internal:set_field(FieldName, NewValue, Acc)
   end, Doc, SchemaFields).
 

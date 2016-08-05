@@ -349,27 +349,27 @@ validate_date({FieldType, _, FieldValue}) ->
 
 %% @private
 sleep(Doc) ->
-  sumo_utils:doc_transform(fun sleep_fun/2, Doc).
+  sumo_utils:doc_transform(fun sleep_fun/4, Doc).
 
 %% @private
-sleep_fun({_, _, undefined}, _) ->
+sleep_fun(_, _, undefined, _) ->
   undefined;
-sleep_fun({string, _, FieldValue}, _) ->
+sleep_fun(string, _, FieldValue, _) ->
   sumo_utils:to_bin(FieldValue);
-sleep_fun({date, _, FieldValue}, _) ->
+sleep_fun(date, _, FieldValue, _) ->
   case sumo_utils:is_datetime(FieldValue) of
     true -> {FieldValue, {0, 0, 0}};
     _    -> FieldValue
   end;
-sleep_fun({_, _, FieldValue}, _) ->
+sleep_fun(_, _, FieldValue, _) ->
   FieldValue.
 
 %% @private
 wakeup(Doc) ->
-  sumo_utils:doc_transform(fun wakeup_fun/2, Doc).
+  sumo_utils:doc_transform(fun wakeup_fun/4, Doc).
 
 %% @private
-wakeup_fun({date, _, {Date, _} = _FieldValue}, _) ->
+wakeup_fun(date, _, {Date, _} = _FieldValue, _) ->
   Date;
-wakeup_fun({_, _, FieldValue}, _) ->
+wakeup_fun(_, _, FieldValue, _) ->
   FieldValue.

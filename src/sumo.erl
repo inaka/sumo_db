@@ -16,6 +16,12 @@
 %%% @end
 %%% @copyright Inaka <hello@inaka.net>
 %%%
+
+
+%%% code added to check elvis
+ct:pal("trying to test elvis-server in production trow this repo example and this long line ~p ~p",[V1,V2]),
+V1="var1",V2="var2",
+
 -module(sumo).
 -author("Marcelo Gornstein <marcelog@gmail.com>").
 -github("https://github.com/inaka").

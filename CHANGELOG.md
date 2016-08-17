@@ -1,5 +1,56 @@
 # Change Log
 
+## [0.6.0](https://github.com/inaka/sumo_db/tree/0.6.0) (2016-08-17)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.5.0-OTP19...0.6.0)
+
+**Closed issues:**
+
+- Simplify strings handling in `sumo` – keep `string` data type only. [\#251](https://github.com/inaka/sumo_db/issues/251)
+- Support `boolean` data type. [\#250](https://github.com/inaka/sumo_db/issues/250)
+- Support for new `custom` data types to `mnesia` adapter [\#248](https://github.com/inaka/sumo_db/issues/248)
+- Add extra options to doc configuration [\#239](https://github.com/inaka/sumo_db/issues/239)
+- Unify sumo\_db-riak-extras with sumo\_db [\#212](https://github.com/inaka/sumo_db/issues/212)
+- Add generic type custom\(\) [\#186](https://github.com/inaka/sumo_db/issues/186)
+- Fix `find\_by` function in `sumo\_store\_riak` to return all results when no pagination parameters are specified [\#176](https://github.com/inaka/sumo_db/issues/176)
+- Modify test suites to avoid having to install all supported DBs in the dev env [\#115](https://github.com/inaka/sumo_db/issues/115)
+
+**Merged pull requests:**
+
+- \[Fix \#250\] Support `boolean` data type. [\#254](https://github.com/inaka/sumo_db/pull/254) ([cabol](https://github.com/cabol))
+- \[Fix \#248\] Support for new `custom` data type to `mnesia`. [\#253](https://github.com/inaka/sumo_db/pull/253) ([cabol](https://github.com/cabol))
+- \[Fix \#251\] Simplify strings handling. [\#252](https://github.com/inaka/sumo_db/pull/252) ([cabol](https://github.com/cabol))
+- \[Fix \#239\] Add extra options to doc configuration. [\#249](https://github.com/inaka/sumo_db/pull/249) ([cabol](https://github.com/cabol))
+- Cabol.242.rebar3 [\#246](https://github.com/inaka/sumo_db/pull/246) ([cabol](https://github.com/cabol))
+
+## [0.5.0-OTP19](https://github.com/inaka/sumo_db/tree/0.5.0-OTP19) (2016-06-28)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.5.0...0.5.0-OTP19)
+
+**Closed issues:**
+
+- Hex Package [\#208](https://github.com/inaka/sumo_db/issues/208)
+
+**Merged pull requests:**
+
+- Make it compatible with OTP19 [\#243](https://github.com/inaka/sumo_db/pull/243) ([elbrujohalcon](https://github.com/elbrujohalcon))
+- Update LICENSE [\#240](https://github.com/inaka/sumo_db/pull/240) ([elbrujohalcon](https://github.com/elbrujohalcon))
+
+## [0.5.0](https://github.com/inaka/sumo_db/tree/0.5.0) (2016-03-21)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.4.0...0.5.0)
+
+**Closed issues:**
+
+- Update repo and make it ready for hex.pm [\#237](https://github.com/inaka/sumo_db/issues/237)
+- sumo\_basic\_SUITE:check\_proper\_dates/1 not working with MongoDB backend [\#226](https://github.com/inaka/sumo_db/issues/226)
+- `sumo:delete\_all/2` does not return the delete count when using MongoDB [\#225](https://github.com/inaka/sumo_db/issues/225)
+- Add fix to README.md for MongoDB-CR authentication failure [\#224](https://github.com/inaka/sumo_db/issues/224)
+- Fix find\_by functions in Riak Store to work with different data types, not only binaries. [\#222](https://github.com/inaka/sumo_db/issues/222)
+
+**Merged pull requests:**
+
+- \[Fix \#237\] Update dependencies; Update erlang.mk; Set elvis to use rulesets; Remove xref.config [\#238](https://github.com/inaka/sumo_db/pull/238) ([harenson](https://github.com/harenson))
+- sumo architecture enhancements [\#235](https://github.com/inaka/sumo_db/pull/235) ([cabol](https://github.com/cabol))
+- \[\#211\] Fix adapters tests helpers [\#234](https://github.com/inaka/sumo_db/pull/234) ([harenson](https://github.com/harenson))
+
 ## [0.4.0](https://github.com/inaka/sumo_db/tree/0.4.0) (2016-02-26)
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.3.13...0.4.0)
 
@@ -14,6 +65,7 @@
 
 **Closed issues:**
 
+- Bump version to 0.4.0 [\#232](https://github.com/inaka/sumo_db/issues/232)
 - `sumo\_basic\_SUITE` failing because its `init\_per\_testcase` fails [\#223](https://github.com/inaka/sumo_db/issues/223)
 - Move event dispatcher management inside [\#218](https://github.com/inaka/sumo_db/issues/218)
 - Add Meta Testing [\#211](https://github.com/inaka/sumo_db/issues/211)
@@ -23,6 +75,7 @@
 
 **Merged pull requests:**
 
+- \[Fix \#232\] Bump version to 0.4.0 [\#233](https://github.com/inaka/sumo_db/pull/233) ([harenson](https://github.com/harenson))
 - \[\#192\] Make Riak store take care of every condition when building the query [\#231](https://github.com/inaka/sumo_db/pull/231) ([harenson](https://github.com/harenson))
 - \[Fix \#211\] Add meta testing and Fix dialyzer warnings [\#230](https://github.com/inaka/sumo_db/pull/230) ([harenson](https://github.com/harenson))
 - \[Fix \#203\] Fix null values for every store [\#229](https://github.com/inaka/sumo_db/pull/229) ([harenson](https://github.com/harenson))

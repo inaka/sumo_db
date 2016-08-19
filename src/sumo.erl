@@ -217,6 +217,7 @@ persist(DocName, State) ->
     _         -> updated
   end,
   Store = sumo_config:get_store(DocName),
+  sumo_event:dispatch(DocName, list_to_atom("pre_" ++ atom_to_list(EventName)), [State]),
   case sumo_store:persist(Store, sumo_internal:new_doc(DocName, DocMap)) of
     {ok, NewDoc} ->
       Ret = sumo_internal:wakeup(NewDoc),
@@ -230,6 +231,7 @@ persist(DocName, State) ->
 -spec delete_all(schema_name()) -> non_neg_integer().
 delete_all(DocName) ->
   Store = sumo_config:get_store(DocName),
+  sumo_event:dispatch(DocName, pre_delete_all),
   case sumo_store:delete_all(Store, DocName) of
     {ok, NumRows} ->
       case NumRows > 0 of
@@ -245,6 +247,7 @@ delete_all(DocName) ->
 -spec delete(schema_name(), user_doc()) -> boolean().
 delete(DocName, Id) ->
   IdField = sumo_internal:id_field_name(DocName),
+  sumo_event:dispatch(DocName, pre_deleted, [Id]),
   case delete_by(DocName, [{IdField, Id}]) of
     1 -> sumo_event:dispatch(DocName, deleted, [Id]), true;
     0 -> false
@@ -254,11 +257,12 @@ delete(DocName, Id) ->
 -spec delete_by(schema_name(), conditions()) -> non_neg_integer().
 delete_by(DocName, Conditions) ->
   Store = sumo_config:get_store(DocName),
+  sumo_event:dispatch(DocName, pre_deleted_total, [Conditions]),
   case sumo_store:delete_by(Store, DocName, Conditions) of
     {ok, 0} ->
       0;
     {ok, NumRows} ->
-      sumo_event:dispatch(DocName, deleted_total, [NumRows]),
+      sumo_event:dispatch(DocName, deleted_total, [NumRows, Conditions]),
       NumRows;
     Error ->
       throw(Error)
@@ -274,6 +278,7 @@ create_schema(DocName) ->
 %% @end
 -spec create_schema(schema_name(), atom()) -> ok.
 create_schema(DocName, Store) ->
+  sumo_event:dispatch(DocName, pre_schema_created),
   case sumo_store:create_schema(Store, sumo_internal:get_schema(DocName)) of
     ok ->
       sumo_event:dispatch(DocName, schema_created),

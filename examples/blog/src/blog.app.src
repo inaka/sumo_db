@@ -3,7 +3,7 @@
   [
    {description, "Blog application"},
    {vsn, "1.0.0"},
-   {applications, [kernel, stdlib, lager, tirerl, sumo_db]},
+   {applications, [kernel, stdlib, mnesia, lager, sumo_db]},
    {modules, []},
    {registered, []}
   ]

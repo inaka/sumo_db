@@ -16,3 +16,5 @@ sumo_db.d
 _build/
 rebar.lock
 *_plt
+.idea/
+*.iml

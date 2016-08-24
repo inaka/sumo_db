@@ -43,24 +43,24 @@ handle_info(_Info, State) ->
 handle_call(_Request, State) ->
   {ok, not_implemented, State}.
 
-handle_event({blog_post, schema_created, []}, State) ->
+handle_event({post, schema_created, []}, State) ->
   lager:info("The blog post schema has been created"),
   {ok, State};
 
-handle_event({blog_post, deleted, [Id]}, State) ->
+handle_event({post, deleted, [Id]}, State) ->
   lager:info("The blog post ~p has been deleted", [Id]),
   {ok, State};
 
-handle_event({blog_post, deleted_all, []}, State) ->
+handle_event({post, deleted_all, []}, State) ->
   lager:info("All blog posts entries have been deleted"),
   {ok, State};
 
-handle_event({blog_post, created, [Entity]}, State) ->
+handle_event({post, created, [Entity]}, State) ->
   Id = proplists:get_value(id, Entity),
   lager:info("Blog post ~p created", [Id]),
   {ok, State};
 
-handle_event({blog_post, updated, [Entity]}, State) ->
+handle_event({post, updated, [Entity]}, State) ->
   Id = proplists:get_value(id, Entity),
   lager:info("Blog post ~p updated", [Id]),
   {ok, State};

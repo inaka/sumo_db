@@ -12,6 +12,7 @@
 -include_lib("mixer/include/mixer.hrl").
 -mixin([
   {sumo_basic_test_helper, [
+    create_schema/1,
     find/1,
     find_all/1,
     find_by/1,

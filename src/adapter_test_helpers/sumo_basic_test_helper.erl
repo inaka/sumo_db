@@ -2,6 +2,7 @@
 
 %% Test Cases - Helpers
 -export([
+  create_schema/1,
   find/1,
   find_all/1,
   find_by/1,
@@ -16,6 +17,14 @@
 %%%=============================================================================
 %%% Test Cases - Helpers
 %%%=============================================================================
+
+-spec create_schema(config()) -> ok.
+create_schema(Config) ->
+  ok = sumo:create_schema(),
+  Tables = mnesia:system_info(tables),
+  {_, Name} = lists:keyfind(name, 1, Config),
+  true = lists:member(Name, Tables),
+  ok.
 
 -spec find(config()) -> ok.
 find(Config) ->

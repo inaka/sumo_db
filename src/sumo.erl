@@ -119,8 +119,8 @@ get_docs() ->
 %% @doc Creates the schema for all known (configured) docs.
 -spec create_schema() -> ok.
 create_schema() ->
-  lists:foreach(fun({DocName, Store}) ->
-    create_schema(DocName, Store)
+  lists:foreach(fun({DocName, _, _}) ->
+    create_schema(DocName)
   end, get_docs()).
 
 %% @doc Returns 1 doc that matches the given Conditions.

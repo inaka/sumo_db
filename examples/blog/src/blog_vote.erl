@@ -89,7 +89,7 @@ sumo_sleep(Vote) ->
 %% @doc Part of the sumo_doc behavior.
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
-  sumo:new_schema(?MODULE, [
+  sumo:new_schema(vote, [
     sumo:new_field(id, integer, [not_null, auto_increment, id]),
     sumo:new_field(post_id, integer),
     sumo:new_field(reader_id, integer)

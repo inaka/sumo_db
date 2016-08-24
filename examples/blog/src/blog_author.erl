@@ -42,17 +42,17 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% @doc Returns a new author.
 -spec new(string()) -> author().
-new(Name) when is_list(Name) ->
+new(Name) when is_binary(Name) ->
   create(undefined, Name, <<>>).
 
 %% @doc Returns a new author.
 -spec new(string(), binary()) -> author().
-new(Name, Photo) when is_list(Name), is_binary(Photo) ->
+new(Name, Photo) when is_binary(Name), is_binary(Photo) ->
   create(undefined, Name, Photo).
 
 %% @doc Returns a new author (internal).
--spec create(undefined|id(), string(), binary()) -> author().
-create(Id, Name, Photo) when is_list(Name), is_binary(Photo) ->
+-spec create(undefined|id(), binary(), binary()) -> author().
+create(Id, Name, Photo) when is_binary(Name), is_binary(Photo) ->
   [{id, Id}, {name, Name}, {photo, Photo}].
 
 %% @doc Returns the id of the given author.
@@ -62,7 +62,7 @@ id(Author) when is_list(Author) ->
 
 %% @doc Returns the name of the given author.
 -spec name(author()) -> string().
-name(Author) when is_list(Author) ->
+name(Author) when is_binary(Author) ->
   get(name, Author).
 
 %% @doc Returns the current author's photo.
@@ -104,7 +104,7 @@ sumo_sleep(Author) ->
 %% @doc Part of the sumo_doc behavior.
 -spec sumo_schema() -> sumo:schema().
 sumo_schema() ->
-  sumo:new_schema(?MODULE, [
+  sumo:new_schema(author, [
     sumo:new_field(id, integer, [not_null, auto_increment, id]),
     sumo:new_field(name, string, [{length, 128}, not_null]),
     sumo:new_field(photo, binary)

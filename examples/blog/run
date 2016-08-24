@@ -13,7 +13,10 @@ main(_) ->
 
   % Let's first create our db schema. Database should be already created. All
   % other schemas are auto generated.
-  ok = sumo:create_schema(),
+  ok = sumo:create_schema(post),
+  ok = sumo:create_schema(author),
+  ok = sumo:create_schema(vote),
+  ok = sumo:create_schema(reader),
 
   % Cleanup authors and posts, so we can have a fresh runup.
   _NumRows1 = blog:del_author(),
@@ -22,7 +25,7 @@ main(_) ->
 
   % Let's create a new blog author and a new blog entry. The result is the
   % same author and post with their new id's filled in.
-  Author = blog:new_author("Pepe Gorostiga", <<"some binary jpg">>),
+  Author = blog:new_author(<<"Pepe Gorostiga">>, <<"some binary jpg">>),
   Post = blog:new_post("How awesome sumo_db is", "It just make things easy", Author),
 
   % Let's now delete them.
@@ -30,15 +33,15 @@ main(_) ->
   true = blog:del_author(Author),
 
   % Let's create them again
-  Author2 = blog:new_author("Pepe Gorostiga", <<"some binary jpg">>),
-  _Author3 = blog:new_author("Some other guy", <<"some other photo">>),
+  Author2 = blog:new_author(<<"Pepe Gorostiga">>, <<"some binary jpg">>),
+  _Author3 = blog:new_author(<<"Some other guy">>, <<"some other photo">>),
   Post2 = blog:new_post("How awesome sumo_db is", "It just make things easy", Author2),
 
   % Update author and post.
   blog:save_author(blog_author:update_photo(<<"new photo">>, Author2)),
   blog:save_post(blog_post:update_title("My new shiny title", Post2)),
 
-  io:format("Authors by name: ~p~n", [blog:find_authors_by_name("Pepe Gorostiga", 10, 0)]),
+  io:format("Authors by name: ~p~n", [blog:find_authors_by_name(<<"Pepe Gorostiga">>, 10, 0)]),
   io:format("Authors: ~p~n", [blog:find_all_authors(10, 0)]),
   io:format("A blog: ~p~n", [blog:find_post(blog_post:id(Post2))]),
   io:format("An author: ~p~n", [blog:find_author(blog_author:id(Author2))]),
@@ -59,22 +62,16 @@ main(_) ->
   % Create a vote
   _Vote = blog:new_vote(blog_reader:id(Reader2), blog_post:id(Post2)),
 
-  io:format("Deleted ~p authors~n", [blog:del_author_by_name("Pepe Gorostiga")]).
+  io:format("Deleted ~p authors~n", [blog:del_author_by_name(<<"Pepe Gorostiga">>)]).
 
 setup_codepath() ->
-  Dir = filename:dirname(escript:script_name()),
+  Dir = filename:absname(""),
   Deps = [
-    "lager", "goldrush", "worker_pool", "emysql", "emongo"
+    "blog", "goldrush", "worker_pool", "lager", "quickrand",
+    "sumo_db", "uuid_erl"
   ],
-  DepsDir = filename:absname(Dir ++ "/../../deps/"),
-  code:add_patha(filename:absname(Dir ++ "/../../ebin")),
-  code:add_patha(filename:absname(Dir ++ "/ebin")),
+  DepsDir = filename:absname(Dir ++ "/" ++ "_build/default/lib"),
   [ code:add_patha(DepsDir ++ "/" ++ X ++ "/ebin") || X <- Deps].
 
 start_apps() ->
-  Apps = [
-    sasl, compiler, syntax_tools, goldrush, lager,
-    crypto, emysql, emongo, worker_pool,
-    sumo_db
-  ],
-  [ ok = application:start(X) || X <- Apps].
+  application:ensure_all_started(blog).

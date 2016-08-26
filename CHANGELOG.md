@@ -1,10 +1,31 @@
 # Change Log
 
+## [0.6.1](https://github.com/inaka/sumo_db/tree/0.6.1) (2016-08-26)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.6.0...0.6.1)
+
+**Fixed bugs:**
+
+- Don't persist Strings as Binaries in Mnesia store [\#244](https://github.com/inaka/sumo_db/issues/244)
+
+**Closed issues:**
+
+- fix sumo:create\_schema/0 [\#258](https://github.com/inaka/sumo_db/issues/258)
+- fix sumo\_find\_test\_helper with the last sumo\_db changes [\#257](https://github.com/inaka/sumo_db/issues/257)
+- Fix the blog example regarding with new architectural changes in `sumo\_db` [\#245](https://github.com/inaka/sumo_db/issues/245)
+- Move from erlang.mk to rebar3 [\#242](https://github.com/inaka/sumo_db/issues/242)
+
+**Merged pull requests:**
+
+- \[\#257\] find\_test\_helper adapted to last changes in sumo\_db [\#261](https://github.com/inaka/sumo_db/pull/261) ([ferigis](https://github.com/ferigis))
+- \[\#258\] create\_schema/0 fixed and test added [\#260](https://github.com/inaka/sumo_db/pull/260) ([ferigis](https://github.com/ferigis))
+- Ferigis.245.fix examples [\#259](https://github.com/inaka/sumo_db/pull/259) ([ferigis](https://github.com/ferigis))
+
 ## [0.6.0](https://github.com/inaka/sumo_db/tree/0.6.0) (2016-08-17)
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.5.0-OTP19...0.6.0)
 
 **Closed issues:**
 
+- Version Bump to 0.6.0 [\#255](https://github.com/inaka/sumo_db/issues/255)
 - Simplify strings handling in `sumo` – keep `string` data type only. [\#251](https://github.com/inaka/sumo_db/issues/251)
 - Support `boolean` data type. [\#250](https://github.com/inaka/sumo_db/issues/250)
 - Support for new `custom` data types to `mnesia` adapter [\#248](https://github.com/inaka/sumo_db/issues/248)
@@ -16,6 +37,7 @@
 
 **Merged pull requests:**
 
+- \[Close \#255\] version bump to 0.6.0 [\#256](https://github.com/inaka/sumo_db/pull/256) ([Euen](https://github.com/Euen))
 - \[Fix \#250\] Support `boolean` data type. [\#254](https://github.com/inaka/sumo_db/pull/254) ([cabol](https://github.com/cabol))
 - \[Fix \#248\] Support for new `custom` data type to `mnesia`. [\#253](https://github.com/inaka/sumo_db/pull/253) ([cabol](https://github.com/cabol))
 - \[Fix \#251\] Simplify strings handling. [\#252](https://github.com/inaka/sumo_db/pull/252) ([cabol](https://github.com/cabol))

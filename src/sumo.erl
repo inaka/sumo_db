@@ -39,6 +39,7 @@
 -export([
   persist/2,
   fetch/2,
+  find_one/2,
   find_all/1, find_all/4,
   find_by/2, find_by/4, find_by/5,
   delete/2,
@@ -131,6 +132,14 @@ fetch(DocName, Id) ->
   case sumo_store:fetch(Store, DocName, Id) of
     {ok, Doc}       -> sumo_internal:wakeup(Doc);
     {error, Reason} -> Reason
+  end.
+
+%% @doc Returns 1 doc that matches the given Conditions.
+-spec find_one(schema_name(), conditions()) -> user_doc() | notfound.
+find_one(DocName, Conditions) ->
+  case find_by(DocName, Conditions, 1, 0) of
+    []          -> notfound;
+    [First | _] -> First
   end.
 
 %% @doc Returns all docs from the given store.
@@ -313,5 +322,4 @@ normalize_sort_fields(SortFields) when is_list(SortFields) ->
 
 %% @private
 get_docs() ->
-  {ok, Docs} = application:get_env(sumo_db, docs),
-  Docs.
+  application:get_env(sumo_db, docs, []).

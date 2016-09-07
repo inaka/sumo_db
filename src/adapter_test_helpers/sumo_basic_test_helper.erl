@@ -32,9 +32,10 @@ find(Config) ->
   Module = sumo_config:get_prop_value(Name, module),
 
   [First, Second | _] = sumo:find_all(Name),
-  First = sumo:fetch(Name, Module:id(First)),
+  First = sumo:find_one(Name, [{id, Module:id(First)}]),
   Second = sumo:fetch(Name, Module:id(Second)),
   notfound = sumo:fetch(Name, 0),
+  notfound = sumo:find_one(Name, [{id, 0}]),
   ok.
 
 -spec find_all(config()) -> ok.

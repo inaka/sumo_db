@@ -32,9 +32,10 @@ find(Config) ->
   Module = sumo_config:get_prop_value(Name, module),
 
   [First, Second | _] = sumo:find_all(Name),
-  First = sumo:find(Name, Module:id(First)),
-  Second = sumo:find(Name, Module:id(Second)),
-  notfound = sumo:find(Name, 0),
+  First = sumo:find_one(Name, [{id, Module:id(First)}]),
+  Second = sumo:fetch(Name, Module:id(Second)),
+  notfound = sumo:fetch(Name, 0),
+  notfound = sumo:find_one(Name, [{id, 0}]),
   ok.
 
 -spec find_all(config()) -> ok.
@@ -141,7 +142,7 @@ check_proper_dates(Config) ->
   Module = sumo_config:get_prop_value(Name, module),
 
   [P0] = sumo:find_by(Name, [{name, <<"A">>}]),
-  P1 = sumo:find(Name, Module:id(P0)),
+  P1 = sumo:fetch(Name, Module:id(P0)),
   [P2 | _] = sumo:find_all(Name),
 
   {Date, _} = calendar:universal_time(),

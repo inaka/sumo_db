@@ -28,6 +28,7 @@
   start_link/3,
   create_schema/2,
   persist/2,
+  fetch/3,
   delete_by/3,
   delete_all/2,
   find_all/2,
@@ -74,6 +75,11 @@
 -callback persist(Doc, State) -> Res when
   Doc :: sumo_internal:doc(),
   Res :: result(sumo_internal:doc(), State).
+
+-callback fetch(Schema, Id, State) -> Res when
+  Schema :: sumo:schema_name(),
+  Id     :: sumo:field_value(),
+  Res    :: result(sumo_internal:doc(), State).
 
 -callback delete_by(Schema, Conditions, State) -> Res when
   Schema     :: sumo:schema_name(),
@@ -146,6 +152,15 @@ create_schema(Name, Schema) ->
   Res  :: {ok, sumo_internal:doc()} | {error, term()}.
 persist(Name, Doc) ->
   wpool:call(Name, {persist, Doc}).
+
+%% @doc Fetch a single doc by its `Id'.
+-spec fetch(Name, DocName, Id) -> Res when
+  Name    :: atom(),
+  DocName :: sumo:schema_name(),
+  Id      :: sumo:field_value(),
+  Res     :: {ok, sumo_internal:doc()} | {error, term()}.
+fetch(Name, DocName, Id) ->
+  wpool:call(Name, {fetch, DocName, Id}).
 
 %% @doc Deletes the docs identified by the given conditions.
 -spec delete_by(Name, DocName, Conditions) -> Res when
@@ -262,6 +277,13 @@ handle_call(
   #state{handler = Handler, handler_state = HState} = State
 ) ->
   {OkOrError, Reply, NewState} = Handler:persist(Doc, HState),
+  {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
+
+handle_call(
+  {fetch, DocName, Id}, _From,
+  #state{handler = Handler, handler_state = HState} = State
+) ->
+  {OkOrError, Reply, NewState} = Handler:fetch(DocName, Id, HState),
   {reply, {OkOrError, Reply}, State#state{handler_state=NewState}};
 
 handle_call(

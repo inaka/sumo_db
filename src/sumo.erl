@@ -112,18 +112,13 @@
 %% @doc Creates or updates the given Doc.
 -spec persist(schema_name(), UserDoc) -> UserDoc.
 persist(DocName, State) ->
-  IdField = sumo_internal:id_field_name(DocName),
   Module = sumo_config:get_prop_value(DocName, module),
   DocMap = Module:sumo_sleep(State),
-  EventName = case maps:get(IdField, DocMap, undefined) of
-    undefined -> created;
-    _         -> updated
-  end,
   Store = sumo_config:get_store(DocName),
   case sumo_store:persist(Store, sumo_internal:new_doc(DocName, DocMap)) of
     {ok, NewDoc} ->
       Ret = sumo_internal:wakeup(NewDoc),
-      sumo_event:dispatch(DocName, EventName, [Ret]),
+      sumo_event:dispatch(DocName, persisted, [Ret]),
       Ret;
     Error ->
       throw(Error)

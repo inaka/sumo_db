@@ -18,3 +18,4 @@ rebar.lock
 *_plt
 .idea/
 *.iml
+.rebar

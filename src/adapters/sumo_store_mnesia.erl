@@ -21,7 +21,7 @@
 -author("Brujo Benavides <elbrujohalcon@inaka.net>").
 -license("Apache License 2.0").
 
--behavior(sumo_store).
+-behaviour(sumo_store).
 
 %% API
 -export([

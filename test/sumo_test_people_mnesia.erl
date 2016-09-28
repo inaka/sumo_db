@@ -1,6 +1,6 @@
 -module(sumo_test_people_mnesia).
 
--behavior(sumo_doc).
+-behaviour(sumo_doc).
 
 %% @todo remove this once mixer migrates specs better
 -dialyzer([no_behaviours]).

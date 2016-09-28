@@ -21,7 +21,7 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
--behavior(sumo_doc).
+-behaviour(sumo_doc).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.

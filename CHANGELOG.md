@@ -5,7 +5,12 @@
 
 **Closed issues:**
 
+- version bump 0.6.3 [\#276](https://github.com/inaka/sumo_db/issues/276)
 - Rebar3 doesn't understand our behaviors [\#271](https://github.com/inaka/sumo_db/issues/271)
+
+**Merged pull requests:**
+
+- \[Close \#276\] version bump to 0.6.3 [\#277](https://github.com/inaka/sumo_db/pull/277) ([Euen](https://github.com/Euen))
 
 ## [0.6.2](https://github.com/inaka/sumo_db/tree/0.6.2) (2016-09-28)
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.6.1...0.6.2)

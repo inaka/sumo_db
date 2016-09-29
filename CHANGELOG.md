@@ -1,5 +1,12 @@
 # Change Log
 
+## [0.6.3](https://github.com/inaka/sumo_db/tree/0.6.3) (2016-09-29)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.6.2...0.6.3)
+
+**Closed issues:**
+
+- Rebar3 doesn't understand our behaviors [\#271](https://github.com/inaka/sumo_db/issues/271)
+
 ## [0.6.2](https://github.com/inaka/sumo_db/tree/0.6.2) (2016-09-28)
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.6.1...0.6.2)
 
@@ -9,6 +16,7 @@
 
 **Closed issues:**
 
+- Version Bump to 0.6.2 [\#273](https://github.com/inaka/sumo_db/issues/273)
 - Compile fails with "behaviour sumo\_store undefined" [\#270](https://github.com/inaka/sumo_db/issues/270)
 - Split `find\_by` function in order to have two explicit functions: `fetch` and `find\_by` [\#265](https://github.com/inaka/sumo_db/issues/265)
 - Wrong event when persisting [\#241](https://github.com/inaka/sumo_db/issues/241)
@@ -17,6 +25,7 @@
 
 **Merged pull requests:**
 
+- \[Close \#273\] version bump 0.6.2 [\#274](https://github.com/inaka/sumo_db/pull/274) ([Euen](https://github.com/Euen))
 - \[\#271\] Changed behavior by behaviour [\#272](https://github.com/inaka/sumo_db/pull/272) ([demian711](https://github.com/demian711))
 - Cabol.265.refactor\_sumo\_find\_by [\#266](https://github.com/inaka/sumo_db/pull/266) ([cabol](https://github.com/cabol))
 

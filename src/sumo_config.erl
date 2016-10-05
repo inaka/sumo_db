@@ -22,18 +22,53 @@
 
 %% API
 -export([
+  init/0,
   get_docs/0,
   get_doc/1,
   get_store/1,
   get_props/1,
-  get_prop_value/2
+  get_prop_value/2,
+  get_events/0,
+  get_event_manager/1
 ]).
 
+%%%===================================================================
+%%% Types
+%%%===================================================================
+
 -type doc_config() :: {DocName :: atom(), Store :: atom(), Props :: map()}.
+
+-type event_config() :: {DocName :: atom(), EventHandler :: module()}.
+
+-export_type([
+  doc_config/0,
+  event_config/0
+]).
 
 %%%===================================================================
 %%% API
 %%%===================================================================
+
+-spec init() -> ok.
+init() ->
+  sumo_config = ets:new(sumo_config, [
+    protected,
+    named_table,
+    {read_concurrency, true}
+  ]),
+  Docs = application:get_env(sumo_db, docs, []),
+  Events = application:get_env(sumo_db, events, []),
+  NewDocs = lists:foldl(fun({DocName, EventManager}, Acc) ->
+    case lists:keyfind(DocName, 1, Acc) of
+      {DocName, Store, Props} ->
+        NewDoc = {DocName, Store, Props#{event_manager => EventManager}},
+        lists:keyreplace(DocName, 1, Acc, NewDoc);
+      _ ->
+        Acc
+    end
+  end, Docs, Events),
+  true = ets:insert(sumo_config, NewDocs),
+  ok.
 
 -spec get_docs() -> [doc_config()].
 get_docs() ->
@@ -57,6 +92,14 @@ get_props(DocName) ->
 -spec get_prop_value(atom(), atom()) -> term().
 get_prop_value(DocName, Prop) ->
   maps:get(Prop, get_props(DocName), undefined).
+
+-spec get_events() -> [event_config()].
+get_events() ->
+  application:get_env(sumo_db, events, []).
+
+-spec get_event_manager(atom()) -> module().
+get_event_manager(DocName) ->
+  get_prop_value(DocName, event_manager).
 
 %%%===================================================================
 %%% Internal functions

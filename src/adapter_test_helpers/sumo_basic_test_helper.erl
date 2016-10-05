@@ -229,8 +229,9 @@ init_store(Name) ->
 %%% Internal functions
 %%%=============================================================================
 
-pick_up_event(Event) ->
-  sumo_test_people_mnesia_events_handler:pick_up_event(Event).
+pick_up_event({Name, _, _} = Event) ->
+  EventManager = sumo_config:get_event_manager(Name),
+  EventManager:pick_up_event(Event).
 
 create(Name, Args) ->
   Res = sumo:persist(Name, Args),

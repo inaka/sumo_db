@@ -1,4 +1,4 @@
--module(sumo_test_people_mnesia_events_handler).
+-module(sumo_test_people_events_manager).
 
 -behaviour(gen_event).
 

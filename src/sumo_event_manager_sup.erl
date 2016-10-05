@@ -41,10 +41,9 @@ start_link() -> supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 %%% Supervisor callbacks
 %%%=============================================================================
 
--spec init(any()) ->
-  {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
+-spec init(any()) -> {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
 init([]) ->
-  Events = application:get_env(sumo_db, events, []),
+  Events = sumo_config:get_events(),
   EventsManagers = lists:usort([Manager || {_, Manager} <- Events]),
   ManagersList = [manager(EventManager) || EventManager <- EventsManagers],
   {ok, {{one_for_one, 5, 10}, ManagersList}}.

@@ -113,11 +113,11 @@
 
 %% @doc Creates or updates the given Doc.
 -spec persist(schema_name(), user_doc()) -> user_doc().
-persist(DocName, Doc) ->
+persist(DocName, UserDoc) ->
   Module = sumo_config:get_prop_value(DocName, module),
-  DocMap = Module:sumo_sleep(Doc),
+  DocMap = Module:sumo_sleep(UserDoc),
   Store = sumo_config:get_store(DocName),
-  sumo_event:dispatch(DocName, pre_persisted, [Doc]),
+  sumo_event:dispatch(DocName, pre_persisted, [UserDoc]),
   case sumo_store:persist(Store, sumo_internal:new_doc(DocName, DocMap)) of
     {ok, NewDoc} ->
       Ret = sumo_internal:wakeup(NewDoc),

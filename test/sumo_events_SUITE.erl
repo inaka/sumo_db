@@ -23,7 +23,7 @@ all() -> [events_manager_supervisor_running].
 -spec init_per_suite(Config::config()) -> config().
 init_per_suite(Config) ->
   ok = sumo_test_utils:start_apps(),
-  [{module, sumo_test_people_mnesia} | Config].
+  [{name, people} | Config].
 
 -spec end_per_suite(Config::config()) -> config().
 end_per_suite(Config) ->

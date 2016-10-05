@@ -224,6 +224,6 @@ pick_up_event(Event) ->
 
 create(Name, Args) ->
   Res = sumo:persist(Name, Args),
-  ok = pick_up_event({Name, pre_created, [Args]}),
-  ok = pick_up_event({Name, created, [Res]}),
+  ok = pick_up_event({Name, pre_persisted, [Args]}),
+  ok = pick_up_event({Name, persisted, [Res]}),
   Res.

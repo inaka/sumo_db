@@ -2,24 +2,24 @@
 
 -behaviour(gen_event).
 
--export([ init/1
-        , terminate/2
-        , handle_info/2
-        , handle_call/2
-        , code_change/3
-        , handle_event/2
-        ]).
+-export([
+  init/1,
+  terminate/2,
+  handle_info/2,
+  handle_call/2,
+  code_change/3,
+  handle_event/2
+]).
 
 -export([pick_up_event/1]).
 
--record(state,
-        {event_list = [] :: list()}).
+-record(state, {event_list = [] :: list()}).
 -type state() :: #state{}.
 
 -spec pick_up_event(tuple()) -> ok | no_event.
 pick_up_event(Event) ->
-  EventMgr = proplists:get_value( people
-                                , application:get_env(sumo_db, events, [])),
+  EventMgr = proplists:get_value(
+    people, application:get_env(sumo_db, events, [])),
   gen_event:call(EventMgr, ?MODULE, {pick_up_event, Event}).
 
 -spec init([]) -> {ok, state()}.
@@ -30,8 +30,10 @@ init([]) ->
 handle_info(_Info, State) ->
   {ok, State}.
 
--spec handle_call({pick_up_event, term()} | term(), state()) ->
-                     { ok, ok | no_event | not_implemented, state()}.
+-spec handle_call(Event, State) -> Result when
+  Event  :: term(),
+  State  :: state(),
+  Result :: {ok, ok | no_event | not_implemented, state()}.
 handle_call({pick_up_event, Event}, #state{event_list = EventList} = State) ->
   case lists:member(Event, EventList) of
     true ->

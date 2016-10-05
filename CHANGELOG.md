@@ -1,5 +1,39 @@
 # Change Log
 
+## [0.6.3](https://github.com/inaka/sumo_db/tree/0.6.3) (2016-09-29)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.6.2...0.6.3)
+
+**Closed issues:**
+
+- version bump 0.6.3 [\#276](https://github.com/inaka/sumo_db/issues/276)
+- Rebar3 doesn't understand our behaviors [\#271](https://github.com/inaka/sumo_db/issues/271)
+
+**Merged pull requests:**
+
+- \[Close \#276\] version bump to 0.6.3 [\#277](https://github.com/inaka/sumo_db/pull/277) ([Euen](https://github.com/Euen))
+
+## [0.6.2](https://github.com/inaka/sumo_db/tree/0.6.2) (2016-09-28)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.6.1...0.6.2)
+
+**Fixed bugs:**
+
+- Riak store change type in maps [\#199](https://github.com/inaka/sumo_db/issues/199)
+
+**Closed issues:**
+
+- Version Bump to 0.6.2 [\#273](https://github.com/inaka/sumo_db/issues/273)
+- Compile fails with "behaviour sumo\_store undefined" [\#270](https://github.com/inaka/sumo_db/issues/270)
+- Split `find\_by` function in order to have two explicit functions: `fetch` and `find\_by` [\#265](https://github.com/inaka/sumo_db/issues/265)
+- Wrong event when persisting [\#241](https://github.com/inaka/sumo_db/issues/241)
+- Improve sumo in order to have a plugable architecture \(separate API from specific implementations\) [\#221](https://github.com/inaka/sumo_db/issues/221)
+- Update riak dep [\#209](https://github.com/inaka/sumo_db/issues/209)
+
+**Merged pull requests:**
+
+- \[Close \#273\] version bump 0.6.2 [\#274](https://github.com/inaka/sumo_db/pull/274) ([Euen](https://github.com/Euen))
+- \[\#271\] Changed behavior by behaviour [\#272](https://github.com/inaka/sumo_db/pull/272) ([demian711](https://github.com/demian711))
+- Cabol.265.refactor\_sumo\_find\_by [\#266](https://github.com/inaka/sumo_db/pull/266) ([cabol](https://github.com/cabol))
+
 ## [0.6.1](https://github.com/inaka/sumo_db/tree/0.6.1) (2016-08-26)
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.6.0...0.6.1)
 
@@ -9,6 +43,7 @@
 
 **Closed issues:**
 
+- Version Bump to 0.6.1 [\#263](https://github.com/inaka/sumo_db/issues/263)
 - fix sumo:create\_schema/0 [\#258](https://github.com/inaka/sumo_db/issues/258)
 - fix sumo\_find\_test\_helper with the last sumo\_db changes [\#257](https://github.com/inaka/sumo_db/issues/257)
 - Fix the blog example regarding with new architectural changes in `sumo\_db` [\#245](https://github.com/inaka/sumo_db/issues/245)
@@ -16,6 +51,7 @@
 
 **Merged pull requests:**
 
+- \[Close \#263\] version bump to 263 [\#264](https://github.com/inaka/sumo_db/pull/264) ([Euen](https://github.com/Euen))
 - \[\#257\] find\_test\_helper adapted to last changes in sumo\_db [\#261](https://github.com/inaka/sumo_db/pull/261) ([ferigis](https://github.com/ferigis))
 - \[\#258\] create\_schema/0 fixed and test added [\#260](https://github.com/inaka/sumo_db/pull/260) ([ferigis](https://github.com/ferigis))
 - Ferigis.245.fix examples [\#259](https://github.com/inaka/sumo_db/pull/259) ([ferigis](https://github.com/ferigis))

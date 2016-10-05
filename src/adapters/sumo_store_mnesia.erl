@@ -21,13 +21,14 @@
 -author("Brujo Benavides <elbrujohalcon@inaka.net>").
 -license("Apache License 2.0").
 
--behavior(sumo_store).
+-behaviour(sumo_store).
 
 %% API
 -export([
   init/1,
   create_schema/2,
   persist/2,
+  fetch/3,
   delete_by/3,
   delete_all/2,
   find_all/2, find_all/5,
@@ -79,6 +80,21 @@ persist(Doc, State) ->
     {atomic, ok} ->
       NewDoc = sumo_internal:set_field(IdField, NewId, Doc),
       {ok, NewDoc, State}
+  end.
+
+-spec fetch(DocName, Id, State) -> Response when
+  DocName  :: sumo:schema_name(),
+  Id       :: sumo:field_value(),
+  State    :: state(),
+  Response :: sumo_store:result(sumo_internal:doc(), state()).
+fetch(DocName, Id, State) ->
+  try
+    [Result] = mnesia:dirty_read(DocName, Id),
+    Schema = sumo_internal:get_schema(DocName),
+    Fields = schema_field_names(Schema),
+    {ok, wakeup(result_to_doc(Result, Fields)), State}
+  catch
+    _:_ -> {error, notfound, State}
   end.
 
 -spec delete_by(sumo:schema_name(), sumo:conditions(), state()) ->

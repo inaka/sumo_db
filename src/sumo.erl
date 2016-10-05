@@ -38,13 +38,13 @@
 %%% API for standard CRUD functions.
 -export([
   persist/2,
+  fetch/2,
+  find_one/2,
+  find_all/1, find_all/4,
+  find_by/2, find_by/4, find_by/5,
   delete/2,
   delete_by/2,
   delete_all/1,
-  find/2,
-  find_all/1, find_all/4,
-  find_by/2, find_by/4, find_by/5,
-  find_one/2,
   call/2, call/3
 ]).
 
@@ -110,32 +110,38 @@
 %%% Code starts here.
 %%%=============================================================================
 
-%% @doc Returns all the configured docs.
--spec get_docs() -> [{atom(), atom()}].
-get_docs() ->
-  {ok, Docs} = application:get_env(sumo_db, docs),
-  Docs.
+%% @doc Creates or updates the given Doc.
+-spec persist(schema_name(), user_doc()) -> user_doc().
+persist(DocName, Doc) ->
+  Module = sumo_config:get_prop_value(DocName, module),
+  DocMap = Module:sumo_sleep(Doc),
+  Store = sumo_config:get_store(DocName),
+  sumo_event:dispatch(DocName, pre_persisted, [Doc]),
+  case sumo_store:persist(Store, sumo_internal:new_doc(DocName, DocMap)) of
+    {ok, NewDoc} ->
+      Ret = sumo_internal:wakeup(NewDoc),
+      sumo_event:dispatch(DocName, persisted, [Ret]),
+      Ret;
+    Error ->
+      throw(Error)
+  end.
 
-%% @doc Creates the schema for all known (configured) docs.
--spec create_schema() -> ok.
-create_schema() ->
-  lists:foreach(fun({DocName, _, _}) ->
-    create_schema(DocName)
-  end, get_docs()).
+%% @doc Returns the doc identified by Id.
+-spec fetch(schema_name(), field_value()) -> user_doc() | notfound.
+fetch(DocName, Id) ->
+  Store = sumo_config:get_store(DocName),
+  case sumo_store:fetch(Store, DocName, Id) of
+    {ok, Doc}       -> sumo_internal:wakeup(Doc);
+    {error, Reason} -> Reason
+  end.
 
 %% @doc Returns 1 doc that matches the given Conditions.
 -spec find_one(schema_name(), conditions()) -> user_doc() | notfound.
 find_one(DocName, Conditions) ->
   case find_by(DocName, Conditions, 1, 0) of
-    []   -> notfound;
-    List -> hd(List)
+    []          -> notfound;
+    [First | _] -> First
   end.
-
-%% @doc Returns the doc identified by Id.
--spec find(schema_name(), field_value()) -> user_doc() | notfound.
-find(DocName, Id) ->
-  IdFieldName = sumo_internal:id_field_name(DocName),
-  find_one(DocName, [{IdFieldName, Id}]).
 
 %% @doc Returns all docs from the given store.
 -spec find_all(schema_name()) -> [user_doc()].
@@ -201,30 +207,10 @@ find_by(DocName, Conditions, SortFields, Limit, Offset) ->
   NormalizedSortFields = normalize_sort_fields(SortFields),
   Store = sumo_config:get_store(DocName),
   case sumo_store:find_by(
-      Store, DocName, Conditions, NormalizedSortFields, Limit, Offset) of
+    Store, DocName, Conditions, NormalizedSortFields, Limit, Offset
+  ) of
     {ok, Docs} -> docs_wakeup(Docs);
     Error      -> throw(Error)
-  end.
-
-%% @doc Creates or updates the given Doc.
--spec persist(schema_name(), UserDoc) -> UserDoc.
-persist(DocName, State) ->
-  IdField = sumo_internal:id_field_name(DocName),
-  Module = sumo_config:get_prop_value(DocName, module),
-  DocMap = Module:sumo_sleep(State),
-  EventName = case maps:get(IdField, DocMap, undefined) of
-    undefined -> created;
-    _         -> updated
-  end,
-  Store = sumo_config:get_store(DocName),
-  sumo_event:dispatch(DocName, list_to_atom("pre_" ++ atom_to_list(EventName)), [State]),
-  case sumo_store:persist(Store, sumo_internal:new_doc(DocName, DocMap)) of
-    {ok, NewDoc} ->
-      Ret = sumo_internal:wakeup(NewDoc),
-      sumo_event:dispatch(DocName, EventName, [Ret]),
-      Ret;
-    Error ->
-      throw(Error)
   end.
 
 %% @doc Deletes all docs of type DocName.
@@ -235,8 +221,8 @@ delete_all(DocName) ->
   case sumo_store:delete_all(Store, DocName) of
     {ok, NumRows} ->
       case NumRows > 0 of
-        true  -> sumo_event:dispatch(DocName, deleted_all);
-        _     -> ok
+        true -> sumo_event:dispatch(DocName, deleted_all);
+        _    -> ok
       end,
       NumRows;
     Error ->
@@ -268,25 +254,6 @@ delete_by(DocName, Conditions) ->
       throw(Error)
   end.
 
-%% @doc Creates the schema for the docs of type DocName.
--spec create_schema(schema_name()) -> ok.
-create_schema(DocName) ->
-  create_schema(DocName, sumo_config:get_store(DocName)).
-
-%% @doc
-%% Creates the schema for the docs of type `DocName' using the given `Store'.
-%% @end
--spec create_schema(schema_name(), atom()) -> ok.
-create_schema(DocName, Store) ->
-  sumo_event:dispatch(DocName, pre_schema_created),
-  case sumo_store:create_schema(Store, sumo_internal:get_schema(DocName)) of
-    ok ->
-      sumo_event:dispatch(DocName, schema_created),
-      ok;
-    Error ->
-      throw(Error)
-  end.
-
 %% @doc Calls the given custom function of a store.
 -spec call(schema_name(), atom()) -> term().
 call(DocName, Function) ->
@@ -299,6 +266,29 @@ call(DocName, Function, Args) ->
   case sumo_store:call(Store, DocName, Function, Args) of
     {ok, {docs, Docs}} -> docs_wakeup(Docs);
     {ok, {raw, Value}} -> Value
+  end.
+
+%% @doc Creates the schema for all known (configured) docs.
+-spec create_schema() -> ok.
+create_schema() ->
+  lists:foreach(fun({DocName, _, _}) ->
+    create_schema(DocName)
+  end, get_docs()).
+
+%% @doc Creates the schema for the docs of type DocName.
+-spec create_schema(schema_name()) -> ok.
+create_schema(DocName) ->
+  create_schema(DocName, sumo_config:get_store(DocName)).
+
+%% @doc
+%% Creates the schema for the docs of type `DocName' using the given `Store'.
+%% @end
+-spec create_schema(schema_name(), atom()) -> ok.
+create_schema(DocName, Store) ->
+  sumo_event:dispatch(DocName, pre_schema_created),
+  case sumo_store:create_schema(Store, sumo_internal:get_schema(DocName)) of
+    ok    -> sumo_event:dispatch(DocName, schema_created), ok;
+    Error -> throw(Error)
   end.
 
 %% @doc Returns a new schema.
@@ -331,3 +321,7 @@ normalize_sort_fields({Name, Order}) ->
   [{Name, Order}];
 normalize_sort_fields(SortFields) when is_list(SortFields) ->
   lists:flatmap(fun normalize_sort_fields/1, SortFields).
+
+%% @private
+get_docs() ->
+  application:get_env(sumo_db, docs, []).

@@ -21,7 +21,7 @@
 -github("https://github.com/inaka").
 -license("Apache License 2.0").
 
--behavior(gen_event).
+-behaviour(gen_event).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Exports.

@@ -45,6 +45,7 @@
   delete/2,
   delete_by/2,
   delete_all/1,
+  count/1,
   call/2, call/3
 ]).
 
@@ -252,6 +253,14 @@ delete_by(DocName, Conditions) ->
       NumRows;
     Error ->
       throw(Error)
+  end.
+
+%% @doc Counts the total number of docs in the given schema name `DocName'.
+-spec count(schema_name()) -> non_neg_integer().
+count(DocName) ->
+  case sumo_store:count(sumo_config:get_store(DocName), DocName) of
+    {ok, Total} -> Total;
+    Error       -> throw(Error)
   end.
 
 %% @doc Calls the given custom function of a store.

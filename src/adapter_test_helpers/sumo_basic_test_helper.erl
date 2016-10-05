@@ -118,6 +118,7 @@ delete_all(Config) ->
   pick_up_event({Name, pre_delete_all, []}),
   pick_up_event({Name, delete_all, []}),
   [] = sumo:find_all(Name),
+  0 = sumo:count(Name),
   ok.
 
 -spec delete(config()) -> ok.
@@ -128,6 +129,7 @@ delete(Config) ->
   %% delete_by
   Conditions = [{last_name, <<"D">>}],
   2 = sumo:delete_by(Name, Conditions),
+  6 = sumo:count(Name),
 
   ok = pick_up_event({Name, pre_deleted_total, [Conditions]}),
   ok = pick_up_event({Name, deleted_total, [2, Conditions]}),
@@ -148,6 +150,7 @@ delete(Config) ->
 
   NewAll = sumo:find_all(Name),
   [_] = All -- NewAll,
+  5 = sumo:count(Name),
   ok.
 
 -spec check_proper_dates(config()) -> ok.
@@ -213,6 +216,13 @@ init_store(Name) ->
     weird_field2  => [1, true, <<"hi">>, 1.1],
     weird_field3  => #{a => 1, b => [1, "2", <<"3">>], <<"c">> => false}
   })),
+
+  8 = sumo:count(Name),
+  _ = try sumo:count(wrong)
+  catch
+    _:no_workers -> ok
+  end,
+
   ok.
 
 %%%=============================================================================

@@ -44,8 +44,8 @@ all() ->
 -spec init_per_suite(config()) -> config().
 init_per_suite(Config) ->
   ok = sumo_test_utils:start_apps(),
-  EventMgr = proplists:get_value(people,
-                                 application:get_env(sumo_db, events, [])),
+  EventMgr = proplists:get_value(
+    people, application:get_env(sumo_db, events, [])),
   gen_event:add_handler(EventMgr, sumo_test_people_mnesia_events_handler, []),
   [{name, people} | Config].
 

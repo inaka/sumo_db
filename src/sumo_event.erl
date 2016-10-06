@@ -36,7 +36,11 @@ dispatch(DocName, Event) ->
 %% @doc Dispatch an event through gen_event:notify/2.
 -spec dispatch(sumo:schema_name(), term(), term()) -> ok.
 dispatch(DocName, Event, Args) ->
-  case sumo_config:get_event_manager(DocName) of
-    undefined    -> ok;
-    EventManager -> gen_event:notify(EventManager, {DocName, Event, Args})
+  case sumo_config:get_event_managers(DocName) of
+    [] ->
+      ok;
+    EventManagers ->
+      lists:foreach(fun(EventManager) ->
+        gen_event:notify(EventManager, {DocName, Event, Args})
+      end, EventManagers)
   end.

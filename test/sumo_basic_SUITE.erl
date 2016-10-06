@@ -44,9 +44,6 @@ all() ->
 -spec init_per_suite(config()) -> config().
 init_per_suite(Config) ->
   ok = sumo_test_utils:start_apps(),
-  EventMgr = proplists:get_value(
-    people, application:get_env(sumo_db, events, [])),
-  gen_event:add_handler(EventMgr, sumo_test_people_events_manager, []),
   [{name, people} | Config].
 
 -spec init_per_testcase(atom(), config()) -> config().
@@ -57,4 +54,5 @@ init_per_testcase(_, Config) ->
 
 -spec end_per_suite(config()) -> config().
 end_per_suite(Config) ->
+  _ = application:stop(sumo_db),
   Config.

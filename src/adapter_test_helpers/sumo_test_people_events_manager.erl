@@ -18,9 +18,7 @@
 
 -spec pick_up_event(tuple()) -> ok | no_event.
 pick_up_event(Event) ->
-  EventMgr = proplists:get_value(
-    people, application:get_env(sumo_db, events, [])),
-  gen_event:call(EventMgr, ?MODULE, {pick_up_event, Event}).
+  gen_event:call(?MODULE, ?MODULE, {pick_up_event, Event}).
 
 -spec init([]) -> {ok, state()}.
 init([]) ->

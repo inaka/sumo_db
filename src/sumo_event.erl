@@ -36,28 +36,7 @@ dispatch(DocName, Event) ->
 %% @doc Dispatch an event through gen_event:notify/2.
 -spec dispatch(sumo:schema_name(), term(), term()) -> ok.
 dispatch(DocName, Event, Args) ->
-  case get_event_manager(DocName) of
+  case sumo_config:get_event_manager(DocName) of
     undefined    -> ok;
     EventManager -> gen_event:notify(EventManager, {DocName, Event, Args})
-  end.
-
-%%%=============================================================================
-%%% Internal functions
-%%%=============================================================================
-
-%% @doc Returns the name of the event manager configured for the given
-%% doc, or undefined.
--spec get_event_manager(DocName) -> Res when
-  DocName :: sumo:schema_name(),
-  Res     :: undefined | atom()| {atom(), term()}.
-get_event_manager(DocName) ->
-  {ok, Docs} = application:get_env(sumo_db, events),
-  case Docs of
-    undefined ->
-      undefined;
-    EventManagers ->
-      case sumo_utils:keyfind(DocName, EventManagers) of
-        undefined -> undefined;
-        Name      -> Name
-      end
   end.

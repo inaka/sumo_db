@@ -11,14 +11,13 @@
 
 -spec events_manager_supervisor_running(Config :: config()) -> ok.
 events_manager_supervisor_running(Config) ->
-  {_, Module} = lists:keyfind(module, 1, Config),
+  {_, DocName} = lists:keyfind(name, 1, Config),
 
-  Events = application:get_env(sumo_db, events, []),
-  case lists:keyfind(Module, 1, Events) of
-    false ->
+  case sumo_config:get_event_manager(DocName) of
+    undefined ->
       ok;
-    {Module, EventManager} ->
+    EventManager ->
       ct:comment("~p should be running", [EventManager]),
-      [] = gen_event:which_handlers(EventManager),
+      [EventManager] = gen_event:which_handlers(EventManager),
       ok
   end.

@@ -115,7 +115,10 @@ delete_all(Config) ->
   {_, Name} = lists:keyfind(name, 1, Config),
 
   sumo:delete_all(Name),
+  pick_up_event({Name, pre_delete_all, []}),
+  pick_up_event({Name, delete_all, []}),
   [] = sumo:find_all(Name),
+  0 = sumo:count(Name),
   ok.
 
 -spec delete(config()) -> ok.
@@ -124,16 +127,30 @@ delete(Config) ->
   Module = sumo_config:get_prop_value(Name, module),
 
   %% delete_by
-  2 = sumo:delete_by(Name, [{last_name, <<"D">>}]),
-  Results = sumo:find_by(Name, [{last_name, <<"D">>}]),
+  Conditions = [{last_name, <<"D">>}],
+  2 = sumo:delete_by(Name, Conditions),
+  6 = sumo:count(Name),
+
+  ok = pick_up_event({Name, pre_deleted_total, [Conditions]}),
+  ok = pick_up_event({Name, deleted_total, [2, Conditions]}),
+
+  Results = sumo:find_by(Name, Conditions),
   [] = Results,
 
   %% delete
   [First | _ ] = All = sumo:find_all(Name),
   Id = Module:id(First),
   sumo:delete(Name, Id),
+
+  ok = pick_up_event({Name, pre_deleted, [Id]}),
+  ok = pick_up_event({Name, deleted, [Id]}),
+  IdField = sumo_internal:id_field_name(Name),
+  ok = pick_up_event({Name, pre_deleted_total, [[{IdField, Id}]]}),
+  ok = pick_up_event({Name, deleted_total, [1, [{IdField, Id}]]}),
+
   NewAll = sumo:find_all(Name),
   [_] = All -- NewAll,
+  5 = sumo:count(Name),
   ok.
 
 -spec check_proper_dates(config()) -> ok.
@@ -154,20 +171,24 @@ check_proper_dates(Config) ->
   Date = Module:birthdate(P2),
   {Date, {_, _, _}} = Module:created_at(P2),
 
-  Person = sumo:persist(Name, Module:new(<<"X">>, <<"Z">>, 6)),
+  Person = create(Name, Module:new(<<"X">>, <<"Z">>, 6)),
   Date = Module:birthdate(Person),
   ok.
 
 -spec init_store(atom()) -> ok.
 init_store(Name) ->
   sumo:create_schema(Name),
+  ok = pick_up_event({Name, pre_schema_created, []}),
+  ok = pick_up_event({Name, schema_created, []}),
   Module = sumo_config:get_prop_value(Name, module),
   sumo:delete_all(Name),
+  ok = pick_up_event({Name, pre_delete_all, []}),
+  ok = pick_up_event({Name, deleted_all, []}),
 
   DT = {Date, _} = calendar:universal_time(),
 
-  sumo:persist(Name, Module:new(<<"A">>, <<"E">>, 6)),
-  sumo:persist(Name, Module:from_map(#{
+  create(Name, Module:new(<<"A">>, <<"E">>, 6)),
+  create(Name, Module:from_map(#{
     name         => <<"B">>,
     last_name    => <<"D">>,
     age          => 3,
@@ -175,13 +196,13 @@ init_store(Name) ->
     created_at   => DT,
     weird_field1 => true
   })),
-  sumo:persist(Name, Module:new(<<"C">>, <<"C">>, 5)),
-  sumo:persist(Name, Module:new(<<"D">>, <<"D">>, 4)),
-  sumo:persist(Name, Module:new(<<"E">>, <<"A">>, 2)),
-  sumo:persist(Name, Module:new(<<"F">>, <<"E">>, 1)),
-  sumo:persist(Name, Module:new(<<"Model T-2000">>, <<"undefined">>, 7)),
+  create(Name, Module:new(<<"C">>, <<"C">>, 5)),
+  create(Name, Module:new(<<"D">>, <<"D">>, 4)),
+  create(Name, Module:new(<<"E">>, <<"A">>, 2)),
+  create(Name, Module:new(<<"F">>, <<"E">>, 1)),
+  create(Name, Module:new(<<"Model T-2000">>, <<"undefined">>, 7)),
 
-  sumo:persist(Name, Module:from_map(#{
+  create(Name, Module:from_map(#{
     name          => <<"Name">>,
     last_name     => <<"LastName">>,
     age           => 3,
@@ -195,4 +216,25 @@ init_store(Name) ->
     weird_field2  => [1, true, <<"hi">>, 1.1],
     weird_field3  => #{a => 1, b => [1, "2", <<"3">>], <<"c">> => false}
   })),
+
+  8 = sumo:count(Name),
+  _ = try sumo:count(wrong)
+  catch
+    _:no_workers -> ok
+  end,
+
   ok.
+
+%%%=============================================================================
+%%% Internal functions
+%%%=============================================================================
+
+pick_up_event({Name, _, _} = Event) ->
+  EventManager = sumo_config:get_event_manager(Name),
+  EventManager:pick_up_event(Event).
+
+create(Name, Args) ->
+  Res = sumo:persist(Name, Args),
+  ok = pick_up_event({Name, pre_persisted, [Args]}),
+  ok = pick_up_event({Name, persisted, [Res]}),
+  Res.

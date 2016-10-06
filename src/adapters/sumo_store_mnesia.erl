@@ -32,7 +32,8 @@
   delete_by/3,
   delete_all/2,
   find_all/2, find_all/5,
-  find_by/3, find_by/5, find_by/6
+  find_by/3, find_by/5, find_by/6,
+  count/2
 ]).
 
 %%%=============================================================================
@@ -97,8 +98,11 @@ fetch(DocName, Id, State) ->
     _:_ -> {error, notfound, State}
   end.
 
--spec delete_by(sumo:schema_name(), sumo:conditions(), state()) ->
-  sumo_store:result(sumo_store:affected_rows(), state()).
+-spec delete_by(DocName, Conditions, State) -> Response when
+  DocName    :: sumo:schema_name(),
+  Conditions :: sumo:conditions(),
+  State      :: state(),
+  Response   :: sumo_store:result(sumo_store:affected_rows(), state()).
 delete_by(DocName, Conditions, State) ->
   MatchSpec = build_match_spec(DocName, Conditions),
   Transaction = fun() ->
@@ -113,8 +117,10 @@ delete_by(DocName, Conditions, State) ->
       {ok, Result, State}
   end.
 
--spec delete_all(sumo:schema_name(), state()) ->
-  sumo_store:result(sumo_store:affected_rows(), state()).
+-spec delete_all(DocName, State) -> Response when
+  DocName  :: sumo:schema_name(),
+  State    :: state(),
+  Response :: sumo_store:result(sumo_store:affected_rows(), state()).
 delete_all(DocName, State) ->
   Count = mnesia:table_info(DocName, size),
   case mnesia:clear_table(DocName) of
@@ -124,47 +130,54 @@ delete_all(DocName, State) ->
       {error, Reason, State}
   end.
 
--spec find_all(sumo:schema_name(), state()) ->
-  sumo_store:result([sumo_internal:doc()], state()).
+-spec find_all(DocName, State) -> Response when
+  DocName  :: sumo:schema_name(),
+  State    :: state(),
+  Response :: sumo_store:result([sumo_internal:doc()], state()).
 find_all(DocName, State) ->
   find_all(DocName, [], 0, 0, State).
 
--spec find_all(
-  sumo:schema_name(),
-  term(),
-  non_neg_integer(),
-  non_neg_integer(),
-  state()
-) -> sumo_store:result([sumo_internal:doc()], state()).
+-spec find_all(DocName, SortFields, Limit, Offset, State) -> Response when
+  DocName    :: sumo:schema_name(),
+  SortFields :: term(),
+  Limit      :: non_neg_integer(),
+  Offset     :: non_neg_integer(),
+  State      :: state(),
+  Response   :: sumo_store:result([sumo_internal:doc()], state()).
 find_all(DocName, SortFields, Limit, Offset, State) ->
   find_by(DocName, [], SortFields, Limit, Offset, State).
 
--spec find_by(sumo:schema_name(), sumo:conditions(), state()) ->
-  sumo_store:result([sumo_internal:doc()], state()).
+-spec find_by(DocName, Conditions, State) -> Response when
+  DocName    :: sumo:schema_name(),
+  Conditions :: sumo:conditions(),
+  State      :: state(),
+  Response   :: sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName, Conditions, State) ->
   find_by(DocName, Conditions, [], 0, 0, State).
 
--spec find_by(
-  sumo:schema_name(),
-  sumo:conditions(),
-  non_neg_integer(),
-  non_neg_integer(),
-  state()
-) -> sumo_store:result([sumo_internal:doc()], state()).
+-spec find_by(DocName, Conditions, Limit, Offset, State) -> Response when
+  DocName    :: sumo:schema_name(),
+  Conditions :: sumo:conditions(),
+  Limit      :: non_neg_integer(),
+  Offset     :: non_neg_integer(),
+  State      :: state(),
+  Response   :: sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName, Conditions, Limit, Offset, State) ->
   find_by(DocName, Conditions, [], Limit, Offset, State).
 
--spec find_by(
-  sumo:schema_name(),
-  sumo:conditions(),
-  term(),
-  non_neg_integer(),
-  non_neg_integer(),
-  state()
-) -> sumo_store:result([sumo_internal:doc()], state()).
+-spec find_by(DocName, Conditions, Sort, Limit, Offset, State) -> Response when
+  DocName    :: sumo:schema_name(),
+  Conditions :: sumo:conditions(),
+  Sort       :: term(),
+  Limit      :: non_neg_integer(),
+  Offset     :: non_neg_integer(),
+  State      :: state(),
+  Response   :: sumo_store:result([sumo_internal:doc()], state()).
 find_by(DocName, Conditions, [], Limit, Offset, State) ->
   MatchSpec = build_match_spec(DocName, Conditions),
-  Transaction0 = fun() -> mnesia:select(DocName, MatchSpec) end,
+  Transaction0 = fun() ->
+    mnesia:select(DocName, MatchSpec)
+  end,
   TransactionL = fun() ->
     case mnesia:select(DocName, MatchSpec, Offset + Limit, read) of
       {ManyItems, _Cont} ->
@@ -186,10 +199,13 @@ find_by(DocName, Conditions, [], Limit, Offset, State) ->
       Docs = [wakeup(result_to_doc(Result, Fields)) || Result <- Results],
       {ok, Docs, State}
   end;
-find_by(_DocName, _Conditions, _SortFields, _Limit, _Offset, State) ->
+find_by(_DocName, _Conditions, _Sort, _Limit, _Offset, State) ->
   {error, not_supported, State}.
 
--spec create_schema(sumo:schema(), state()) -> sumo_store:result(state()).
+-spec create_schema(Schema, State) -> Response when
+  Schema   :: sumo:schema(),
+  State    :: state(),
+  Response :: sumo_store:result(state()).
 create_schema(Schema, #{default_options := DefaultOptions} = State) ->
   Name = sumo_internal:schema_name(Schema),
   Fields = schema_fields(Schema),
@@ -207,6 +223,18 @@ create_schema(Schema, #{default_options := DefaultOptions} = State) ->
     {atomic, ok}                      -> {ok, State};
     {aborted, {already_exists, Name}} -> {ok, State};
     {aborted, Reason}                 -> {error, Reason, State}
+  end.
+
+-spec count(DocName, State) -> Response when
+  DocName  :: sumo:schema_name(),
+  State    :: state(),
+  Response :: sumo_store:result(non_neg_integer(), state()).
+count(DocName, State) ->
+  try
+    Size = mnesia:table_info(DocName, size),
+    {ok, Size, State}
+  catch
+    _:Reason -> {error, Reason, State}
   end.
 
 %%%=============================================================================

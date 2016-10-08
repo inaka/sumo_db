@@ -10,7 +10,8 @@
 
 %% Test Cases
 -export([
-  t_sumo_config/1,
+  t_basic_ops/1,
+  t_add_remove_event_managers/1,
   t_reload_sumo_config/1
 ]).
 
@@ -54,8 +55,8 @@ init_per_testcase(_, Config) ->
 %%% Test Cases
 %%%=============================================================================
 
--spec t_sumo_config(config()) -> ok.
-t_sumo_config(_Config) ->
+-spec t_basic_ops(config()) -> ok.
+t_basic_ops(_Config) ->
   validate_docs(),
 
   % expected doc managers
@@ -77,6 +78,48 @@ t_sumo_config(_Config) ->
   ExpectedManagersDoc2 = sumo_config:get_event_managers(doc2),
   ExpectedManagersDoc3 = sumo_config:get_event_managers(doc3),
   ExpectedManagersDoc3 = sumo_config:get_event_managers(doc4),
+
+  AllEvManagers = lists:usort([ev_manager1, ev_manager2, super_ev_manager]),
+  AllEvManagers = sumo_config:get_event_managers(),
+
+  ok.
+
+-spec t_add_remove_event_managers(config()) -> ok.
+t_add_remove_event_managers(_Config) ->
+  validate_docs(),
+
+  % expected doc managers
+  ExpectedManagersDoc1 = [
+    ev_manager1,
+    super_ev_manager
+  ],
+  ExpectedManagersDoc3 = [
+    super_ev_manager
+  ],
+
+  AllEvManagers = lists:usort([ev_manager1, ev_manager2, super_ev_manager]),
+  AllEvManagers = sumo_config:get_event_managers(),
+
+  % add event managers
+  ExpectedManagersDoc11 = lists:usort([ev_managerA | ExpectedManagersDoc1]),
+  ExpectedManagersDoc11 = sumo_config:add_event_managers(doc1, ev_managerA),
+  ExpectedManagersDoc31 = lists:usort(
+    [ev_managerA, ev_managerB | ExpectedManagersDoc3]),
+  ExpectedManagersDoc31 = sumo_config:add_event_managers(
+    doc3, [ev_managerA, ev_managerB]),
+
+  AllEvManagers1 = lists:usort([ev_managerA, ev_managerB] ++ AllEvManagers),
+  AllEvManagers1 = sumo_config:get_event_managers(),
+
+  % remove event managers
+  ExpectedManagersDoc11 = lists:usort([ev_managerA | ExpectedManagersDoc1]),
+  ExpectedManagersDoc1 = sumo_config:remove_event_managers(doc1, ev_managerA),
+  ExpectedManagersDoc31 = lists:usort(
+    [ev_managerA, ev_managerB | ExpectedManagersDoc3]),
+  ExpectedManagersDoc3 = sumo_config:remove_event_managers(
+    doc3, [ev_managerA, ev_managerB]),
+
+  AllEvManagers = sumo_config:get_event_managers(),
 
   ok.
 

@@ -32,7 +32,8 @@
   get_events/0,
   get_event_managers/0,
   get_event_managers/1,
-  add_event_managers/2
+  add_event_managers/2,
+  remove_event_managers/2
 ]).
 
 -include_lib("stdlib/include/ms_transform.hrl").
@@ -104,9 +105,18 @@ get_event_managers() ->
 get_event_managers(DocName) ->
   get_prop_value(DocName, event_managers, []).
 
--spec add_event_managers(atom(), [module()] | module()) -> [doc_config()].
+-spec add_event_managers(atom(), [module()] | module()) -> [module()].
 add_event_managers(DocName, EventManagers) ->
-  update_doc_entry(DocName, EventManagers, get_docs()).
+  load_entries([get_doc(DocName)], [{DocName, EventManagers}]),
+  get_event_managers(DocName).
+
+-spec remove_event_managers(atom(), [module()] | module()) -> [module()].
+remove_event_managers(DocName, EventManagers) when is_list(EventManagers) ->
+  Docs = [get_doc(DocName)],
+  load_entries(Docs, [{DocName, EventManagers}], fun lists:subtract/2),
+  get_event_managers(DocName);
+remove_event_managers(DocName, EventManagers) when is_atom(EventManagers) ->
+  remove_event_managers(DocName, [EventManagers]).
 
 %%%===================================================================
 %%% Internal functions
@@ -117,16 +127,35 @@ do_init() ->
   ?MODULE = ets:new(?MODULE, [named_table, public, {read_concurrency, true}]),
   Docs = application:get_env(sumo_db, docs, []),
   Events = application:get_env(sumo_db, events, []),
-  UpdatedDocs = load_entry(Docs, Events),
+  UpdatedDocs = load_events(Docs, Events),
   EvManagers = load_event_managers(UpdatedDocs),
   Entries = [{'$event_managers', EvManagers} | UpdatedDocs],
+  set_entries(Entries).
+
+%% @private
+set_entries(Entries) ->
   true = ets:insert(?MODULE, Entries),
   ok.
 
 %% @private
-load_entry(Docs, Events) ->
+load_entries(Docs, Events) ->
+  load_entries(Docs, Events, fun lists:append/2).
+
+%% @private
+load_entries(Docs, Events, Fun) ->
+  UpdatedDocs = load_events(Docs, Events, Fun),
+  ok = set_entries(UpdatedDocs),
+  EvManagers = load_event_managers(get_docs()),
+  set_entries({'$event_managers', EvManagers}).
+
+%% @private
+load_events(Docs, Events) ->
+  load_events(Docs, Events, fun lists:append/2).
+
+%% @private
+load_events(Docs, Events, Fun) ->
   lists:foldl(fun({DocName, EventManagers}, DocAcc) ->
-    update_doc_entry(DocName, EventManagers, DocAcc)
+    update_doc_entry(DocName, EventManagers, Fun, DocAcc)
   end, Docs, Events).
 
 %% @private
@@ -136,25 +165,25 @@ load_event_managers(Docs) ->
   end, [], Docs)).
 
 %% @private
-update_doc_entry(_DocName, [], Docs) ->
+update_doc_entry(_DocName, [], _Fun, Docs) ->
   Docs;
-update_doc_entry('_', EventManagers, Docs) when is_list(EventManagers) ->
+update_doc_entry('_', EvManagers, Fun, Docs) when is_list(EvManagers) ->
   DocNames = [DocName || {DocName, _, _} <- Docs],
   lists:foldl(fun(DocName, DocAcc) ->
-    update_doc_entry(DocName, EventManagers, DocAcc)
+    update_doc_entry(DocName, EvManagers, Fun, DocAcc)
   end, Docs, DocNames);
-update_doc_entry(DocName, EventManagers, Docs) when is_list(EventManagers) ->
+update_doc_entry(DocName, EvManagers, Fun, Docs) when is_list(EvManagers) ->
   case lists:keyfind(DocName, 1, Docs) of
     {DocName, Store, Props} ->
-      CurrentEventManagers = maps:get(event_managers, Props, []),
-      NewEventManagers = lists:usort(EventManagers ++ CurrentEventManagers),
+      CurrentEvManagers = maps:get(event_managers, Props, []),
+      NewEventManagers = lists:usort(Fun(CurrentEvManagers, EvManagers)),
       NewDoc = {DocName, Store, Props#{event_managers => NewEventManagers}},
       lists:keyreplace(DocName, 1, Docs, NewDoc);
     _ ->
       Docs
   end;
-update_doc_entry(DocName, EventManager, Docs) when is_atom(EventManager) ->
-  update_doc_entry(DocName, [EventManager], Docs).
+update_doc_entry(DocName, EvManagers, Fun, Docs) when is_atom(EvManagers) ->
+  update_doc_entry(DocName, [EvManagers], Fun, Docs).
 
 %% @private
 lookup_element(Key, Pos) ->

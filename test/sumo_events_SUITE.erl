@@ -27,4 +27,5 @@ init_per_suite(Config) ->
 
 -spec end_per_suite(Config::config()) -> config().
 end_per_suite(Config) ->
+  _ = application:stop(sumo_db),
   Config.

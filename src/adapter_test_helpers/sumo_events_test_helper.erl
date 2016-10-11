@@ -17,8 +17,7 @@ events_manager_supervisor_running(Config) ->
       ok;
     EventManagers ->
       ct:comment("~p should be running", [EventManagers]),
-      EventManagers = [begin
-        [E] = gen_event:which_handlers(EM), E
-      end || EM <- EventManagers],
+      EventManagers =
+        [hd(gen_event:which_handlers(EM)) || EM <- EventManagers],
       ok
   end.

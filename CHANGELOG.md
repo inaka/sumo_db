@@ -1,5 +1,28 @@
 # Change Log
 
+## [0.7.0](https://github.com/inaka/sumo_db/tree/0.7.0) (2016-10-11)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.6.4...0.7.0)
+
+**Closed issues:**
+
+- Fix sumo to support that one event manager to handle multiple docs and vice versa [\#280](https://github.com/inaka/sumo_db/issues/280)
+
+**Merged pull requests:**
+
+- Cabol.280.fixes and improvements on sumo events [\#281](https://github.com/inaka/sumo_db/pull/281) ([cabol](https://github.com/cabol))
+- Add pre\_events and their dispatching [\#262](https://github.com/inaka/sumo_db/pull/262) ([llamallamaduck](https://github.com/llamallamaduck))
+
+## [0.6.4](https://github.com/inaka/sumo_db/tree/0.6.4) (2016-09-29)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.6.3...0.6.4)
+
+**Closed issues:**
+
+- Version Bump to 0.6.4 [\#278](https://github.com/inaka/sumo_db/issues/278)
+
+**Merged pull requests:**
+
+- \[Close \#278\] version bump to 0.6.4  [\#279](https://github.com/inaka/sumo_db/pull/279) ([Euen](https://github.com/Euen))
+
 ## [0.6.3](https://github.com/inaka/sumo_db/tree/0.6.3) (2016-09-29)
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.6.2...0.6.3)
 

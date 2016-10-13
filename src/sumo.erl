@@ -117,11 +117,11 @@ persist(DocName, UserDoc) ->
   Module = sumo_config:get_prop_value(DocName, module),
   DocMap = Module:sumo_sleep(UserDoc),
   Store = sumo_config:get_store(DocName),
-  sumo_event:dispatch(DocName, pre_persisted, [UserDoc]),
+  EventId = sumo_event:dispatch(DocName, pre_persisted, [UserDoc]),
   case sumo_store:persist(Store, sumo_internal:new_doc(DocName, DocMap)) of
     {ok, NewDoc} ->
       Ret = sumo_internal:wakeup(NewDoc),
-      sumo_event:dispatch(DocName, persisted, [Ret]),
+      EventId = sumo_event:dispatch(DocName, EventId, persisted, [Ret]),
       Ret;
     Error ->
       throw(Error)
@@ -218,11 +218,11 @@ find_by(DocName, Conditions, SortFields, Limit, Offset) ->
 -spec delete_all(schema_name()) -> non_neg_integer().
 delete_all(DocName) ->
   Store = sumo_config:get_store(DocName),
-  sumo_event:dispatch(DocName, pre_delete_all),
+  EventId = sumo_event:dispatch(DocName, pre_delete_all),
   case sumo_store:delete_all(Store, DocName) of
     {ok, NumRows} ->
-      case NumRows > 0 of
-        true -> sumo_event:dispatch(DocName, deleted_all);
+      _ = case NumRows > 0 of
+        true -> EventId = sumo_event:dispatch(DocName, EventId, deleted_all, []);
         _    -> ok
       end,
       NumRows;
@@ -234,9 +234,9 @@ delete_all(DocName) ->
 -spec delete(schema_name(), user_doc()) -> boolean().
 delete(DocName, Id) ->
   IdField = sumo_internal:id_field_name(DocName),
-  sumo_event:dispatch(DocName, pre_deleted, [Id]),
+  EventId = sumo_event:dispatch(DocName, pre_deleted, [Id]),
   case delete_by(DocName, [{IdField, Id}]) of
-    1 -> sumo_event:dispatch(DocName, deleted, [Id]), true;
+    1 -> EventId = sumo_event:dispatch(DocName, EventId, deleted, [Id]), true;
     0 -> false
   end.
 
@@ -244,12 +244,15 @@ delete(DocName, Id) ->
 -spec delete_by(schema_name(), conditions()) -> non_neg_integer().
 delete_by(DocName, Conditions) ->
   Store = sumo_config:get_store(DocName),
-  sumo_event:dispatch(DocName, pre_deleted_total, [Conditions]),
+  EventId = sumo_event:dispatch(DocName, pre_deleted_total, [Conditions]),
   case sumo_store:delete_by(Store, DocName, Conditions) of
     {ok, 0} ->
       0;
     {ok, NumRows} ->
-      sumo_event:dispatch(DocName, deleted_total, [NumRows, Conditions]),
+      EventId = sumo_event:dispatch(DocName,
+                                    EventId,
+                                    deleted_total,
+                                    [NumRows, Conditions]),
       NumRows;
     Error ->
       throw(Error)
@@ -294,10 +297,13 @@ create_schema(DocName) ->
 %% @end
 -spec create_schema(schema_name(), atom()) -> ok.
 create_schema(DocName, Store) ->
-  sumo_event:dispatch(DocName, pre_schema_created),
+  EventId = sumo_event:dispatch(DocName, pre_schema_created),
   case sumo_store:create_schema(Store, sumo_internal:get_schema(DocName)) of
-    ok    -> sumo_event:dispatch(DocName, schema_created), ok;
-    Error -> throw(Error)
+    ok    ->
+      EventId = sumo_event:dispatch(DocName, EventId, schema_created, []),
+      ok;
+    Error ->
+      throw(Error)
   end.
 
 %% @doc Returns a new schema.

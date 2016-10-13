@@ -24,6 +24,11 @@
 %%% API
 -export([dispatch/2, dispatch/3]).
 
+%%% Types
+-type event_id() :: reference().
+
+-export_type([event_id/0]).
+
 %%%=============================================================================
 %%% API
 %%%=============================================================================
@@ -41,6 +46,7 @@ dispatch(DocName, Event, Args) ->
       ok;
     EventManagers ->
       lists:foreach(fun(EventManager) ->
-        gen_event:notify(EventManager, {DocName, Event, Args})
+        EventId = make_ref(),
+        gen_event:notify(EventManager, {EventId, DocName, Event, Args})
       end, EventManagers)
   end.

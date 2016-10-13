@@ -43,8 +43,8 @@ handle_call(_, State) ->
   {ok, not_implemented, State}.
 
 -spec handle_event(term(), state()) -> {ok, state()}.
-handle_event(Event, #state{event_list = EventList}) ->
-  {ok, #state{event_list = [Event | EventList]}}.
+handle_event({_EventId, Model, Event, Args}, #state{event_list = EventList}) ->
+  {ok, #state{event_list = [{Model, Event, Args} | EventList]}}.
 
 -spec code_change(term(), state(), term()) -> {ok, state()}.
 code_change(_OldVsn, State, _Extra) ->

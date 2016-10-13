@@ -22,25 +22,39 @@
 -license("Apache License 2.0").
 
 %%% API
--export([dispatch/2, dispatch/3]).
+-export([dispatch/2, dispatch/3, dispatch/4]).
+
+%%% Types
+-type event_id() :: reference().
+
+-export_type([event_id/0]).
 
 %%%=============================================================================
 %%% API
 %%%=============================================================================
 
 %% @doc Dispatch an event through gen_event:notify/2.
--spec dispatch(sumo:schema_name(), term()) -> ok.
+-spec dispatch(sumo:schema_name(), term()) -> event_id() | no_event_managers.
 dispatch(DocName, Event) ->
   dispatch(DocName, Event, []).
 
 %% @doc Dispatch an event through gen_event:notify/2.
--spec dispatch(sumo:schema_name(), term(), term()) -> ok.
+-spec dispatch(sumo:schema_name(), term(), term()) ->
+  event_id() | no_event_managers.
 dispatch(DocName, Event, Args) ->
+  EventId = make_ref(),
+  dispatch(DocName, EventId, Event, Args).
+
+%% @doc Dispatch an event through gen_event:notify/2.
+-spec dispatch(sumo:schema_name(), event_id(), term(), term()) ->
+  event_id() | no_event_managers.
+dispatch(DocName, EventId, Event, Args) ->
   case sumo_config:get_event_managers(DocName) of
     [] ->
-      ok;
+      no_event_managers;
     EventManagers ->
       lists:foreach(fun(EventManager) ->
-        gen_event:notify(EventManager, {DocName, Event, Args})
-      end, EventManagers)
+        gen_event:notify(EventManager, {EventId, DocName, Event, Args})
+      end, EventManagers),
+      EventId
   end.

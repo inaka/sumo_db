@@ -115,8 +115,8 @@ delete_all(Config) ->
   {_, Name} = lists:keyfind(name, 1, Config),
 
   sumo:delete_all(Name),
-  pick_up_event({Name, pre_delete_all, []}),
-  pick_up_event({Name, delete_all, []}),
+  {EventId, Name, pre_delete_all, []} = pick_up_event(),
+  {EventId, Name, deleted_all, []} = pick_up_event(),
   [] = sumo:find_all(Name),
   0 = sumo:count(Name),
   ok.
@@ -131,8 +131,8 @@ delete(Config) ->
   2 = sumo:delete_by(Name, Conditions),
   6 = sumo:count(Name),
 
-  ok = pick_up_event({Name, pre_deleted_total, [Conditions]}),
-  ok = pick_up_event({Name, deleted_total, [2, Conditions]}),
+  {EventId, Name, pre_deleted_total, [Conditions]} = pick_up_event(),
+  {EventId, Name, deleted_total, [2, Conditions]} = pick_up_event(),
 
   Results = sumo:find_by(Name, Conditions),
   [] = Results,
@@ -142,11 +142,12 @@ delete(Config) ->
   Id = Module:id(First),
   sumo:delete(Name, Id),
 
-  ok = pick_up_event({Name, pre_deleted, [Id]}),
-  ok = pick_up_event({Name, deleted, [Id]}),
+  % sumo:delete/2 uses internally sumo:delete_by/2, we handle those events too
   IdField = sumo_internal:id_field_name(Name),
-  ok = pick_up_event({Name, pre_deleted_total, [[{IdField, Id}]]}),
-  ok = pick_up_event({Name, deleted_total, [1, [{IdField, Id}]]}),
+  {EventId2, Name, pre_deleted, [Id]} = pick_up_event(),
+  {EventId4, Name, pre_deleted_total, [[{IdField, Id}]]} = pick_up_event(),
+  {EventId4, Name, deleted_total, [1, [{IdField, Id}]]} = pick_up_event(),
+  {EventId2, Name, deleted, [Id]} = pick_up_event(),
 
   NewAll = sumo:find_all(Name),
   [_] = All -- NewAll,
@@ -178,12 +179,8 @@ check_proper_dates(Config) ->
 -spec init_store(atom()) -> ok.
 init_store(Name) ->
   sumo:create_schema(Name),
-  ok = pick_up_event({Name, pre_schema_created, []}),
-  ok = pick_up_event({Name, schema_created, []}),
   Module = sumo_config:get_prop_value(Name, module),
   sumo:delete_all(Name),
-  ok = pick_up_event({Name, pre_delete_all, []}),
-  ok = pick_up_event({Name, deleted_all, []}),
 
   DT = {Date, _} = calendar:universal_time(),
 
@@ -223,17 +220,22 @@ init_store(Name) ->
     _:no_workers -> ok
   end,
 
+  clean_events(),
   ok.
 
 %%%=============================================================================
 %%% Internal functions
 %%%=============================================================================
 
-pick_up_event(Event) ->
-  sumo_test_people_events_manager:pick_up_event(Event).
+pick_up_event() ->
+  sumo_test_people_events_manager:pick_up_event().
+
+clean_events() ->
+  sumo_test_people_events_manager:clean_events().
 
 create(Name, Args) ->
+  clean_events(),
   Res = sumo:persist(Name, Args),
-  ok = pick_up_event({Name, pre_persisted, [Args]}),
-  ok = pick_up_event({Name, persisted, [Res]}),
+  {EventId, Name, pre_persisted, [Args]} = pick_up_event(),
+  {EventId, Name, persisted, [Res]} = pick_up_event(),
   Res.

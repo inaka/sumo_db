@@ -75,6 +75,48 @@ These three concepts have a specific meaning in the context of sumo_db.
 TO implement an adapter, you must implement two behaviors: `sumo_backend` and
 `sumo_store`.
 
+## Events
+
+Sumo dispatches events when things happen. An Event has this structure:
+```erlang
+{EventId, Model, Event, Args}
+```
+- `EventId` is a `reference()` which identifies the event
+- `Model` is the model where the event happend, for example, if we are creating a new entitiy in the model `people` the value of `Model` would be `people`.
+- `Event` is the type of the event.
+- `Args` extra data sent.
+
+Supported types of events:
+
+- `pre_persisted` just before persisting some entity. This event has the entity we want to persist as `Args`. It is dispatched on this function:
+    - `sumo:persist/2`
+- `persisted` just after persisting some entity. This event has the persisted entity as `Args`. This Event has the same `EventId` as its `pre_persisted` event. It is dispatched on this function:
+    - `sumo:persist/2`
+- `pre_delete_all` just before deleting all entities for a model. This event has no `Args`. It is dispatched on this function:
+    - `sumo:delete_all/1`
+- `deleted_all` just after deleting all entities for a model. This event has no `Args`. This Event has the same `EventId` as its `pre_delete_all` event. It is dispatched on this function:
+    - `sumo:delete_all/1`
+- `pre_deleted` just before deleting an entity. This event has the entity id as `Args`. It is dispatched on this function:
+    - `sumo:delete/2`
+- `deleted` just after deleting an entity. This event has the entity id as `Args`. This Event has the same `EventId` as its `pre_deleted` event. It is dispatched on this function:
+    - `sumo:delete/2`
+- `pre_deleted_total` just before deleting by some delete conditions. This event has the sumo conditions as `Args`. It is dispatched on this function:
+    - `sumo:delete_by/2`
+- `deleted_total` just after deleting by some delete conditions. This event has a list with the number of entities deleted and the delete conditions as `Args`. This Event has the same `EventId` as its `pre_deleted_total` event. It is dispatched on this function:
+    - `sumo:delete_by/2`
+- `pre_schema_created` just before creating a sumo schema. This event has no `Args`. It is dispatched on this function:
+    - `sumo:create_schema/2`
+- `schema_created` just after creating a sumo schema. This event has no `Args`. This Event has the same `EventId` as its `pre_schema_created` event. It is dispatched on this function:
+    - `sumo:create_schema/2`
+
+Sumo requires users to add their own `gen_event`'s in order to handle those events. In order to add them Users have to configure sumo properly. In the `config` file we can add them like this under `sumo_db` configuration:
+```erlang
+{events, [
+     {'_', sumo_test_people_events_manager},
+     {people, sumo_test_people_events_manager}
+   ]}
+```
+Sumo allows us to add a `gen_event` to one type of model (i.e. `people`) or for all (`'_'`).
 
 ## Example
 

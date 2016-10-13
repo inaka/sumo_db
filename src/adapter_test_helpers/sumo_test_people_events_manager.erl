@@ -11,14 +11,21 @@
   handle_event/2
 ]).
 
--export([pick_up_event/1]).
+-export([
+  pick_up_event/0,
+  clean_events/0
+]).
 
 -record(state, {event_list = [] :: list()}).
 -type state() :: #state{}.
 
--spec pick_up_event(tuple()) -> ok | no_event.
-pick_up_event(Event) ->
-  gen_event:call(?MODULE, ?MODULE, {pick_up_event, Event}).
+-spec pick_up_event() -> tuple() | no_event.
+pick_up_event() ->
+  gen_event:call(?MODULE, ?MODULE, pick_up_event).
+
+-spec clean_events() -> ok.
+clean_events() ->
+  gen_event:call(?MODULE, ?MODULE, clean_events).
 
 -spec init([]) -> {ok, state()}.
 init([]) ->
@@ -31,12 +38,15 @@ handle_info(_Info, State) ->
 -spec handle_call(Event, State) -> Result when
   Event  :: term(),
   State  :: state(),
-  Result :: {ok, ok | no_event | not_implemented, state()}.
-handle_call({pick_up_event, Event}, #state{event_list = EventList} = State) ->
-  case lists:member(Event, EventList) of
-    true ->
-      {ok, ok, #state{event_list = lists:delete(Event, EventList)}};
-    false ->
+  Result :: {ok, ok | no_event | not_implemented | term(), state()}.
+handle_call(clean_events, _State) ->
+  {ok, ok, #state{event_list = []}};
+handle_call(pick_up_event, #state{event_list = EventList} = State) ->
+  try
+    Event = lists:last(EventList),
+    {ok, Event, #state{event_list = lists:delete(Event, EventList)}}
+  catch
+    error:function_clause ->
       {ok, no_event, State}
   end;
 handle_call(_, State) ->

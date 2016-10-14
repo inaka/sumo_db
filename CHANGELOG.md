@@ -1,5 +1,17 @@
 # Change Log
 
+## [0.7.1](https://github.com/inaka/sumo_db/tree/0.7.1) (2016-10-14)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.7.0...0.7.1)
+
+**Closed issues:**
+
+- Link events and pre\_events [\#284](https://github.com/inaka/sumo_db/issues/284)
+- Version Bump to 0.7.0 [\#282](https://github.com/inaka/sumo_db/issues/282)
+
+**Merged pull requests:**
+
+- \[\#284\] link events and pre events, improve README [\#285](https://github.com/inaka/sumo_db/pull/285) ([ferigis](https://github.com/ferigis))
+
 ## [0.7.0](https://github.com/inaka/sumo_db/tree/0.7.0) (2016-10-11)
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.6.4...0.7.0)
 
@@ -9,6 +21,7 @@
 
 **Merged pull requests:**
 
+- \[\#282\] Version Bump to 0.7.0 [\#283](https://github.com/inaka/sumo_db/pull/283) ([ferigis](https://github.com/ferigis))
 - Cabol.280.fixes and improvements on sumo events [\#281](https://github.com/inaka/sumo_db/pull/281) ([cabol](https://github.com/cabol))
 - Add pre\_events and their dispatching [\#262](https://github.com/inaka/sumo_db/pull/262) ([llamallamaduck](https://github.com/llamallamaduck))
 

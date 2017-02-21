@@ -59,7 +59,6 @@ init(Options) ->
   State    :: state(),
   Response :: sumo_store:result(sumo_internal:doc(), state()).
 persist(Doc, State) ->
-  %% Set the real id, replacing undefined by 0 so it is auto-generated
   DocName = sumo_internal:doc_name(Doc),
   IdField = sumo_internal:id_field_name(DocName),
   Id = sumo_internal:get_field(IdField, Doc),

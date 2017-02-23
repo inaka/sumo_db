@@ -124,7 +124,7 @@ persist(DocName, UserDoc) ->
       EventId = sumo_event:dispatch(DocName, EventId, persisted, [Ret]),
       Ret;
     Error ->
-      throw(Error)
+      exit(Error)
   end.
 
 %% @doc Returns the doc identified by Id.
@@ -149,7 +149,7 @@ find_one(DocName, Conditions) ->
 find_all(DocName) ->
   case sumo_store:find_all(sumo_config:get_store(DocName), DocName) of
     {ok, Docs} -> docs_wakeup(Docs);
-    Error      -> throw(Error)
+    Error      -> exit(Error)
   end.
 
 %% @doc Returns Limit docs from the given store, starting at offset.
@@ -164,7 +164,7 @@ find_all(DocName, SortFields0, Limit, Offset) ->
   Store = sumo_config:get_store(DocName),
   case sumo_store:find_all(Store, DocName, SortFields, Limit, Offset) of
     {ok, Docs} -> docs_wakeup(Docs);
-    Error      -> throw(Error)
+    Error      -> exit(Error)
   end.
 
 %% @doc Returns *all* docs that match Conditions.
@@ -173,7 +173,7 @@ find_by(DocName, Conditions) ->
   Store = sumo_config:get_store(DocName),
   case sumo_store:find_by(Store, DocName, Conditions) of
     {ok, Docs} -> docs_wakeup(Docs);
-    Error      -> throw(Error)
+    Error      -> exit(Error)
   end.
 
 %% @doc
@@ -190,7 +190,7 @@ find_by(DocName, Conditions, Limit, Offset) ->
   Store = sumo_config:get_store(DocName),
   case sumo_store:find_by(Store, DocName, Conditions, Limit, Offset) of
     {ok, Docs} -> docs_wakeup(Docs);
-    Error      -> throw(Error)
+    Error      -> exit(Error)
   end.
 
 %% @doc
@@ -211,7 +211,7 @@ find_by(DocName, Conditions, SortFields, Limit, Offset) ->
     Store, DocName, Conditions, NormalizedSortFields, Limit, Offset
   ) of
     {ok, Docs} -> docs_wakeup(Docs);
-    Error      -> throw(Error)
+    Error      -> exit(Error)
   end.
 
 %% @doc Deletes all docs of type DocName.
@@ -227,7 +227,7 @@ delete_all(DocName) ->
       end,
       NumRows;
     Error ->
-      throw(Error)
+      exit(Error)
   end.
 
 %% @doc Deletes the doc identified by Id.
@@ -255,7 +255,7 @@ delete_by(DocName, Conditions) ->
                                     [NumRows, Conditions]),
       NumRows;
     Error ->
-      throw(Error)
+      exit(Error)
   end.
 
 %% @doc Counts the total number of docs in the given schema name `DocName'.
@@ -303,7 +303,7 @@ create_schema(DocName, Store) ->
       EventId = sumo_event:dispatch(DocName, EventId, schema_created, []),
       ok;
     Error ->
-      throw(Error)
+      exit(Error)
   end.
 
 %% @doc Returns a new schema.

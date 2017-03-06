@@ -1,6 +1,7 @@
 [![Stories in Ready](https://badge.waffle.io/inaka/sumo_db.png?label=ready&title=Ready)](https://waffle.io/inaka/sumo_db)
 # sumo_db
 
+[![Build Status](https://travis-ci.org/inaka/sumo_db.svg?branch=master)](https://travis-ci.org/inaka/sumo_db)
 
 ## About
 

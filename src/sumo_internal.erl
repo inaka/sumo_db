@@ -200,5 +200,5 @@ report_overrun(Report) ->
 %% @private
 get_id_field(_Schema = #{fields := Fields}) ->
   hd(lists:filter(fun(_Field = #{attrs := Attributes}) ->
-    length(lists:filter(fun(T) -> T =:= id end, Attributes)) > 0
+    lists:member(id, Attributes)
   end, Fields)).

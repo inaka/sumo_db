@@ -85,7 +85,9 @@
 %% @doc Returns a new schema.
 -spec new_schema(sumo:schema_name(), [field()]) -> schema().
 new_schema(Name, Fields) ->
-  #{name => Name, fields => Fields}.
+  S = #{name => Name, fields => Fields},
+  _ = get_id_field(S),
+  S.
 
 %% @doc Returns a new field of the given type and attributes.
 -spec new_field(

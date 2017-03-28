@@ -182,7 +182,7 @@ values_conditions({Name, Value}, {Values, CleanExprs, Count}) ->
 values_conditions([], Acc) ->
   Acc;
 values_conditions(Expr, _) ->
-  throw({unsupported_expression, Expr}).
+  exit({unsupported_expression, Expr}).
 
 -spec where_clause(sumo:conditions()) -> iodata().
 where_clause(Exprs) ->

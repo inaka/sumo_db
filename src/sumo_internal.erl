@@ -90,9 +90,7 @@ new_schema(Name, Fields) ->
   S.
 
 %% @doc Returns a new field of the given type and attributes.
--spec new_field(
-  sumo:field_name(), sumo:field_type(), sumo:field_attrs()
-) -> field().
+-spec new_field(sumo:field_name(), sumo:field_type(), sumo:field_attrs()) -> field().
 new_field(Name, Type, Attributes) ->
   #{name => Name, type => Type, attrs => Attributes}.
 
@@ -179,7 +177,7 @@ id_field_name(DocName) ->
 id_field_type(DocName) ->
   field_type(get_id_field(get_schema(DocName))).
 
-%% @doc Checks the operator is known, throws otherwise.
+%% @doc Checks the operator is known, exit otherwise.
 -spec check_operator(sumo:operator()) -> ok.
 check_operator('<') -> ok;
 check_operator('=<') -> ok;
@@ -188,7 +186,7 @@ check_operator('>=') -> ok;
 check_operator('==') -> ok;
 check_operator('/=') -> ok;
 check_operator('like') -> ok;
-check_operator(Op) -> throw({unknown_operator, Op}).
+check_operator(Op) -> exit({unknown_operator, Op}).
 
 -spec report_overrun(term()) -> ok.
 report_overrun(Report) ->

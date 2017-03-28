@@ -57,7 +57,15 @@ start_link(Name, Options) ->
 %%%=============================================================================
 
 -spec init([term()]) -> {ok, state()}.
-init(_Options) -> {ok, #{}}.
+init(_Options) ->
+  Node = node(),
+  _ = application:stop(mnesia),
+  _ = case mnesia:create_schema([Node]) of
+    ok -> ok;
+    {error, {Node, {already_exists, Node}}} -> ok
+  end,
+  {ok, _} = application:ensure_all_started(mnesia),
+  {ok, #{}}.
 
 -spec handle_call(term(), term(), state()) -> {reply, term(), state()}.
 handle_call(Msg, _From, State) -> {reply, {unexpected_message, Msg}, State}.

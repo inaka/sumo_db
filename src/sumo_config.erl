@@ -38,22 +38,29 @@
 
 -include_lib("stdlib/include/ms_transform.hrl").
 
-%%%===================================================================
+%%%=============================================================================
 %%% Types
-%%%===================================================================
+%%%=============================================================================
 
--type doc_config() :: {DocName :: atom(), Store :: atom(), Props :: map()}.
+-type doc_config() :: {
+  SchemaName :: sumo:schema_name(),
+  Store      :: atom(),
+  Props      :: map()
+}.
 
--type event_config() :: {DocName :: atom(), EventHandler :: module()}.
+-type event_config() :: {
+  SchemaName   :: sumo:schema_name(),
+  EventHandler :: module()
+}.
 
 -export_type([
   doc_config/0,
   event_config/0
 ]).
 
-%%%===================================================================
+%%%=============================================================================
 %%% API
-%%%===================================================================
+%%%=============================================================================
 
 -spec init() -> ok.
 init() ->
@@ -118,9 +125,9 @@ remove_event_managers(DocName, EventManagers) when is_list(EventManagers) ->
 remove_event_managers(DocName, EventManagers) when is_atom(EventManagers) ->
   remove_event_managers(DocName, [EventManagers]).
 
-%%%===================================================================
+%%%=============================================================================
 %%% Internal functions
-%%%===================================================================
+%%%=============================================================================
 
 %% @private
 do_init() ->
@@ -128,8 +135,8 @@ do_init() ->
   Docs = application:get_env(sumo_db, docs, []),
   Events = application:get_env(sumo_db, events, []),
   UpdatedDocs = load_events(Docs, Events),
-  EvManagers = load_event_managers(UpdatedDocs),
-  Entries = [{'$event_managers', EvManagers} | UpdatedDocs],
+  EventManagers = load_event_managers(UpdatedDocs),
+  Entries = [{'$event_managers', EventManagers} | UpdatedDocs],
   set_entries(Entries).
 
 %% @private
@@ -145,8 +152,8 @@ load_entries(Docs, Events) ->
 load_entries(Docs, Events, Fun) ->
   UpdatedDocs = load_events(Docs, Events, Fun),
   ok = set_entries(UpdatedDocs),
-  EvManagers = load_event_managers(get_docs()),
-  set_entries({'$event_managers', EvManagers}).
+  EventManagers = load_event_managers(get_docs()),
+  set_entries({'$event_managers', EventManagers}).
 
 %% @private
 load_events(Docs, Events) ->

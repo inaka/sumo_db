@@ -43,7 +43,10 @@
 -type option() :: disc_copies | ram_copies | majority
                 | snmp | storage_properties.
 
--type state() :: #{default_options => [{option(), term()}]}.
+-type state() :: #{
+  log_queries     => boolean(),
+  default_options => [{option(), term()}]
+}.
 
 %%%=============================================================================
 %%% API
@@ -52,7 +55,8 @@
 -spec init(term()) -> {ok, state()}.
 init(Options) ->
   DefaultOptions = parse(Options),
-  {ok, #{default_options => DefaultOptions}}.
+  LogQueries = application:get_env(sumo_db, log_queries, false),
+  {ok, #{default_options => DefaultOptions, log_queries => LogQueries}}.
 
 -spec persist(Doc, State) -> Response when
   Doc      :: sumo_internal:doc(),
@@ -196,6 +200,7 @@ find_by(DocName, Conditions, [], Limit, Offset, State) ->
       Schema = sumo_internal:get_schema(DocName),
       Fields = schema_field_names(Schema),
       Docs = [wakeup(result_to_doc(Result, Fields)) || Result <- Results],
+      _ = maybe_log_query(DocName, Conditions, Limit, Offset, MatchSpec, State),
       {ok, Docs, State}
   end;
 find_by(_DocName, _Conditions, _Sort, _Limit, _Offset, State) ->
@@ -380,6 +385,14 @@ result_to_doc(Result, Fields) ->
 %% @private
 transform_conditions(DocName, Conditions) ->
   sumo_utils:transform_conditions(fun validate_date/1, DocName, Conditions, [date]).
+
+%% @private
+maybe_log_query(DocName, Conditions, Limit, Offset, MatchSpec, #{log_queries := true}) ->
+  Msg = "find_by(~p, ~p, [], ~p, ~p)~nMatchSpec: ~p",
+  Args = [DocName, Conditions, Limit, Offset, MatchSpec],
+  lager:debug(Msg, Args);
+maybe_log_query(_, _, _, _, _, _) ->
+  ok.
 
 %% @private
 validate_date({FieldType, _, FieldValue}) ->

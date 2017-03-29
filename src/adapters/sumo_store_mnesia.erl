@@ -280,7 +280,7 @@ new_id(string)    -> uuid:uuid_to_string(uuid:get_v4(), standard);
 new_id(binary)    -> uuid:uuid_to_string(uuid:get_v4(), binary_standard);
 new_id(integer)   -> <<Id:128>> = uuid:get_v4(), Id;
 new_id(float)     -> <<Id:128>> = uuid:get_v4(), Id * 1.0;
-new_id(FieldType) -> throw({unimplemented, FieldType}).
+new_id(FieldType) -> exit({unimplemented, FieldType}).
 
 %% @doc http://www.erlang.org/doc/apps/erts/match_spec.html
 %% @private
@@ -346,7 +346,7 @@ condition_to_guard({Name, Value}, FieldsMap) ->
   condition_to_guard({Name, '==', Value}, FieldsMap).
 
 %% @private
-check_operator(like) -> throw({unsupported_operator, like});
+check_operator(like) -> exit({unsupported_operator, like});
 check_operator(Op)   -> sumo_internal:check_operator(Op).
 
 %% @private
@@ -379,9 +379,7 @@ result_to_doc(Result, Fields) ->
 
 %% @private
 transform_conditions(DocName, Conditions) ->
-  sumo_utils:transform_conditions(
-    fun validate_date/1, DocName, Conditions, [date]
-  ).
+  sumo_utils:transform_conditions(fun validate_date/1, DocName, Conditions, [date]).
 
 %% @private
 validate_date({FieldType, _, FieldValue}) ->

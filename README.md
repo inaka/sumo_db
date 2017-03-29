@@ -60,8 +60,7 @@ And you can check all of our open-source projects at
 
 These three concepts have a specific meaning in the context of sumo_db.
 
- - **Backend**: holds the connection to a single instance of a database, which
- can be MySql, MongoDB, ElasticSearch or any other that's implemented.
+ - **Backend**: establishes and holds a single Database instance connection.
 
  - **Store**: implements the specific operations that modify the contents of the
  backend and retrieves the information it holds.
@@ -71,10 +70,26 @@ These three concepts have a specific meaning in the context of sumo_db.
  that bridges the model and the store.
 
 
+## Supported Backends/Adapters
+
+ - [Mnesia](http://erlang.org/doc/man/mnesia.html) is built-in in `sumo`
+ - [Riak](https://github.com/inaka/sumo_db_riak)
+ - [PostgreSQL](https://github.com/inaka/sumo_db_pgsql)
+ - [MySQL](https://github.com/inaka/sumo_db_mysql)
+ - [MongoDB](https://github.com/inaka/sumo_db_mongo)
+ - [ElasticSearch](https://github.com/inaka/sumo_db_elasticsearch)
+
+
 ## Implementing an Adapter
 
-TO implement an adapter, you must implement two behaviors: `sumo_backend` and
-`sumo_store`.
+To implement an adapter, you must implement two specific behaviours:
+
+ - [**sumo_backend**](./src/sumo_backend.erl) – DB connection
+ - [**sumo_store**](./src/sumo_store.erl) – implements the **Sumo API**
+
+ > You can check the implemented adapters mentioned above in order to have
+   a better idea about how to build a custom adapter from scratch.
+
 
 ## Events
 
@@ -118,6 +133,7 @@ Sumo requires users to add their own `gen_event`'s in order to handle those even
    ]}
 ```
 Sumo allows us to add a `gen_event` to one type of model (i.e. `people`) or for all (`'_'`).
+
 
 ## Example
 

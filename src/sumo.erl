@@ -207,9 +207,7 @@ find_by(DocName, Conditions, Limit, Offset) ->
 find_by(DocName, Conditions, SortFields, Limit, Offset) ->
   NormalizedSortFields = normalize_sort_fields(SortFields),
   Store = sumo_config:get_store(DocName),
-  case sumo_store:find_by(
-    Store, DocName, Conditions, NormalizedSortFields, Limit, Offset
-  ) of
+  case sumo_store:find_by(Store, DocName, Conditions, NormalizedSortFields, Limit, Offset) of
     {ok, Docs} -> docs_wakeup(Docs);
     Error      -> exit(Error)
   end.
@@ -249,10 +247,7 @@ delete_by(DocName, Conditions) ->
     {ok, 0} ->
       0;
     {ok, NumRows} ->
-      EventId = sumo_event:dispatch(DocName,
-                                    EventId,
-                                    deleted_total,
-                                    [NumRows, Conditions]),
+      EventId = sumo_event:dispatch(DocName, EventId, deleted_total, [NumRows, Conditions]),
       NumRows;
     Error ->
       exit(Error)
@@ -263,7 +258,7 @@ delete_by(DocName, Conditions) ->
 count(DocName) ->
   case sumo_store:count(sumo_config:get_store(DocName), DocName) of
     {ok, Total} -> Total;
-    Error       -> throw(Error)
+    Error       -> exit(Error)
   end.
 
 %% @doc Calls the given custom function of a store.

@@ -65,7 +65,7 @@
 %%%=============================================================================
 
 -spec sumo_schema() -> no_return().
-sumo_schema() -> throw(should_be_implemented_by_children).
+sumo_schema() -> exit(should_be_implemented_by_children).
 
 -spec sumo_sleep(Person :: person()) -> sumo:model().
 sumo_sleep(Person) ->

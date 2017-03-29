@@ -50,8 +50,7 @@ doc_transform(Fun, Doc) ->
   FieldValue         :: sumo:field_value(),
   ResTuple           :: {FieldName, FieldType, FieldValue},
   Response           :: [ResTuple].
-doc_filter_fields_by(DocNameOrDoc, FilteredFieldTypes)
-    when is_atom(DocNameOrDoc) ->
+doc_filter_fields_by(DocNameOrDoc, FilteredFieldTypes) when is_atom(DocNameOrDoc) ->
   filter_fields(DocNameOrDoc, undefined, FilteredFieldTypes);
 doc_filter_fields_by(DocNameOrDoc, FilteredFieldTypes) ->
   DocName = sumo_internal:doc_name(DocNameOrDoc),

@@ -43,7 +43,10 @@
 -type option() :: disc_copies | ram_copies | majority
                 | snmp | storage_properties.
 
--type state() :: #{default_options => [{option(), term()}]}.
+-type state() :: #{
+  verbose         => boolean(),
+  default_options => [{option(), term()}]
+}.
 
 %%%=============================================================================
 %%% API
@@ -52,7 +55,8 @@
 -spec init(term()) -> {ok, state()}.
 init(Options) ->
   DefaultOptions = parse(Options),
-  {ok, #{default_options => DefaultOptions}}.
+  Verbose = application:get_env(sumo_db, verbose, false),
+  {ok, #{default_options => DefaultOptions, verbose => Verbose}}.
 
 -spec persist(Doc, State) -> Response when
   Doc      :: sumo_internal:doc(),
@@ -79,6 +83,7 @@ persist(Doc, State) ->
       {error, Reason, State};
     {atomic, ok} ->
       NewDoc = sumo_internal:set_field(IdField, NewId, Doc),
+      _ = maybe_log(persist, [DocName, NewDoc], State),
       {ok, NewDoc, State}
   end.
 
@@ -92,6 +97,7 @@ fetch(DocName, Id, State) ->
     [Result] = mnesia:dirty_read(DocName, Id),
     Schema = sumo_internal:get_schema(DocName),
     Fields = schema_field_names(Schema),
+    _ = maybe_log(fetch, [DocName, Id], State),
     {ok, wakeup(result_to_doc(Result, Fields)), State}
   catch
     _:_ -> {error, notfound, State}
@@ -113,6 +119,7 @@ delete_by(DocName, Conditions, State) ->
     {aborted, Reason} ->
       {error, Reason, State};
     {atomic, Result} ->
+      _ = maybe_log(delete_by, [DocName, Conditions], State),
       {ok, Result, State}
   end.
 
@@ -124,6 +131,7 @@ delete_all(DocName, State) ->
   Count = mnesia:table_info(DocName, size),
   case mnesia:clear_table(DocName) of
     {atomic, ok} ->
+      _ = maybe_log(delete_all, [DocName], State),
       {ok, Count, State};
     {aborted, Reason} ->
       {error, Reason, State}
@@ -196,6 +204,7 @@ find_by(DocName, Conditions, [], Limit, Offset, State) ->
       Schema = sumo_internal:get_schema(DocName),
       Fields = schema_field_names(Schema),
       Docs = [wakeup(result_to_doc(Result, Fields)) || Result <- Results],
+      _ = maybe_log(find_by, [DocName, Conditions, Limit, Offset, MatchSpec], State),
       {ok, Docs, State}
   end;
 find_by(_DocName, _Conditions, _Sort, _Limit, _Offset, State) ->
@@ -414,3 +423,16 @@ wakeup_fun(date, _, {Date, _} = _FieldValue, _) ->
   Date;
 wakeup_fun(_, _, FieldValue, _) ->
   FieldValue.
+
+%% @private
+maybe_log(Fun, Args, #{verbose := true}) ->
+  lager:debug(log_format(Fun), Args);
+maybe_log(_, _, _) ->
+  ok.
+
+%% @private
+log_format(persist)    -> "persist(~p, ~p)";
+log_format(fetch)      -> "fetch(~p, ~p)";
+log_format(delete_by)  -> "delete_by(~p, ~p)";
+log_format(delete_all) -> "delete_all(~p)";
+log_format(find_by)    -> "find_by(~p, ~p, [], ~p, ~p)~nMatchSpec: ~p".

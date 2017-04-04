@@ -57,17 +57,17 @@ find_authors_by_name(Name, Limit, Offset) ->
 %% @doc Finds a post given the id.
 -spec find_post(blog_post:id()) -> blog_post:post()|notfound.
 find_post(Id) ->
-  sumo:fetch(post, Id).
+  sumo:find(post, Id).
 
 %% @doc Finds an author, given the id.
 -spec find_author(blog_author:id()) -> blog_author:author()|notfound.
 find_author(Id) ->
-  sumo:fetch(author, Id).
+  sumo:find(author, Id).
 
 %% @doc Find a reader, given the id.
 -spec find_reader(blog_reader:id()) -> blog_reader:reader()|notfound.
 find_reader(Id) ->
-  sumo:fetch(reader, Id).
+  sumo:find(reader, Id).
 
 %% @doc Returns all available posts.
 -spec total_posts() -> non_neg_integer().

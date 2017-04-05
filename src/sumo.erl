@@ -25,7 +25,8 @@
 -export([
   new_schema/2,
   new_field/3,
-  new_field/2
+  new_field/2,
+  new_doc/2
 ]).
 
 %%% API for schema creation.
@@ -315,6 +316,12 @@ new_field(Name, Type, Attributes) ->
 -spec new_field(field_name(), field_type()) -> field().
 new_field(Name, Type) ->
   new_field(Name, Type, []).
+
+-spec new_doc(schema_name(), user_doc()) -> sumo_internal:doc().
+new_doc(SchemaName, UserDoc) ->
+  Module = sumo_config:get_prop_value(SchemaName, module),
+  Model = Module:sumo_sleep(UserDoc),
+  sumo_internal:new_doc(SchemaName, Model).
 
 %%%=============================================================================
 %%% Internal functions

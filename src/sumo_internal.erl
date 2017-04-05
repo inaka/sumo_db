@@ -31,6 +31,7 @@
   schema_name/1,
   schema_fields/1,
   doc_name/1,
+  doc_module/1,
   doc_fields/1,
   wakeup/1,
   new_doc/1,
@@ -60,12 +61,12 @@
 %%%===================================================================
 
 -opaque schema() :: #{
-  name   => atom(),
+  name   => sumo:schema_name(),
   fields => [field()]
 }.
 
 -opaque doc() :: #{
-  name   => atom(),
+  name   => sumo:schema_name(),
   module => module(),
   fields => sumo:model()
 }.
@@ -108,6 +109,11 @@ schema_fields(Schema) ->
 -spec doc_name(doc()) -> atom().
 doc_name(Doc) ->
   maps:get(name, Doc, undefined).
+
+%% @doc Returns the doc name
+-spec doc_module(doc()) -> module().
+doc_module(Doc) ->
+  maps:get(module, Doc, undefined).
 
 -spec doc_fields(doc()) -> sumo:model().
 doc_fields(Doc) ->

@@ -190,7 +190,7 @@ check_operator(Op) -> exit({unknown_operator, Op}).
 
 -spec report_overrun(term()) -> ok.
 report_overrun(Report) ->
-  lager:error("~p", [Report]).
+  error_logger:error_msg("~p", [Report]).
 
 %%%=============================================================================
 %%% Internal functions

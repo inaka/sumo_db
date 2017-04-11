@@ -426,7 +426,7 @@ wakeup_fun(_, _, FieldValue, _) ->
 
 %% @private
 maybe_log(Fun, Args, #{verbose := true}) ->
-  lager:debug(log_format(Fun), Args);
+  error_logger:info_msg(log_format(Fun), Args);
 maybe_log(_, _, _) ->
   ok.
 

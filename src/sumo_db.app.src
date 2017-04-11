@@ -7,7 +7,6 @@
     kernel,
     stdlib,
     sasl,
-    lager,
     crypto,
     worker_pool,
     uuid

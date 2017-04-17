@@ -9,6 +9,7 @@
   delete_all/1,
   delete/1,
   check_proper_dates/1,
+  persist_using_changeset/1,
   init_store/1
 ]).
 
@@ -174,6 +175,24 @@ check_proper_dates(Config) ->
 
   Person = create(Name, Module:new(<<"X">>, <<"Z">>, 6)),
   Date = Module:birthdate(Person),
+  ok.
+
+-spec persist_using_changeset(config()) -> ok.
+persist_using_changeset(Config) ->
+  {_, Name} = lists:keyfind(name, 1, Config),
+  Module = sumo_config:get_prop_value(Name, module),
+  Schema = Module:sumo_schema(),
+
+  [] = sumo:find_by(Name, [{name, <<"John">>}]),
+  [P1] = sumo:find_by(Name, [{name, <<"A">>}]),
+  Doc1 = sumo:new_doc(people, P1),
+  Allowed = [sumo_internal:field_name(F) || F <- sumo_internal:schema_fields(Schema)],
+  CS1 = sumo_changeset:cast(Doc1, #{name => <<"John">>}, Allowed),
+  _ = sumo:persist(CS1),
+  [_] = sumo:find_by(Name, [{name, <<"John">>}]),
+
+  CS2 = sumo_changeset:validate_format(CS1, name, <<"^A">>),
+  {error, CS2} = sumo:persist(CS2),
   ok.
 
 -spec init_store(atom()) -> ok.

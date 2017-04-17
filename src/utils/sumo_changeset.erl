@@ -362,8 +362,7 @@ get_metadata(Data) ->
 convert_params(Params) ->
   maps:fold(fun
     (K, V, Acc) when is_binary(K) -> maps:put(sumo_utils:to_atom(K), V, Acc);
-    (K, _, Acc) when is_atom(K)   -> Acc;
-    (K, _, _)                     -> error({badarg, K})
+    (K, _, Acc) when is_atom(K)   -> Acc
   end, Params, Params).
 
 %% @private

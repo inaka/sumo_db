@@ -38,7 +38,7 @@
 
 %%% API for standard CRUD functions.
 -export([
-  persist/2,
+  persist/1, persist/2,
   fetch/2,
   find_one/2,
   find_all/1, find_all/4,
@@ -113,20 +113,29 @@
 %%%=============================================================================
 
 %% @doc Creates or updates the given Doc.
+-spec persist(Changeset) -> Return when
+  Changeset :: sumo_changeset:changeset(),
+  StoredDoc :: user_doc(),
+  Return    :: {ok, StoredDoc} | {error, Changeset}.
+persist(Changeset) ->
+  case sumo_changeset:is_valid(Changeset) of
+    true ->
+      Data = sumo_changeset:apply_changes(Changeset),
+      Schema = sumo_changeset:schema(Changeset),
+      Params = sumo_changeset:params(Changeset),
+      Store = sumo_changeset:store(Changeset),
+      {ok, do_persist(Schema, Params, Data, Store)};
+    false ->
+      {error, Changeset}
+  end.
+
+%% @doc Creates or updates the given Doc.
 -spec persist(schema_name(), user_doc()) -> user_doc().
 persist(DocName, UserDoc) ->
   Module = sumo_config:get_prop_value(DocName, module),
-  DocMap = Module:sumo_sleep(UserDoc),
+  Doc = sumo_internal:new_doc(DocName, Module:sumo_sleep(UserDoc)),
   Store = sumo_config:get_store(DocName),
-  EventId = sumo_event:dispatch(DocName, pre_persisted, [UserDoc]),
-  case sumo_store:persist(Store, sumo_internal:new_doc(DocName, DocMap)) of
-    {ok, NewDoc} ->
-      Ret = sumo_internal:wakeup(NewDoc),
-      EventId = sumo_event:dispatch(DocName, EventId, persisted, [Ret]),
-      Ret;
-    Error ->
-      exit(Error)
-  end.
+  do_persist(DocName, UserDoc, Doc, Store).
 
 %% @doc Returns the doc identified by Id.
 -spec fetch(schema_name(), field_value()) -> user_doc() | notfound.
@@ -326,6 +335,18 @@ new_doc(SchemaName, UserDoc) ->
 %%%=============================================================================
 %%% Internal functions
 %%%=============================================================================
+
+%% @private
+do_persist(DocName, UserDoc, Doc, Store) ->
+  EventId = sumo_event:dispatch(DocName, pre_persisted, [UserDoc]),
+  case sumo_store:persist(Store, Doc) of
+    {ok, NewDoc} ->
+      Return = sumo_internal:wakeup(NewDoc),
+      EventId = sumo_event:dispatch(DocName, EventId, persisted, [Return]),
+      Return;
+    Error ->
+      exit(Error)
+  end.
 
 %% @private
 docs_wakeup(Docs) ->

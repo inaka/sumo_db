@@ -112,11 +112,6 @@ t_cast(_Config) ->
   Params = ?PERSON#{age => '33', missing => 1},
   Allowed = [missing | ?ALLOWED],
 
-  %% should fails because an invalid key type in params
-  _ = assert_error({badarg, 1}, fun() ->
-    sumo_changeset:cast(PersonDoc, Params#{1 => 1}, Allowed)
-  end),
-
   %% run changeset pipeline
   ExpectedChanges = #{
     birthdate => {{1980, 9, 22}, {0, 0, 0}},
@@ -469,7 +464,9 @@ t_nested_changeset_validations(_Config) ->
     sumo_changeset:cast(_, Params, ?ALLOWED),
     sumo_changeset:validate_required(_, ?REQUIRED),
     sumo_changeset:validate_inclusion(_, status, [<<"active">>, <<"blocked">>]),
-    sumo_changeset:validate_number(_, age, [{less_than_or_equal_to, 33}])),
+    sumo_changeset:validate_number(_, age, [{less_than_or_equal_to, 33}]),
+    sumo_changeset:validate_length(_, last_name, [{min, 3}]),
+    sumo_changeset:validate_format(_, last_name, <<"^oth">>)),
 
   ok.
 

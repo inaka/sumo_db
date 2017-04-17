@@ -18,7 +18,8 @@
     find_by/1,
     delete_all/1,
     delete/1,
-    check_proper_dates/1
+    check_proper_dates/1,
+    persist_using_changeset/1
   ]}
 ]).
 

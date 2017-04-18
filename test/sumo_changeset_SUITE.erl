@@ -91,9 +91,8 @@ end_per_suite(Config) ->
 -spec t_add_error(config()) -> ok.
 t_add_error(_Config) ->
   %% run changeset pipeline adding an error
-  CS = [pipe](undefined,
-    default_person_doc(),
-    sumo_changeset:cast(_, ?PERSON, ?ALLOWED),
+  CS = [pipe](people,
+    sumo_changeset:cast(_, default_person_doc(), ?PERSON, ?ALLOWED),
     sumo_changeset:add_error(_, status, <<"Invalid">>)),
 
   %% validate errors
@@ -106,7 +105,8 @@ t_add_error(_Config) ->
 -spec t_cast(config()) -> ok.
 t_cast(_Config) ->
   %% create a person doc
-  PersonDoc = default_person_doc(),
+  Person = default_person_doc(),
+  PersonModel = sumo_internal:doc_fields(sumo_internal:from_user_doc(people, Person)),
 
   %% create params to be cast adding some intentional errors
   Params = ?PERSON#{age => '33', missing => 1},
@@ -120,11 +120,11 @@ t_cast(_Config) ->
     last_name => <<"other">>,
     status    => <<"active">>
   },
-  CS = sumo_changeset:cast(PersonDoc, Params, Allowed),
+  CS = sumo_changeset:cast(people, Person, Params, Allowed),
   _ = validate_cs(CS, #{
     schema   => people,
     store    => sumo_test_mnesia,
-    data     => PersonDoc,
+    data     => PersonModel,
     params   => maps:with(Allowed, Params),
     changes  => ExpectedChanges,
     types    => {true, fun(M) -> maps:size(M) > 0 end},
@@ -136,9 +136,8 @@ t_cast(_Config) ->
   1 = length(sumo_changeset:errors(CS)),
   _ = validate_cs_errors(CS, [age]),
 
-  CS1 = [pipe](undefined,
-    default_person_doc(),
-    sumo_changeset:cast(_, #{}, ?ALLOWED),
+  CS1 = [pipe](people,
+    sumo_changeset:cast(_, default_person_doc(), #{}, ?ALLOWED),
     sumo_changeset:cast(_, #{last_name => <<"other">>}, Allowed)),
 
   %% validate errors
@@ -149,21 +148,18 @@ t_cast(_Config) ->
 
 -spec t_change(config()) -> ok.
 t_change(_Config) ->
-  CS1 = [pipe](undefined,
-    default_person_doc(),
-    sumo_changeset:cast(_, #{}, ?ALLOWED),
+  CS1 = [pipe](people,
+    sumo_changeset:cast(_, default_person_doc(), #{}, ?ALLOWED),
     sumo_changeset:change(_, #{last_name => <<"other">>})),
   1 = maps:size(sumo_changeset:changes(CS1)),
 
-  CS2 = [pipe](undefined,
-    default_person_doc(),
-    sumo_changeset:change(_, #{last_name => <<"Darwin">>}),
+  CS2 = [pipe](people,
+    sumo_changeset:change(_, default_person_doc(), #{last_name => <<"Darwin">>}),
     sumo_changeset:change(_, #{last_name => <<"other">>})),
   1 = maps:size(sumo_changeset:changes(CS2)),
 
-  CS3 = [pipe](undefined,
-    default_person_doc(),
-    sumo_changeset:change(_, #{last_name => <<"Darwin">>}),
+  CS3 = [pipe](people,
+    sumo_changeset:change(_, default_person_doc(), #{last_name => <<"Darwin">>}),
     sumo_changeset:cast(_, #{}, ?ALLOWED)),
   1 = maps:size(sumo_changeset:changes(CS3)),
 
@@ -171,22 +167,19 @@ t_change(_Config) ->
 
 -spec t_put_change(config()) -> ok.
 t_put_change(_Config) ->
-  #{last_name := <<"other">>} = [pipe](undefined,
-    default_person_doc(),
-    sumo_changeset:cast(_, #{}, ?ALLOWED),
+  #{last_name := <<"other">>} = [pipe](people,
+    sumo_changeset:cast(_, default_person_doc(), #{}, ?ALLOWED),
     sumo_changeset:put_change(_, last_name, <<"other">>),
     sumo_changeset:changes(_)),
 
-  0 = [pipe](undefined,
-    default_person_doc(),
-    sumo_changeset:cast(_, #{}, ?ALLOWED),
+  0 = [pipe](people,
+    sumo_changeset:cast(_, default_person_doc(), #{}, ?ALLOWED),
     sumo_changeset:put_change(_, last_name, <<"Doe">>),
     sumo_changeset:changes(_),
     maps:size(_)),
 
-  0 = [pipe](undefined,
-    default_person_doc(<<"other">>, <<"other">>),
-    sumo_changeset:cast(_, #{}, ?ALLOWED),
+  0 = [pipe](people,
+    sumo_changeset:cast(_, sumo_test_people:new(<<"other">>, <<"other">>), #{}, ?ALLOWED),
     sumo_changeset:put_change(_, last_name, <<"other">>),
     sumo_changeset:cast(_, #{last_name => <<"other">>}, ?ALLOWED),
     sumo_changeset:put_change(_, last_name, <<"other">>),
@@ -197,9 +190,8 @@ t_put_change(_Config) ->
 
 -spec t_get_change(config()) -> ok.
 t_get_change(_Config) ->
-  CS1 = [pipe](undefined,
-    default_person_doc(),
-    sumo_changeset:cast(_, #{}, ?ALLOWED),
+  CS1 = [pipe](people,
+    sumo_changeset:cast(_, default_person_doc(), #{}, ?ALLOWED),
     sumo_changeset:put_change(_, last_name, <<"other">>)),
   1 = maps:size(sumo_changeset:changes(CS1)),
 
@@ -211,9 +203,8 @@ t_get_change(_Config) ->
 
 -spec t_delete_change(config()) -> ok.
 t_delete_change(_Config) ->
-  CS1 = [pipe](undefined,
-    default_person_doc(),
-    sumo_changeset:cast(_, #{}, ?ALLOWED),
+  CS1 = [pipe](people,
+    sumo_changeset:cast(_, default_person_doc(), #{}, ?ALLOWED),
     sumo_changeset:put_change(_, last_name, <<"other">>)),
   1 = maps:size(sumo_changeset:changes(CS1)),
 
@@ -225,49 +216,48 @@ t_delete_change(_Config) ->
 -spec t_apply_changes(config()) -> ok.
 t_apply_changes(_Config) ->
   %% create a person doc
-  PersonDoc = default_person_doc(),
+  Person = default_person_doc(),
+  PersonModel = sumo_internal:doc_fields(sumo_internal:from_user_doc(people, Person)),
 
   %% run changeset pipeline
-  CS1 = sumo_changeset:cast(PersonDoc, ?PERSON#{missing => 1}, ?ALLOWED),
+  CS1 = sumo_changeset:cast(people, Person, ?PERSON#{missing => 1}, ?ALLOWED),
   Data = sumo_changeset:data(CS1),
-  true = Data == PersonDoc,
-  Person = sumo_test_people:sumo_wakeup(sumo_internal:doc_fields(Data)),
+  true = Data == PersonModel,
   undefined = sumo_test_people:id(Person),
   <<"Doe">> = sumo_test_people:last_name(Person),
   undefined = sumo_test_people:age(Person),
 
   %% apply changes
   NewData = sumo_changeset:apply_changes(CS1),
-  false = NewData == PersonDoc,
-  NewPerson = sumo_test_people:sumo_wakeup(sumo_internal:doc_fields(NewData)),
+  false = NewData == PersonModel,
+  NewPerson = sumo_test_people:sumo_wakeup(NewData),
   1 = sumo_test_people:id(NewPerson),
   <<"other">> = sumo_test_people:last_name(NewPerson),
   33 = sumo_test_people:age(NewPerson),
 
   %% run changeset pipeline
-  CS2 = sumo_changeset:cast(PersonDoc, #{}, ?ALLOWED),
+  CS2 = sumo_changeset:cast(people, Person, #{}, ?ALLOWED),
   0 = maps:size(sumo_changeset:changes(CS2)),
-  PersonDoc = sumo_changeset:apply_changes(CS2),
+  PersonModel = sumo_changeset:apply_changes(CS2),
 
   %% run changeset pipeline
-  PersonDoc1 = sumo_internal:set_field(invalid, 1, PersonDoc),
-  CS3 = [pipe](PersonDoc1,
-    sumo_changeset:cast(_, #{}, ?ALLOWED),
-    sumo_changeset:put_change(_, invalid, 2)
+  CS3 = [pipe](people,
+    sumo_changeset:cast(_, Person, #{}, ?ALLOWED),
+    sumo_changeset:put_change(_, missing, 2)
   ),
   1 = maps:size(sumo_changeset:changes(CS3)),
-  PersonDoc1 = sumo_changeset:apply_changes(CS3),
+  PersonModel = sumo_changeset:apply_changes(CS3),
 
   ok.
 
 -spec t_validate_change(config()) -> ok.
 t_validate_change(_Config) ->
   %% create a person doc
-  PersonDoc = default_person_doc(),
+  Person = default_person_doc(),
 
   %% run changeset pipeline
-  CS1 = [pipe](PersonDoc,
-    sumo_changeset:cast(_, ?PERSON, ?ALLOWED),
+  CS1 = [pipe](people,
+    sumo_changeset:cast(_, Person, ?PERSON, ?ALLOWED),
     sumo_changeset:validate_change(_, age, fun(age, Age) ->
       case Age > 30 of
         true  -> [{age, <<"cannot be greater than 30">>}];
@@ -284,11 +274,11 @@ t_validate_change(_Config) ->
 -spec t_validate_required(config()) -> ok.
 t_validate_required(_Config) ->
   %% create a person doc
-  PersonDoc = default_person_doc(),
+  Person = default_person_doc(),
 
   %% run changeset pipeline
-  CS1 = [pipe](PersonDoc,
-    sumo_changeset:cast(_, ?PERSON, ?ALLOWED),
+  CS1 = [pipe](people,
+    sumo_changeset:cast(_, Person, ?PERSON, ?ALLOWED),
     sumo_changeset:validate_required(_, ?REQUIRED)),
 
   %% validate errors
@@ -296,8 +286,8 @@ t_validate_required(_Config) ->
   0 = length(sumo_changeset:errors(CS1)),
 
   %% run changeset pipeline
-  CS2 = [pipe](PersonDoc,
-    sumo_changeset:cast(_, ?PERSON#{age => nil}, ?ALLOWED),
+  CS2 = [pipe](people,
+    sumo_changeset:cast(_, Person, ?PERSON#{age => nil}, ?ALLOWED),
     sumo_changeset:validate_required(_, [address | ?REQUIRED])),
 
   %% validate errors
@@ -307,8 +297,8 @@ t_validate_required(_Config) ->
 
   %% should fails
   _ = assert_error({badarg, invalid}, fun() ->
-    [pipe](PersonDoc,
-      sumo_changeset:cast(_, ?PERSON, ?ALLOWED),
+    [pipe](people,
+      sumo_changeset:cast(_, Person, ?PERSON, ?ALLOWED),
       sumo_changeset:validate_required(_, [invalid | ?REQUIRED]))
   end),
 
@@ -317,14 +307,14 @@ t_validate_required(_Config) ->
 -spec t_validate_inclusion(config()) -> ok.
 t_validate_inclusion(_Config) ->
   %% create a person doc
-  PersonDoc = default_person_doc(),
+  Person = default_person_doc(),
 
   %% valid statuses
   Statuses = [<<"active">>, <<"blocked">>],
 
   %% run changeset pipeline
-  CS1 = [pipe](PersonDoc,
-    sumo_changeset:cast(_, ?PERSON, ?ALLOWED),
+  CS1 = [pipe](people,
+    sumo_changeset:cast(_, Person, ?PERSON, ?ALLOWED),
     sumo_changeset:validate_required(_, ?REQUIRED),
     sumo_changeset:validate_inclusion(_, status, Statuses)),
 
@@ -333,8 +323,8 @@ t_validate_inclusion(_Config) ->
   0 = length(sumo_changeset:errors(CS1)),
 
   %% run changeset pipeline
-  CS2 = [pipe](PersonDoc,
-    sumo_changeset:cast(_, ?PERSON#{status => <<"invalid">>}, ?ALLOWED),
+  CS2 = [pipe](people,
+    sumo_changeset:cast(_, Person, ?PERSON#{status => <<"invalid">>}, ?ALLOWED),
     sumo_changeset:validate_required(_, ?REQUIRED),
     sumo_changeset:validate_inclusion(_, status, Statuses)),
 
@@ -348,11 +338,11 @@ t_validate_inclusion(_Config) ->
 -spec t_validate_number(config()) -> ok.
 t_validate_number(_Config) ->
   %% create a person doc
-  PersonDoc = default_person_doc(),
+  Person = default_person_doc(),
 
   %% run changeset pipeline
-  CS1 = [pipe](PersonDoc,
-    sumo_changeset:cast(_, ?PERSON, ?ALLOWED),
+  CS1 = [pipe](people,
+    sumo_changeset:cast(_, Person, ?PERSON, ?ALLOWED),
     sumo_changeset:validate_number(_, age, [
       {less_than, 34},
       {less_than_or_equal_to, 33},
@@ -375,8 +365,8 @@ t_validate_number(_Config) ->
   ],
   _ = lists:foreach(fun(Validations) ->
     %% run changeset pipeline
-    CS = [pipe](PersonDoc,
-      sumo_changeset:cast(_, ?PERSON, ?ALLOWED),
+    CS = [pipe](people,
+      sumo_changeset:cast(_, Person, ?PERSON, ?ALLOWED),
       sumo_changeset:validate_number(_, age, Validations)),
 
     %% validate errors
@@ -387,8 +377,8 @@ t_validate_number(_Config) ->
 
   %% should fails
   _ = assert_error({badarg, invalid_validation}, fun() ->
-    [pipe](PersonDoc,
-      sumo_changeset:cast(_, ?PERSON, ?ALLOWED),
+    [pipe](people,
+      sumo_changeset:cast(_, Person, ?PERSON, ?ALLOWED),
       sumo_changeset:validate_number(_, age, [{invalid_validation, 33}]))
   end),
 
@@ -397,11 +387,11 @@ t_validate_number(_Config) ->
 -spec t_validate_length(config()) -> ok.
 t_validate_length(_Config) ->
   %% create a person doc
-  PersonDoc = default_person_doc(),
+  Person = default_person_doc(),
 
   %% run changeset pipeline
-  CS1 = [pipe](PersonDoc,
-    sumo_changeset:cast(_, ?PERSON, ?ALLOWED),
+  CS1 = [pipe](people,
+    sumo_changeset:cast(_, Person, ?PERSON, ?ALLOWED),
     sumo_changeset:validate_length(_, last_name, [{is, 5}, {min, 2}, {max, 10}])),
 
   %% validate errors
@@ -416,8 +406,8 @@ t_validate_length(_Config) ->
   ],
   _ = lists:foreach(fun(Validations) ->
     %% run changeset pipeline
-    CS = [pipe](PersonDoc,
-      sumo_changeset:cast(_, ?PERSON, ?ALLOWED),
+    CS = [pipe](people,
+      sumo_changeset:cast(_, Person, ?PERSON, ?ALLOWED),
       sumo_changeset:validate_length(_, last_name, Validations)),
 
     %% validate errors
@@ -430,11 +420,11 @@ t_validate_length(_Config) ->
 -spec t_validate_format(config()) -> ok.
 t_validate_format(_Config) ->
   %% create a person doc
-  PersonDoc = default_person_doc(),
+  Person = default_person_doc(),
 
   %% run changeset pipeline
-  CS1 = [pipe](PersonDoc,
-    sumo_changeset:cast(_, ?PERSON, ?ALLOWED),
+  CS1 = [pipe](people,
+    sumo_changeset:cast(_, Person, ?PERSON, ?ALLOWED),
     sumo_changeset:validate_required(_, ?REQUIRED),
     sumo_changeset:validate_format(_, last_name, <<"^oth">>)),
 
@@ -443,8 +433,8 @@ t_validate_format(_Config) ->
   0 = length(sumo_changeset:errors(CS1)),
 
   %% run changeset pipeline
-  CS2 = [pipe](PersonDoc,
-    sumo_changeset:cast(_, ?PERSON, ?ALLOWED),
+  CS2 = [pipe](people,
+    sumo_changeset:cast(_, Person, ?PERSON, ?ALLOWED),
     sumo_changeset:validate_required(_, ?REQUIRED),
     sumo_changeset:validate_format(_, last_name, <<"^Doe">>)),
 
@@ -460,8 +450,7 @@ t_nested_changeset_validations(_Config) ->
   Params = #{age => 33, id => 1, <<"last_name">> => <<"other">>},
 
   _ = [pipe](people,
-    sumo:new_doc(people, Person),
-    sumo_changeset:cast(_, Params, ?ALLOWED),
+    sumo_changeset:cast(_, Person, Params, ?ALLOWED),
     sumo_changeset:validate_required(_, ?REQUIRED),
     sumo_changeset:validate_inclusion(_, status, [<<"active">>, <<"blocked">>]),
     sumo_changeset:validate_number(_, age, [{less_than_or_equal_to, 33}]),
@@ -476,13 +465,7 @@ t_nested_changeset_validations(_Config) ->
 
 %% @private
 default_person_doc() ->
-  default_person_doc(<<"John">>, <<"Doe">>).
-
-%% @private
-default_person_doc(Name, LastName) ->
-  [pipe](Name,
-    sumo_test_people:new(_, LastName),
-    sumo:new_doc(people, _)).
+  sumo_test_people:new(<<"John">>, <<"Doe">>).
 
 %% @private
 validate_cs(CS, ParamsToCheck) ->

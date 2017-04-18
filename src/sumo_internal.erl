@@ -35,7 +35,8 @@
   doc_fields/1,
   wakeup/1,
   new_doc/1,
-  new_doc/2
+  new_doc/2,
+  from_user_doc/2
 ]).
 
 %%% API for schema fields manipulation.
@@ -137,6 +138,13 @@ new_doc(Name, Fields) ->
   Module = sumo_config:get_prop_value(Name, module),
   #{name => Name, module => Module, fields => Fields}.
 
+%% @doc Returns a new doc from the given user doc.
+-spec from_user_doc(sumo:schema_name(), sumo:user_doc()) -> doc().
+from_user_doc(Name, UserDoc) ->
+  Module = sumo_config:get_prop_value(Name, module),
+  Fields = Module:sumo_sleep(UserDoc),
+  #{name => Name, module => Module, fields => Fields}.
+
 %% @doc Returns the schema for a given DocName.
 -spec get_schema(sumo:schema_name()) -> schema().
 get_schema(DocName) ->
@@ -169,9 +177,15 @@ get_field(Name, Doc) ->
   maps:get(Name, doc_fields(Doc), undefined).
 
 %% @doc Sets a value in an sumo_doc.
--spec set_field(sumo:field_name(), sumo:field_value(), doc()) -> doc().
-set_field(FieldName, Value, _Doc = #{fields := Fields, name := Name}) ->
-  new_doc(Name, maps:put(FieldName, Value, Fields)).
+-spec set_field(FieldName, FieldValue, DocOrModel) -> UpdatedDocOrModel when
+  FieldName         :: sumo:field_name(),
+  FieldValue        :: sumo:field_value(),
+  DocOrModel        :: doc() | sumo:model(),
+  UpdatedDocOrModel :: doc() | sumo:model().
+set_field(FieldName, FieldValue, Doc = #{fields := Fields}) ->
+  maps:put(fields, maps:put(FieldName, FieldValue, Fields), Doc);
+set_field(FieldName, FieldValue, Fields) ->
+  maps:put(FieldName, FieldValue, Fields).
 
 %% @doc Returns name of field marked as ID for the given schema or doc name.
 -spec id_field_name(sumo:schema_name()) -> sumo:field_name().

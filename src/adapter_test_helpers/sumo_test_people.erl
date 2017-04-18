@@ -58,7 +58,8 @@
   status        :: status(),
   weird_field1  :: weird_field(),
   weird_field2  :: weird_field(),
-  weird_field3  :: weird_field()
+  weird_field3  :: weird_field(),
+  missing       :: any()
 }).
 
 -type person() :: #person{}.
@@ -86,7 +87,8 @@ sumo_sleep(Person) ->
     status        => Person#person.status,
     weird_field1  => Person#person.weird_field1,
     weird_field2  => Person#person.weird_field2,
-    weird_field3  => Person#person.weird_field3}.
+    weird_field3  => Person#person.weird_field3,
+    missing       => Person#person.missing}.
 
 -spec sumo_wakeup(Person :: sumo:model()) -> person().
 sumo_wakeup(Person) ->
@@ -105,7 +107,8 @@ sumo_wakeup(Person) ->
     status        = maps:get(status, Person),
     weird_field1  = maps:get(weird_field1, Person),
     weird_field2  = maps:get(weird_field2, Person),
-    weird_field3  = maps:get(weird_field3, Person)
+    weird_field3  = maps:get(weird_field3, Person),
+    missing       = maps:get(missing, Person, undefined)
   }.
 
 %%%=============================================================================
@@ -160,7 +163,8 @@ from_map(Map) ->
     is_blocked    = maps:get(is_blocked, Map, false),
     weird_field1  = maps:get(weird_field1, Map, undefined),
     weird_field2  = maps:get(weird_field2, Map, undefined),
-    weird_field3  = maps:get(weird_field3, Map, undefined)
+    weird_field3  = maps:get(weird_field3, Map, undefined),
+    missing       = maps:get(missing, Map, undefined)
   }.
 
 -spec name(Person :: person()) -> name().

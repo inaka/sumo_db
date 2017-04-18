@@ -1,4 +1,15 @@
-%%% @doc Based on Elixir `Ecto.Changeset'.
+%%%-------------------------------------------------------------------
+%%% @doc
+%%% Based on Elixir `Ecto.Changeset'.
+%%%
+%%% Changesets allow filtering, casting, validation and definition of
+%%% constraints when manipulating sumo models.
+%%%
+%%% @reference See
+%%% <a href="https://hexdocs.pm/ecto/Ecto.Changeset.html">Ecto.Changeset</a>
+%%% @end
+%%% @end
+%%%-------------------------------------------------------------------
 -module(sumo_changeset).
 
 %% Properties
@@ -18,8 +29,8 @@
 -export([
   add_error/3, add_error/4,
   apply_changes/1,
-  cast/3,
-  change/2,
+  cast/3, cast/4,
+  change/2, change/3,
   get_field/2, get_field/3,
   put_change/3,
   get_change/2, get_change/3,
@@ -52,7 +63,7 @@
 -opaque changeset() :: #{
   schema   => sumo:schema_name(),
   store    => atom(),
-  data     => sumo_internal:doc() | undefined,
+  data     => sumo:model() | undefined,
   params   => params() | undefined,
   errors   => errors() | undefined,
   changes  => kv_map() | undefined,
@@ -63,7 +74,9 @@
 
 %% Exported types
 -export_type([
-  changeset/0
+  changeset/0,
+  params/0,
+  keyword/0
 ]).
 
 %%%=============================================================================
@@ -78,7 +91,7 @@ schema(#{schema := Value}) ->
 store(#{store := Value}) ->
   Value.
 
--spec data(changeset()) -> sumo_internal:doc().
+-spec data(changeset()) -> sumo:model().
 data(#{data := Value}) ->
   Value.
 
@@ -118,7 +131,7 @@ add_error(Changeset, Key, Message) ->
 add_error(#{errors := Errors} = Changeset, Key, Message, Keys) ->
   Changeset#{errors := [{Key, {Message, Keys}} | Errors], is_valid := false}.
 
--spec apply_changes(changeset()) -> sumo_internal:doc().
+-spec apply_changes(changeset()) -> sumo:model().
 apply_changes(#{changes := Changes, data := Data}) when map_size(Changes) == 0 ->
   Data;
 apply_changes(#{changes := Changes, data := Data, types := Types}) ->
@@ -129,18 +142,20 @@ apply_changes(#{changes := Changes, data := Data, types := Types}) ->
     end
   end, Data, Changes).
 
--spec cast(sumo_internal:doc() | changeset(), params(), [atom()]) -> changeset().
-cast(#{data := Data, types := _} = Changeset, Params, Allowed) ->
-  NewChangeset = do_cast(Data, Params, Allowed),
-  cast_merge(Changeset, NewChangeset);
-cast(Data, Params, Allowed) ->
-  do_cast(Data, Params, Allowed).
+-spec cast(changeset(), params(), [atom()]) -> changeset().
+cast(#{schema := Schema, store := Store, data := Data, types := Types} = CS, Params, Allowed) ->
+  NewChangeset = do_cast({Schema, Store, Data, Types}, Params, Allowed),
+  cast_merge(CS, NewChangeset).
+
+-spec cast(sumo:schema_name(), sumo:user_doc(), params(), [atom()]) -> changeset().
+cast(SchemaName, UserDoc, Params, Allowed) ->
+  Metadata = get_metadata(sumo_internal:from_user_doc(SchemaName, UserDoc)),
+  do_cast(Metadata, Params, Allowed).
 
 %% @private
-do_cast(Data, Params, Allowed) ->
+do_cast({SchemaName, Store, Data, Types}, Params, Allowed) ->
   NewParams = convert_params(Params),
   FilteredParams = maps:with(Allowed, NewParams),
-  {SchemaName, Store, Types} = get_metadata(Data),
 
   {Changes, Errors, IsValid} = maps:fold(fun(ParamKey, ParamVal, Acc) ->
     process_param(ParamKey, ParamVal, Types, Acc)
@@ -157,12 +172,15 @@ do_cast(Data, Params, Allowed) ->
     types    := Types
   }.
 
--spec change(sumo_internal:doc() | changeset(), kv_map()) -> changeset().
+-spec change(changeset(), kv_map()) -> changeset().
 change(#{changes := _, types := _} = Changeset, Changes) ->
   NewChanges = changes(get_changed(Changeset, Changes)),
-  Changeset#{changes  := NewChanges};
-change(Data, Changes) ->
-  {SchemaName, Store, Types} = get_metadata(Data),
+  Changeset#{changes  := NewChanges}.
+
+-spec change(sumo:schema_name(), sumo:user_doc(), kv_map()) -> changeset().
+change(SchemaName, UserDoc, Changes) ->
+  Doc = sumo_internal:from_user_doc(SchemaName, UserDoc),
+  {SchemaName, Store, Data, Types} = get_metadata(Doc),
   Changeset = (changeset())#{
     schema   := SchemaName,
     store    := Store,
@@ -187,7 +205,7 @@ get_field(#{changes := Changes, data := Data}, Key, Default) ->
     {ok, Value} ->
       Value;
     error ->
-      case maps:find(Key, sumo_internal:doc_fields(Data)) of
+      case maps:find(Key, Data) of
         {ok, Value} -> Value;
         error       -> Default
       end
@@ -195,7 +213,7 @@ get_field(#{changes := Changes, data := Data}, Key, Default) ->
 
 -spec put_change(changeset(), atom(), term()) -> changeset().
 put_change(#{changes := Changes, data := Data} = Changeset, Key, Value) ->
-  NewChanges = case maps:find(Key, sumo_internal:doc_fields(Data)) of
+  NewChanges = case maps:find(Key, Data) of
     {ok, V} when V /= Value ->
       maps:put(Key, Value, Changes);
     _ ->
@@ -351,12 +369,19 @@ changeset() ->
     required => []}.
 
 %% @private
-get_metadata(Data) ->
-  SchemaName = sumo_internal:doc_name(Data),
+get_metadata(Doc) ->
+  SchemaName = sumo_internal:doc_name(Doc),
   Store = sumo_config:get_store(SchemaName),
-  Module = sumo_internal:doc_module(Data),
+  Data = sumo_internal:doc_fields(Doc),
+  Module = sumo_internal:doc_module(Doc),
   Types = schema_types(Module:sumo_schema()),
-  {SchemaName, Store, Types}.
+  {SchemaName, Store, Data, Types}.
+
+%% @private
+schema_types(Schema) ->
+  lists:foldl(fun(F, Acc) ->
+    maps:put(sumo_internal:field_name(F), sumo_internal:field_type(F), Acc)
+  end, #{}, sumo_internal:schema_fields(Schema)).
 
 %% @private
 convert_params(Params) ->
@@ -364,12 +389,6 @@ convert_params(Params) ->
     (K, V, Acc) when is_binary(K) -> maps:put(sumo_utils:to_atom(K), V, Acc);
     (K, _, Acc) when is_atom(K)   -> Acc
   end, Params, Params).
-
-%% @private
-schema_types(Schema) ->
-  lists:foldl(fun(F, Acc) ->
-    maps:put(sumo_internal:field_name(F), sumo_internal:field_type(F), Acc)
-  end, #{}, sumo_internal:schema_fields(Schema)).
 
 %% @private
 process_param(ParamKey, ParamValue, Types, {Changes, Errors, IsValid}) ->

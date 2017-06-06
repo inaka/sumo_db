@@ -16,6 +16,11 @@
 %%% @end
 %%% @copyright Inaka <hello@inaka.net>
 %%%
+
+
+%%% code added to check elvis
+
+
 -module(sumo).
 -author("Marcelo Gornstein <marcelog@gmail.com>").
 -github("https://github.com/inaka").

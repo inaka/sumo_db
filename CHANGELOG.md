@@ -1,15 +1,60 @@
 # Change Log
 
+## [0.7.2](https://github.com/inaka/sumo_db/tree/0.7.2) (2017-06-06)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.7.1...0.7.2)
+
+**Fixed bugs:**
+
+- Function delete/3 not implemented in postgres store [\#163](https://github.com/inaka/sumo_db/issues/163)
+- example/blog/run :  {error,{"no such file or directory","worker\_pool.app"}} [\#146](https://github.com/inaka/sumo_db/issues/146)
+- PostgreSql: position of not\_null attribute in field schema definition  [\#138](https://github.com/inaka/sumo_db/issues/138)
+- Ensure all backends respect the log\_queries option [\#136](https://github.com/inaka/sumo_db/issues/136)
+
+**Closed issues:**
+
+- Move src/adapter\_test\_helpers folder out from test folder, let sumo src agnostic to test helpers [\#299](https://github.com/inaka/sumo_db/issues/299)
+- Add links to adapters in documentation [\#288](https://github.com/inaka/sumo_db/issues/288)
+- Remove the need for mnesia's start\_phase magic [\#275](https://github.com/inaka/sumo_db/issues/275)
+- Modify events config to follow the same form as docs [\#268](https://github.com/inaka/sumo_db/issues/268)
+- Remove unnecessary macros [\#236](https://github.com/inaka/sumo_db/issues/236)
+- Document mnesia backend requierments [\#214](https://github.com/inaka/sumo_db/issues/214)
+- Riak Store: implement sort for sumo:find\_by/5 [\#200](https://github.com/inaka/sumo_db/issues/200)
+- Update epgsql to 3.1.0 [\#172](https://github.com/inaka/sumo_db/issues/172)
+- Use named statements to improve performance in PostgreSQL store [\#171](https://github.com/inaka/sumo_db/issues/171)
+- Have the riak store create bucket types in create\_schema [\#145](https://github.com/inaka/sumo_db/issues/145)
+- Make the build be able to fetch dependencies dynamically \(on-demand\), for DB providers \(MySQL, PostgreSQL, MongoDB, etc.\). [\#117](https://github.com/inaka/sumo_db/issues/117)
+- Implement sumo\_store\_elasticsearch:find\_by/6 [\#107](https://github.com/inaka/sumo_db/issues/107)
+- Full conditional logic support for ElasticSearch  [\#89](https://github.com/inaka/sumo_db/issues/89)
+- ElasticSearch: take into account other mapping options when creating a schema  [\#76](https://github.com/inaka/sumo_db/issues/76)
+- Fulfill the open-source checklist [\#67](https://github.com/inaka/sumo_db/issues/67)
+
+**Merged pull requests:**
+
+- \[\#295\] Implement sumo\_changeset – analogous to Elixir Ecto.Changeset [\#306](https://github.com/inaka/sumo_db/pull/306) ([cabol](https://github.com/cabol))
+- \[WIP\] Remove dependency on sasl [\#305](https://github.com/inaka/sumo_db/pull/305) ([lucafavatella](https://github.com/lucafavatella))
+- Do not depend on lager [\#304](https://github.com/inaka/sumo_db/pull/304) ([lucafavatella](https://github.com/lucafavatella))
+- sumo:fetch/2 replaced sumo:find/2 in /examples/blog/src/blog.erl [\#302](https://github.com/inaka/sumo_db/pull/302) ([nayibor](https://github.com/nayibor))
+- \[\#136\] – Ensure all backends respect the log\_queries option [\#300](https://github.com/inaka/sumo_db/pull/300) ([cabol](https://github.com/cabol))
+- \[\#275\] – Remove the need for mnesia's start\_phase magic [\#298](https://github.com/inaka/sumo_db/pull/298) ([cabol](https://github.com/cabol))
+- Enforce that schema has at least a field with at least `id` attribute [\#294](https://github.com/inaka/sumo_db/pull/294) ([lucafavatella](https://github.com/lucafavatella))
+- Refactor sumo\_internal:get\_id\_field [\#293](https://github.com/inaka/sumo_db/pull/293) ([lucafavatella](https://github.com/lucafavatella))
+- Mention guidelines [\#292](https://github.com/inaka/sumo_db/pull/292) ([lucafavatella](https://github.com/lucafavatella))
+- Plant CI [\#291](https://github.com/inaka/sumo_db/pull/291) ([lucafavatella](https://github.com/lucafavatella))
+- Avoid silently throwing error [\#290](https://github.com/inaka/sumo_db/pull/290) ([lucafavatella](https://github.com/lucafavatella))
+- Delete wrong comment in mnesia adapter [\#289](https://github.com/inaka/sumo_db/pull/289) ([lucafavatella](https://github.com/lucafavatella))
+
 ## [0.7.1](https://github.com/inaka/sumo_db/tree/0.7.1) (2016-10-14)
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.7.0...0.7.1)
 
 **Closed issues:**
 
+- Version Bump to 0.7.1 [\#286](https://github.com/inaka/sumo_db/issues/286)
 - Link events and pre\_events [\#284](https://github.com/inaka/sumo_db/issues/284)
 - Version Bump to 0.7.0 [\#282](https://github.com/inaka/sumo_db/issues/282)
 
 **Merged pull requests:**
 
+- \[\#286\] Version Bump to 0.7.1 [\#287](https://github.com/inaka/sumo_db/pull/287) ([ferigis](https://github.com/ferigis))
 - \[\#284\] link events and pre events, improve README [\#285](https://github.com/inaka/sumo_db/pull/285) ([ferigis](https://github.com/ferigis))
 
 ## [0.7.0](https://github.com/inaka/sumo_db/tree/0.7.0) (2016-10-11)

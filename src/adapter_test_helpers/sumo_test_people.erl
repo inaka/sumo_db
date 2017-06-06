@@ -24,6 +24,7 @@
   description/1,
   profile_image/1,
   is_blocked/1,
+  status/1,
   weird_field1/1,
   weird_field2/1,
   weird_field3/1
@@ -39,6 +40,7 @@
 -type height()        :: float() | undefined.
 -type description()   :: binary() | undefined.
 -type profile_image() :: binary() | undefined.
+-type status()        :: binary() | undefined.
 -type weird_field()   :: term() | undefined.
 
 -record(person, {
@@ -53,9 +55,11 @@
   description   :: description(),
   profile_image :: profile_image(),
   is_blocked    :: boolean(),
+  status        :: status(),
   weird_field1  :: weird_field(),
   weird_field2  :: weird_field(),
-  weird_field3  :: weird_field()
+  weird_field3  :: weird_field(),
+  missing       :: any()
 }).
 
 -type person() :: #person{}.
@@ -80,9 +84,11 @@ sumo_sleep(Person) ->
     description   => Person#person.description,
     profile_image => Person#person.profile_image,
     is_blocked    => Person#person.is_blocked,
+    status        => Person#person.status,
     weird_field1  => Person#person.weird_field1,
     weird_field2  => Person#person.weird_field2,
-    weird_field3  => Person#person.weird_field3}.
+    weird_field3  => Person#person.weird_field3,
+    missing       => Person#person.missing}.
 
 -spec sumo_wakeup(Person :: sumo:model()) -> person().
 sumo_wakeup(Person) ->
@@ -98,9 +104,11 @@ sumo_wakeup(Person) ->
     description   = maps:get(description, Person),
     profile_image = maps:get(profile_image, Person),
     is_blocked    = maps:get(is_blocked, Person),
+    status        = maps:get(status, Person),
     weird_field1  = maps:get(weird_field1, Person),
     weird_field2  = maps:get(weird_field2, Person),
-    weird_field3  = maps:get(weird_field3, Person)
+    weird_field3  = maps:get(weird_field3, Person),
+    missing       = maps:get(missing, Person, undefined)
   }.
 
 %%%=============================================================================
@@ -155,7 +163,8 @@ from_map(Map) ->
     is_blocked    = maps:get(is_blocked, Map, false),
     weird_field1  = maps:get(weird_field1, Map, undefined),
     weird_field2  = maps:get(weird_field2, Map, undefined),
-    weird_field3  = maps:get(weird_field3, Map, undefined)
+    weird_field3  = maps:get(weird_field3, Map, undefined),
+    missing       = maps:get(missing, Map, undefined)
   }.
 
 -spec name(Person :: person()) -> name().
@@ -201,6 +210,10 @@ profile_image(Person) ->
 -spec is_blocked(Person :: person()) -> boolean().
 is_blocked(Person) ->
   Person#person.is_blocked.
+
+-spec status(Person :: person()) -> status().
+status(Person) ->
+  Person#person.status.
 
 -spec weird_field1(Person :: person()) -> weird_field().
 weird_field1(Person) ->

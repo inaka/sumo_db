@@ -53,7 +53,7 @@ dispatch(DocName, EventId, Event, Args) ->
     [] ->
       no_event_managers;
     EventManagers ->
-      lists:foreach(fun(EventManager) ->
+      ok = lists:foreach(fun(EventManager) ->
         gen_event:notify(EventManager, {EventId, DocName, Event, Args})
       end, EventManagers),
       EventId

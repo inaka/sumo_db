@@ -32,14 +32,14 @@ And you can check all of our open-source projects at
  db implementation (mongo, mysql, redis, elasticsearch, etc.).
 
  * Your entities encapsulate behavior in code (i.e. functions in a module) and
- state in a ``sumo:doc()`` implementation.
+ state in a `sumo:doc()` implementation.
 
  * `sumo` is the main module. It translates to and from sumo internal records
  into your own state.
 
- * Each repo is managed by a worker pool of processes, each one using a module
- that implements *sumo_repo* and calls the actual db driver
- (e.g: sumo_repo_mysql).
+ * Each store is managed by a worker pool of processes, each one using a module
+ that implements `sumo_store` and calls the actual db driver
+ (e.g: `sumo_store_mnesia`).
 
  * Some native domain events are supported, that are dispatched through a
  `gen_event:notify/2` automatically when an entity is created, updated, deleted.
@@ -54,6 +54,9 @@ And you can check all of our open-source projects at
  `find_by/5` and `find_all/4` functions. For example this
  `[{age, desc}, {name, asc}]]` will sort descendently by `age` and ascendently
   by `name`.
+
+ * Support for docs/models validations through `sumo_changeset` (check out the
+   [Changeset](#changeset) section).
 
 
 ## Backends, Stores and Repositories modules
@@ -72,7 +75,7 @@ These three concepts have a specific meaning in the context of sumo_db.
 
 ## Supported Backends/Adapters
 
- - [Mnesia](http://erlang.org/doc/man/mnesia.html) is built-in in `sumo`
+ - [Mnesia](http://erlang.org/doc/man/mnesia.html) – **built-in with `sumo`**
  - [Riak](https://github.com/inaka/sumo_db_riak)
  - [PostgreSQL](https://github.com/inaka/sumo_db_pgsql)
  - [MySQL](https://github.com/inaka/sumo_db_mysql)
@@ -126,13 +129,44 @@ Supported types of events:
     - `sumo:create_schema/2`
 
 Sumo requires users to add their own `gen_event`'s in order to handle those events. In order to add them Users have to configure sumo properly. In the `config` file we can add them like this under `sumo_db` configuration:
+
 ```erlang
 {events, [
-     {'_', sumo_test_people_events_manager},
-     {people, sumo_test_people_events_manager}
-   ]}
+   {'_', sumo_test_people_events_manager},
+   {people, sumo_test_people_events_manager}
+ ]}
 ```
+
 Sumo allows us to add a `gen_event` to one type of model (i.e. `people`) or for all (`'_'`).
+
+
+## Changeset
+
+This feature is inspired by Elixir [Ecto.Changeset](https://hexdocs.pm/ecto/Ecto.Changeset.html),
+and the module that implements this feature is [sumo_changeset](./src/utils/sumo_changeset.erl).
+
+### Changeset Usage Example
+
+ > **NOTE:** This example uses [**FancyFlow**](https://github.com/ferd/fancyflow)
+   in order to pipe changeset functions in a nicer way.
+
+```erlang
+%% suppose you have a model/doc `person`, and that module provides a function
+%% to encapsulate model/doc creation
+Person = person:new(<<"John">>, <<"Doe">>),
+
+%% create the set of params/changes
+Params = #{age => 33, id => 1, <<"last_name">> => <<"other">>},
+
+%% run the changeset
+Changeset = [pipe](people,
+  sumo_changeset:cast(_, Person, Params, [id, first_name, last_name, age, status]),
+  sumo_changeset:validate_required(_, [id, last_name, status]),
+  sumo_changeset:validate_inclusion(_, status, [<<"active">>, <<"blocked">>]),
+  sumo_changeset:validate_number(_, age, [{less_than_or_equal_to, 18}]),
+  sumo_changeset:validate_length(_, last_name, [{min, 3}]),
+  sumo_changeset:validate_format(_, last_name, <<"^[a-zA-Z]">>)),
+```
 
 
 ## Example

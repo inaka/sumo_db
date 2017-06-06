@@ -9,12 +9,20 @@
   is_datetime/1,
   keyfind/2,
   keyfind/3,
+  is_key/2,
+  pipe/2,
+  text/2,
   to_bin/1,
   to_atom/1,
   to_list/1,
   to_int/1,
-  to_float/1
+  to_float/1,
+  to_boolean/1,
+  to_datetime/1
 ]).
+
+-type keyword()  :: [{atom(), term()}].
+-type datetime() :: calendar:date() | calendar:datetime().
 
 %%%=============================================================================
 %%% API
@@ -85,8 +93,7 @@ set_filter_response(Field, Doc) ->
   Conditions :: sumo:conditions(),
   FieldTypes :: [sumo:field_type()],
   Res        :: sumo:conditions().
-transform_conditions(Fun, DocName, Conditions, FieldTypes)
-    when is_list(Conditions) ->
+transform_conditions(Fun, DocName, Conditions, FieldTypes) when is_list(Conditions) ->
   DTFields = doc_filter_fields_by(DocName, FieldTypes),
   lists:foldl(fun
     ({K, V}, Acc) when K == 'and'; K == 'or' ->
@@ -115,10 +122,13 @@ transform_conditions(Fun, DocName, Conditions, FieldTypes) ->
   transform_conditions(Fun, DocName, [Conditions], FieldTypes).
 
 -spec is_datetime(calendar:date() | calendar:datetime()) -> boolean().
-is_datetime({{_, _, _} = Date, {_, _, _}}) ->
-  calendar:valid_date(Date);
 is_datetime({_, _, _} = Date) ->
   calendar:valid_date(Date);
+is_datetime({{_, _, _} = Date, {H, M, S}}) ->
+  calendar:valid_date(Date) and
+    (H >= 0 andalso H =< 23) and
+    (M >= 0 andalso M =< 59) and
+    (S >= 0 andalso S =< 59);
 is_datetime(_) ->
   false.
 
@@ -139,6 +149,32 @@ keyfind(Key, KVList, Default) ->
     {Key, Value} -> Value;
     _            -> Default
   end.
+
+-spec is_key(atom(), keyword()) -> boolean().
+is_key(Key, Map) when is_atom(Key), is_map(Map) ->
+  maps:is_key(Key, Map);
+is_key(Key, Keyword) when is_atom(Key), is_list(Keyword) ->
+  lists:keymember(Key, 1, Keyword).
+
+-spec pipe(Initial, Pipeline) -> Return when
+  Initial  :: term(),
+  Module   :: module(),
+  Fun      :: atom(),
+  Args     :: [term()],
+  FunSpec  :: {fun(), Args} | {Module, Fun, Args},
+  Pipeline :: [FunSpec],
+  Return   :: term().
+pipe(Initial, Pipeline) ->
+  lists:foldl(fun
+    ({Module, Fun, Args}, Acc) ->
+      apply(Module, Fun, [Acc | Args]);
+    ({Fun, Args}, Acc) ->
+      apply(Fun, [Acc | Args])
+  end, Initial, Pipeline).
+
+-spec text(string(), [term()]) -> binary().
+text(Msg, Args) ->
+  iolist_to_binary(io_lib:format(Msg, Args)).
 
 -spec to_bin(Data :: term()) -> binary().
 to_bin(Data) when is_integer(Data) ->
@@ -194,10 +230,29 @@ to_int(Data) ->
 to_float(Data) when is_binary(Data) ->
   binary_to_float(Data);
 to_float(Data) when is_list(Data) ->
-  list_to_float(Data);
+  case string:to_float(Data) of
+    {error, no_float} -> list_to_integer(Data);
+    {F, _Rest}        -> F
+  end;
 to_float(Data) when is_integer(Data) ->
   Data / 1;
 to_float(Data) when is_pid(Data); is_reference(Data); is_tuple(Data) ->
   erlang:phash2(Data) / 1;
 to_float(Data) ->
   Data.
+
+-spec to_boolean(any()) -> boolean().
+to_boolean(Data) ->
+  case to_atom(Data) of
+    V when V == true; V == false ->
+      V;
+    _ ->
+      error({badarg, Data})
+  end.
+
+-spec to_datetime(any()) -> datetime() | no_return().
+to_datetime(Data) ->
+  case is_datetime(Data) of
+    true -> Data;
+    _    -> error({badarg, Data})
+  end.

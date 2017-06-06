@@ -1,6 +1,6 @@
 -module(sumo_basic_test_helper).
 
-%% Test Cases - Helpers
+%% Common Test Cases
 -export([
   create_schema/1,
   find/1,
@@ -9,8 +9,12 @@
   delete_all/1,
   delete/1,
   check_proper_dates/1,
-  init_store/1
+  count/1,
+  persist_using_changeset/1
 ]).
+
+%% Shared Helpers
+-export([init_store/1]).
 
 -type config() :: [{atom(), term()}].
 
@@ -118,7 +122,6 @@ delete_all(Config) ->
   {EventId, Name, pre_delete_all, []} = pick_up_event(),
   {EventId, Name, deleted_all, []} = pick_up_event(),
   [] = sumo:find_all(Name),
-  0 = sumo:count(Name),
   ok.
 
 -spec delete(config()) -> ok.
@@ -129,7 +132,6 @@ delete(Config) ->
   %% delete_by
   Conditions = [{last_name, <<"D">>}],
   2 = sumo:delete_by(Name, Conditions),
-  6 = sumo:count(Name),
 
   {EventId, Name, pre_deleted_total, [Conditions]} = pick_up_event(),
   {EventId, Name, deleted_total, [2, Conditions]} = pick_up_event(),
@@ -151,7 +153,6 @@ delete(Config) ->
 
   NewAll = sumo:find_all(Name),
   [_] = All -- NewAll,
-  5 = sumo:count(Name),
   ok.
 
 -spec check_proper_dates(config()) -> ok.
@@ -175,6 +176,47 @@ check_proper_dates(Config) ->
   Person = create(Name, Module:new(<<"X">>, <<"Z">>, 6)),
   Date = Module:birthdate(Person),
   ok.
+
+-spec count(config()) -> ok.
+count(Config) ->
+  {_, Name} = lists:keyfind(name, 1, Config),
+
+  8 = length(sumo:find_all(Name)),
+  8 = sumo:count(Name),
+
+  _ = try sumo:count(wrong)
+  catch
+    _:no_workers -> ok
+  end,
+
+  Conditions = [{last_name, <<"D">>}],
+  2 = sumo:delete_by(Name, Conditions),
+  6 = sumo:count(Name),
+  ok.
+
+-spec persist_using_changeset(config()) -> ok.
+persist_using_changeset(Config) ->
+  {_, Name} = lists:keyfind(name, 1, Config),
+  Module = sumo_config:get_prop_value(Name, module),
+
+  [] = sumo:find_by(Name, [{name, <<"John">>}]),
+  [P1] = sumo:find_by(Name, [{name, <<"A">>}]),
+
+  Schema = Module:sumo_schema(),
+  Allowed = [sumo_internal:field_name(F) || F <- sumo_internal:schema_fields(Schema)],
+  CS1 = sumo_changeset:cast(people, P1, #{name => <<"John">>, age => 34}, Allowed),
+  _ = sumo:persist(CS1),
+  [P2] = sumo:find_by(Name, [{name, <<"John">>}]),
+  <<"John">> = Module:name(P2),
+  34 = Module:age(P2),
+
+  CS2 = sumo_changeset:validate_number(CS1, age, [{less_than_or_equal_to, 33}]),
+  {error, CS2} = sumo:persist(CS2),
+  ok.
+
+%%%=============================================================================
+%%% Helpers
+%%%=============================================================================
 
 -spec init_store(atom()) -> ok.
 init_store(Name) ->
@@ -213,12 +255,6 @@ init_store(Name) ->
     weird_field2  => [1, true, <<"hi">>, 1.1],
     weird_field3  => #{a => 1, b => [1, "2", <<"3">>], <<"c">> => false}
   })),
-
-  8 = sumo:count(Name),
-  _ = try sumo:count(wrong)
-  catch
-    _:no_workers -> ok
-  end,
 
   clean_events(),
   ok.

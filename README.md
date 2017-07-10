@@ -169,12 +169,14 @@ Changeset = [pipe](people,
 ```
 
 
-## Example
+## Examples
 
 See: [**examples/blog**][example-blog] for a full example. To run it, while
 being in the top level directory:
 
     make all blog
+
+See: [**examples/custom_store**](examples/custom_store) for creating your own Store. To run it, follow the instructions in this README
 
 
 ## Running Dialyzer

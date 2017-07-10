@@ -1,0 +1,13 @@
+{application, store_example, [
+  {description, "An example of creating your own store"},
+  {vsn, "0.1.0"},
+  {registered, []},
+  {applications, [
+    kernel,
+    stdlib,
+    sumo_db,
+    sumo_db_pgsql
+  ]},
+  {mod, {store_example, []}},
+  {modules, []}
+]}.

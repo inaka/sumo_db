@@ -190,7 +190,8 @@ delete_all(Name, DocName) ->
 -spec find_all(Name, DocName) -> Res when
   Name    :: atom(),
   DocName :: sumo:schema_name(),
-  Res     :: {ok, [sumo_internal:doc()]} | {error, term()}.
+  Res     :: {ok, [sumo_internal:doc()]} |
+             {ok, {[sumo_internal:docs()], integer}} | {error, term()}.
 find_all(Name, DocName) ->
   wpool:call(Name, {find_all, DocName}).
 
@@ -204,7 +205,8 @@ find_all(Name, DocName) ->
   SortFields :: sumo:sort(),
   Limit      :: non_neg_integer(),
   Offset     :: non_neg_integer(),
-  Res        :: {ok, [sumo_internal:doc()]} | {error, term()}.
+  Res        :: {ok, [sumo_internal:doc()]} |
+                {ok, {[sumo_internal:docs()], integer}} | {error, term()}.
 find_all(Name, DocName, SortFields, Limit, Offset) ->
   wpool:call(Name, {find_all, DocName, SortFields, Limit, Offset}).
 
@@ -216,7 +218,8 @@ find_all(Name, DocName, SortFields, Limit, Offset) ->
   Name       :: atom(),
   DocName    :: sumo:schema_name(),
   Conditions :: sumo:conditions(),
-  Res        :: {ok, [sumo_internal:doc()]} | {error, term()}.
+  Res        :: {ok, [sumo_internal:doc()]} |
+                {ok, {[sumo_internal:docs()], integer}} | {error, term()}.
 find_by(Name, DocName, Conditions) ->
   wpool:call(Name, {find_by, DocName, Conditions}).
 
@@ -230,7 +233,8 @@ find_by(Name, DocName, Conditions) ->
   Conditions :: sumo:conditions(),
   Limit      :: non_neg_integer(),
   Offset     :: non_neg_integer(),
-  Res        :: {ok, [sumo_internal:doc()]} | {error, term()}.
+  Res        :: {ok, [sumo_internal:doc()]} |
+                {ok, {[sumo_internal:docs()], integer}} | {error, term()}.
 find_by(Name, DocName, Conditions, Limit, Offset) ->
   wpool:call(Name, {find_by, DocName, Conditions, Limit, Offset}).
 
@@ -245,7 +249,8 @@ find_by(Name, DocName, Conditions, Limit, Offset) ->
   SortFields :: sumo:sort(),
   Limit      :: non_neg_integer(),
   Offset     :: non_neg_integer(),
-  Res        :: {ok, [sumo_internal:doc()]} | {error, term()}.
+  Res        :: {ok, [sumo_internal:doc()]} |
+                {ok, {[sumo_internal:docs()], integer}} | {error, term()}.
 find_by(Name, DocName, Conditions, SortFields, Limit, Offset) ->
   wpool:call(Name, {find_by, DocName, Conditions, SortFields, Limit, Offset}).
 

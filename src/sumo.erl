@@ -89,6 +89,8 @@
 
 -type user_doc() :: term().
 
+-type find_results() :: #{docs => [user_doc()], total => integer()}.
+
 -export_type([
   schema_name/0,
   field_attr/0,
@@ -154,11 +156,12 @@ find_one(DocName, Conditions) ->
   end.
 
 %% @doc Returns all docs from the given store.
--spec find_all(schema_name()) -> [user_doc()].
+-spec find_all(schema_name()) -> [user_doc()] | find_results().
 find_all(DocName) ->
   case sumo_store:find_all(sumo_config:get_store(DocName), DocName) of
-    {ok, Docs} -> docs_wakeup(Docs);
-    Error      -> exit(Error)
+    {ok, {Docs, Total}} -> find_results(DocName, Docs, Total);
+    {ok, Docs}          -> find_results(DocName, Docs, 0);
+    Error               -> exit(Error)
   end.
 
 %% @doc Returns Limit docs from the given store, starting at offset.
@@ -167,22 +170,24 @@ find_all(DocName) ->
   SortFields0 :: sort(),
   Limit       :: non_neg_integer(),
   Offset      :: non_neg_integer(),
-  Res         :: [user_doc()].
+  Res         :: [user_doc()] | find_results().
 find_all(DocName, SortFields0, Limit, Offset) ->
   SortFields = normalize_sort_fields(SortFields0),
   Store = sumo_config:get_store(DocName),
   case sumo_store:find_all(Store, DocName, SortFields, Limit, Offset) of
-    {ok, Docs} -> docs_wakeup(Docs);
-    Error      -> exit(Error)
+    {ok, {Docs, Total}} -> find_results(DocName, Docs, Total);
+    {ok, Docs}          -> find_results(DocName, Docs, 0);
+    Error               -> exit(Error)
   end.
 
 %% @doc Returns *all* docs that match Conditions.
--spec find_by(schema_name(), conditions()) -> [user_doc()].
+-spec find_by(schema_name(), conditions()) -> [user_doc()] | find_results().
 find_by(DocName, Conditions) ->
   Store = sumo_config:get_store(DocName),
   case sumo_store:find_by(Store, DocName, Conditions) of
-    {ok, Docs} -> docs_wakeup(Docs);
-    Error      -> exit(Error)
+    {ok, {Docs, Total}} -> find_results(DocName, Docs, Total);
+    {ok, Docs}          -> find_results(DocName, Docs, 0);
+    Error               -> exit(Error)
   end.
 
 %% @doc
@@ -194,12 +199,13 @@ find_by(DocName, Conditions) ->
   Conditions :: conditions(),
   Limit      :: non_neg_integer(),
   Offset     :: non_neg_integer(),
-  Res        :: [user_doc()].
+  Res        :: [user_doc()] | find_results().
 find_by(DocName, Conditions, Limit, Offset) ->
   Store = sumo_config:get_store(DocName),
   case sumo_store:find_by(Store, DocName, Conditions, Limit, Offset) of
-    {ok, Docs} -> docs_wakeup(Docs);
-    Error      -> exit(Error)
+    {ok, {Docs, Total}} -> find_results(DocName, Docs, Total);
+    {ok, Docs}          -> find_results(DocName, Docs, 0);
+    Error               -> exit(Error)
   end.
 
 %% @doc
@@ -212,13 +218,15 @@ find_by(DocName, Conditions, Limit, Offset) ->
   SortFields :: sort(),
   Limit      :: non_neg_integer(),
   Offset     :: non_neg_integer(),
-  Res        :: [user_doc()].
+  Res        :: [user_doc()] | find_results().
 find_by(DocName, Conditions, SortFields, Limit, Offset) ->
   NormalizedSortFields = normalize_sort_fields(SortFields),
   Store = sumo_config:get_store(DocName),
-  case sumo_store:find_by(Store, DocName, Conditions, NormalizedSortFields, Limit, Offset) of
-    {ok, Docs} -> docs_wakeup(Docs);
-    Error      -> exit(Error)
+  case sumo_store:find_by(Store, DocName, Conditions, NormalizedSortFields,
+                          Limit, Offset) of
+    {ok, {Docs, Total}} -> find_results(DocName, Docs, Total);
+    {ok, Docs}          -> find_results(DocName, Docs, 0);
+    Error               -> exit(Error)
   end.
 
 %% @doc Deletes all docs of type DocName.
@@ -229,7 +237,7 @@ delete_all(DocName) ->
   case sumo_store:delete_all(Store, DocName) of
     {ok, NumRows} ->
       _ = case NumRows > 0 of
-        true -> EventId = sumo_event:dispatch(DocName, EventId, deleted_all, []);
+        true -> EventId = sumo_event:dispatch(DocName, EventId, deleted_all,[]);
         _    -> ok
       end,
       NumRows;
@@ -356,3 +364,11 @@ normalize_sort_fields(SortFields) when is_list(SortFields) ->
 %% @private
 get_docs() ->
   application:get_env(sumo_db, docs, []).
+
+%% @private
+find_results(DocName, Docs, Total) ->
+  case sumo_config:get_prop_value(DocName, total_results, undefined) of
+    undefined -> docs_wakeup(Docs);
+    false -> docs_wakeup(Docs);
+    _ -> #{docs => docs_wakeup(Docs), total => Total}
+  end.

@@ -1,5 +1,19 @@
 # Change Log
 
+## [0.7.3](https://github.com/inaka/sumo_db/tree/0.7.3) (2017-07-12)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.7.2...0.7.3)
+
+**Closed issues:**
+
+- How to create your own sumo\_store? [\#313](https://github.com/inaka/sumo_db/issues/313)
+- Version Bump to 0.7.2 [\#310](https://github.com/inaka/sumo_db/issues/310)
+- Implement `sumo\_changeset` module, analogous to Elixir Ecto Changeset [\#295](https://github.com/inaka/sumo_db/issues/295)
+
+**Merged pull requests:**
+
+- \[\#314\] Adding count\_by function [\#317](https://github.com/inaka/sumo_db/pull/317) ([ferigis](https://github.com/ferigis))
+- \[\#313\] Own store example [\#315](https://github.com/inaka/sumo_db/pull/315) ([ferigis](https://github.com/ferigis))
+
 ## [0.7.2](https://github.com/inaka/sumo_db/tree/0.7.2) (2017-06-06)
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.7.1...0.7.2)
 
@@ -30,6 +44,7 @@
 
 **Merged pull requests:**
 
+- \[\#310\] Version Bump to 0.7.2 [\#311](https://github.com/inaka/sumo_db/pull/311) ([ferigis](https://github.com/ferigis))
 - \[\#295\] Implement sumo\_changeset – analogous to Elixir Ecto.Changeset [\#306](https://github.com/inaka/sumo_db/pull/306) ([cabol](https://github.com/cabol))
 - \[WIP\] Remove dependency on sasl [\#305](https://github.com/inaka/sumo_db/pull/305) ([lucafavatella](https://github.com/lucafavatella))
 - Do not depend on lager [\#304](https://github.com/inaka/sumo_db/pull/304) ([lucafavatella](https://github.com/lucafavatella))

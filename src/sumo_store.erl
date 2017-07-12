@@ -37,6 +37,7 @@
   find_by/5,
   find_by/6,
   count/2,
+  count_by/3,
   call/4
 ]).
 
@@ -129,6 +130,11 @@
 -callback count(Schema, State) -> Res when
   Schema :: sumo:schema_name(),
   Res    :: result(non_neg_integer(), State).
+
+-callback count_by(Schema, Conditions, State) -> Res when
+  Schema     :: sumo:schema_name(),
+  Conditions :: sumo:conditions(),
+  Res        :: result(non_neg_integer(), State).
 
 %%%=============================================================================
 %%% API
@@ -257,6 +263,15 @@ find_by(Name, DocName, Conditions, SortFields, Limit, Offset) ->
 count(Name, DocName) ->
   wpool:call(Name, {count, DocName}).
 
+%% @doc Counts the total number of docs that match the given conditions.
+-spec count_by(Name, DocName, Conditions) -> Res when
+  Name       :: atom(),
+  DocName    :: sumo:schema_name(),
+  Conditions :: sumo:conditions(),
+  Res        :: {ok, non_neg_integer()} | {error, term()}.
+count_by(Name, DocName, Conditions) ->
+  wpool:call(Name, {count_by, DocName, Conditions}).
+
 %% @doc Calls a custom function in the given store name.
 -spec call(Name, DocName, Function, Args) -> Res when
   Name     :: atom(),
@@ -370,6 +385,13 @@ handle_call(
   #state{handler = Handler, handler_state = HState} = State
 ) ->
   {OkOrError, Reply, NewState} = Handler:count(DocName, HState),
+  {reply, {OkOrError, Reply}, State#state{handler_state = NewState}};
+
+handle_call(
+  {count_by, DocName, Conditions}, _From,
+  #state{handler = Handler, handler_state = HState} = State
+) ->
+  {OkOrError, Reply, NewState} = Handler:count_by(DocName, Conditions, HState),
   {reply, {OkOrError, Reply}, State#state{handler_state = NewState}};
 
 handle_call(

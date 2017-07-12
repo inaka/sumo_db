@@ -46,6 +46,7 @@
   delete_by/2,
   delete_all/1,
   count/1,
+  count_by/2,
   call/2, call/3
 ]).
 
@@ -266,6 +267,14 @@ delete_by(DocName, Conditions) ->
 -spec count(schema_name()) -> non_neg_integer().
 count(DocName) ->
   case sumo_store:count(sumo_config:get_store(DocName), DocName) of
+    {ok, Total} -> Total;
+    Error       -> exit(Error)
+  end.
+
+%% @doc Counts the total number of docs matching the provided Conditions.
+-spec count_by(schema_name(), conditions()) -> non_neg_integer().
+count_by(DocName, Conditions) ->
+  case sumo_store:count_by(sumo_config:get_store(DocName), DocName, Conditions) of
     {ok, Total} -> Total;
     Error       -> exit(Error)
   end.

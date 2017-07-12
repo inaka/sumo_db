@@ -33,7 +33,8 @@
   delete_all/2,
   find_all/2, find_all/5,
   find_by/3, find_by/5, find_by/6,
-  count/2
+  count/2,
+  count_by/3
 ]).
 
 %%%=============================================================================
@@ -243,6 +244,21 @@ count(DocName, State) ->
     {ok, Size, State}
   catch
     _:Reason -> {error, Reason, State}
+  end.
+
+-spec count_by(DocName, Conditions, State) -> Response when
+  DocName    :: sumo:schema_name(),
+  Conditions :: sumo:conditions(),
+  State      :: state(),
+  Response   :: sumo_store:result(non_neg_integer(), state()).
+count_by(DocName, Conditions, State) ->
+  MatchSpec = build_match_spec(DocName, Conditions),
+  Transaction = fun() ->
+    length(mnesia:select(DocName, MatchSpec))
+  end,
+  case mnesia:transaction(Transaction) of
+    {aborted, Reason} -> {error, Reason, State};
+    {atomic, Count}   -> {ok, Count, State}
   end.
 
 %%%=============================================================================

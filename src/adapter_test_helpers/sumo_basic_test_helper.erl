@@ -10,6 +10,7 @@
   delete/1,
   check_proper_dates/1,
   count/1,
+  count_by/1,
   persist_using_changeset/1
 ]).
 
@@ -192,6 +193,18 @@ count(Config) ->
   Conditions = [{last_name, <<"D">>}],
   2 = sumo:delete_by(Name, Conditions),
   6 = sumo:count(Name),
+  ok.
+
+-spec count_by(config()) -> ok.
+count_by(Config) ->
+  {_, Name} = lists:keyfind(name, 1, Config),
+
+  6 = sumo:count_by(Name, [{age, '>', 2}]),
+  4 = sumo:count_by(Name, [{age, '>', 2}, {age, '=<', 5}]),
+  2 = sumo:count_by(Name, [{age, '>', 5}]),
+  0 = sumo:count_by(Name, [{age, '>', 7}]),
+  8 = sumo:count_by(Name, []),
+
   ok.
 
 -spec persist_using_changeset(config()) -> ok.

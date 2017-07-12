@@ -20,6 +20,7 @@
     delete/1,
     check_proper_dates/1,
     count/1,
+    count_by/1,
     persist_using_changeset/1
   ]}
 ]).

@@ -41,7 +41,7 @@ start_link() -> supervisor:start_link({local, ?MODULE}, ?MODULE, []).
 %%% Supervisor callbacks
 %%%=============================================================================
 
--spec init(any()) -> {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
+%% hidden
 init([]) ->
   EventManagers = sumo_config:get_event_managers(),
   ManagersList = [manager(EventManager) || EventManager <- EventManagers],

@@ -41,7 +41,7 @@ start_link() ->
 %%% Supervisor callbacks
 %%%=============================================================================
 
--spec init(any()) -> {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
+%% hidden
 init([]) ->
   {ok, Backends} = application:get_env(sumo_db, storage_backends),
   Children = lists:map(fun({Name, Module, Options}) ->

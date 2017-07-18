@@ -60,19 +60,33 @@
   handler_state = undefined :: any()
 }).
 
--type state() :: #state{}.
-
-%%%=============================================================================
-%%% Callbacks
-%%%=============================================================================
-
 -type result(R, S)    :: {ok, R, S} | {error, term(), S}.
 -type result(S)       :: {ok, S} | {error, term(), S}.
 -type affected_rows() :: unknown | non_neg_integer().
 
 -export_type([result/2, result/1, affected_rows/0]).
 
+%%%=============================================================================
+%%% gen_server callbacks
+%%%=============================================================================
+
 -callback init(term()) -> {ok, term()}.
+
+-callback handle_info(Info, State) -> Res when
+  Info  :: term(),
+  State :: term(),
+  Res   :: {noreply, State}
+         | {noreply, State, timeout()}
+         | {noreply, State, hibernate}
+         | {stop, Reason :: term(), State}.
+
+-callback terminate(Reason, State) -> ok when
+  Reason :: normal | shutdown | {shutdown, term()} | term(),
+  State  :: term().
+
+%%%=============================================================================
+%%% API callbacks
+%%%=============================================================================
 
 -callback create_schema(Schema, State) -> Res when
   Schema :: sumo:schema(),
@@ -135,6 +149,8 @@
   Schema     :: sumo:schema_name(),
   Conditions :: sumo:conditions(),
   Res        :: result(non_neg_integer(), State).
+
+-optional_callbacks([handle_info/2, terminate/2]).
 
 %%%=============================================================================
 %%% API
@@ -293,14 +309,12 @@ call(Name, DocName, Function, Args) ->
 
 %% @doc Called by start_link.
 %% @hidden
--spec init([term()]) -> {ok, state()}.
 init([Module, Options]) ->
   {ok, HState} = Module:init(Options),
   {ok, #state{handler=Module, handler_state=HState}}.
 
 %% @doc handles calls.
 %% @hidden
--spec handle_call(term(), _, state()) -> {reply, tuple(), state()}.
 handle_call(
   {create_schema, Schema}, _From,
   #state{handler = Handler, handler_state = HState} = State
@@ -403,29 +417,49 @@ handle_call(
   {reply, {OkOrError, Reply}, State#state{handler_state=NewState}}.
 
 %% @hidden
--spec handle_cast(term(), state()) ->
-  {noreply, state()} |
-  {noreply, state(), non_neg_integer()} |
-  {noreply, state(), hibernate} |
-  {stop, term(), state()}.
 handle_cast(_Msg, State) ->
   {noreply, State}.
 
 %% @hidden
--spec handle_info(term(), state()) ->
-  {noreply, state()} |
-  {noreply, state(), non_neg_integer()} |
-  {noreply, state(), hibernate} |
-  {stop, term(), state()}.
-handle_info(_Info, State) ->
-  {noreply, State}.
+handle_info(Info, #state{handler = Handler, handler_state = HState} = State) ->
+  case erlang:function_exported(Handler, handle_info, 2) of
+    true ->
+      try Handler:handle_info(Info, HState) of
+        Response -> handle_info_response(Response, State)
+      catch
+        throw:Response -> handle_info_response(Response, State)
+      end;
+    false ->
+      {noreply, State}
+  end.
 
 %% @hidden
--spec terminate(term(), state()) -> ok.
-terminate(_Reason, _State) ->
-  ok.
+terminate(Reason, #state{handler = Handler, handler_state = HState}) ->
+  case erlang:function_exported(Handler, terminate, 2) of
+    true ->
+      try
+        Handler:terminate(Reason, HState)
+      catch
+        throw:Response -> Response
+      end;
+    false ->
+      ok
+  end.
 
 %% @hidden
--spec code_change(term(), state(), term()) -> {ok, state()} | {error, term()}.
 code_change(_OldVsn, State, _Extra) ->
   {ok, State}.
+
+%%%=============================================================================
+%%% Internal Functions
+%%%=============================================================================
+
+%% @private
+handle_info_response({noreply, NewHState}, State) ->
+  {noreply, State#state{handler_state = NewHState}};
+handle_info_response({noreply, NewHState, hibernate}, State) ->
+  {noreply, State#state{handler_state = NewHState}, hibernate};
+handle_info_response({noreply, NewHState, Timeout}, State) ->
+  {noreply, State#state{handler_state = NewHState}, Timeout};
+handle_info_response({stop, Reason, NewHState}, State) ->
+  {stop, Reason, State#state{handler_state = NewHState}}.

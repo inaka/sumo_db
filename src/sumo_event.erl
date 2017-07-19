@@ -46,8 +46,12 @@ dispatch(DocName, Event, Args) ->
   dispatch(DocName, EventId, Event, Args).
 
 %% @doc Dispatch an event through gen_event:notify/2.
--spec dispatch(sumo:schema_name(), event_id(), term(), term()) ->
-  event_id() | no_event_managers.
+-spec dispatch(DocName, EventId, Event, Args) -> Res when
+  DocName :: sumo:schema_name(),
+  EventId :: event_id(),
+  Event   :: term(),
+  Args    :: term(),
+  Res     :: event_id() | no_event_managers.
 dispatch(DocName, EventId, Event, Args) ->
   case sumo_config:get_event_managers(DocName) of
     [] ->

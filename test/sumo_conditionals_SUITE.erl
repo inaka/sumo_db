@@ -1,4 +1,4 @@
--module(conditional_logic_SUITE).
+-module(sumo_conditionals_SUITE).
 
 %% CT
 -export([

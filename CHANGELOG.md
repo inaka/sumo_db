@@ -1,16 +1,30 @@
 # Change Log
 
+## [0.7.4](https://github.com/inaka/sumo_db/tree/0.7.4) (2017-07-19)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.7.3...0.7.4)
+
+**Closed issues:**
+
+- In `sumo\_store` add `handle\_info` and `terminate` as optional callbacks [\#321](https://github.com/inaka/sumo_db/issues/321)
+- Add sumo:count\_by function [\#314](https://github.com/inaka/sumo_db/issues/314)
+
+**Merged pull requests:**
+
+- \[\#321\] In `sumo\_store` add `handle\_info` and `terminate` as optional callbacks [\#322](https://github.com/inaka/sumo_db/pull/322) ([cabol](https://github.com/cabol))
+
 ## [0.7.3](https://github.com/inaka/sumo_db/tree/0.7.3) (2017-07-12)
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.7.2...0.7.3)
 
 **Closed issues:**
 
+- Version Bump to 0.7.3 [\#318](https://github.com/inaka/sumo_db/issues/318)
 - How to create your own sumo\_store? [\#313](https://github.com/inaka/sumo_db/issues/313)
 - Version Bump to 0.7.2 [\#310](https://github.com/inaka/sumo_db/issues/310)
 - Implement `sumo\_changeset` module, analogous to Elixir Ecto Changeset [\#295](https://github.com/inaka/sumo_db/issues/295)
 
 **Merged pull requests:**
 
+- \[\#318\] Version Bump to 0.7.3 [\#319](https://github.com/inaka/sumo_db/pull/319) ([ferigis](https://github.com/ferigis))
 - \[\#314\] Adding count\_by function [\#317](https://github.com/inaka/sumo_db/pull/317) ([ferigis](https://github.com/ferigis))
 - \[\#313\] Own store example [\#315](https://github.com/inaka/sumo_db/pull/315) ([ferigis](https://github.com/ferigis))
 

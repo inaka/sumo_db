@@ -14,7 +14,6 @@ erl_crash.dump
 .erlang.mk/
 sumo_db.d
 _build/
-rebar.lock
 *_plt
 .idea/
 *.iml

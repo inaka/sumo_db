@@ -108,6 +108,8 @@ find_by(Config) ->
   %% Check pagination
   Results1 = sumo:find_by(Name, [], 3, 1),
   [_, _, _] = Results1,
+  [_, _, _, _, _, _, _] = sumo:find_by(Name, [], 1000, 1),
+  [] = sumo:find_by(Name, [], 1, 1000),
 
   %% This test is #177 github issue related
   [_, _, _, _, _, _, _, _] = sumo:find_by(Name, []),

@@ -1,5 +1,21 @@
 # Change Log
 
+## [0.7.6](https://github.com/inaka/sumo_db/tree/0.7.6) (2017-12-03)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.7.5...0.7.6)
+
+**Merged pull requests:**
+
+- Fix find\_by when offset is greater than available objects [\#329](https://github.com/inaka/sumo_db/pull/329) ([mvpossum](https://github.com/mvpossum))
+- Update README.md [\#328](https://github.com/inaka/sumo_db/pull/328) ([igaray](https://github.com/igaray))
+
+## [0.7.5](https://github.com/inaka/sumo_db/tree/0.7.5) (2017-07-20)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.7.4...0.7.5)
+
+**Merged pull requests:**
+
+- Version Bump to 0.7.5 [\#325](https://github.com/inaka/sumo_db/pull/325) ([cabol](https://github.com/cabol))
+- Version Bump to 0.7.4.1 [\#324](https://github.com/inaka/sumo_db/pull/324) ([cabol](https://github.com/cabol))
+
 ## [0.7.4](https://github.com/inaka/sumo_db/tree/0.7.4) (2017-07-19)
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.7.3...0.7.4)
 
@@ -10,6 +26,7 @@
 
 **Merged pull requests:**
 
+- Version Bump to 0.7.4 [\#323](https://github.com/inaka/sumo_db/pull/323) ([cabol](https://github.com/cabol))
 - \[\#321\] In `sumo\_store` add `handle\_info` and `terminate` as optional callbacks [\#322](https://github.com/inaka/sumo_db/pull/322) ([cabol](https://github.com/cabol))
 
 ## [0.7.3](https://github.com/inaka/sumo_db/tree/0.7.3) (2017-07-12)

@@ -2,11 +2,11 @@
 [{<<"iso8601">>,{pkg,<<"iso8601">>,<<"1.2.3">>},0},
  {<<"quickrand">>,{pkg,<<"quickrand">>,<<"1.5.4">>},1},
  {<<"uuid">>,{pkg,<<"uuid_erl">>,<<"1.5.2-rc1">>},0},
- {<<"worker_pool">>,{pkg,<<"worker_pool">>,<<"2.3.0">>},0}]}.
+ {<<"worker_pool">>,{pkg,<<"worker_pool">>,<<"3.1.0">>},0}]}.
 [
 {pkg_hash,[
  {<<"iso8601">>, <<"56D173EC568D42E95908797A9B7D27BCF0B377443277416733EB1A544A4A47C2">>},
  {<<"quickrand">>, <<"47ADD4755CC5F209CBEFFD6F47C84061196CD7FAD99FD8FD12418EB0D06B939D">>},
  {<<"uuid">>, <<"D4022AB3F4F1A28E86EA15D4075CB0C57EC908D8AF1CA2E8AF28AA815EF93C3A">>},
- {<<"worker_pool">>, <<"F401FD82A6A02333F4326B144A1EE759EEDEA20411F4283A3F3195BD62A2E445">>}]}
+ {<<"worker_pool">>, <<"C908627E04057CF29940AD0E79B89AB161DB520EEBC76942EFD08A187BABF93A">>}]}
 ].

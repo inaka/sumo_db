@@ -1,10 +1,22 @@
 # Change Log
 
+## [0.7.7](https://github.com/inaka/sumo_db/tree/0.7.7) (2018-05-28)
+[Full Changelog](https://github.com/inaka/sumo_db/compare/0.7.6...0.7.7)
+
+**Closed issues:**
+
+- Upgrade sumo\_db dependencies [\#331](https://github.com/inaka/sumo_db/issues/331)
+
+**Merged pull requests:**
+
+- Upgrade worker\_pool to remove the \(already deprecated\) gen\_fsm warning\(s\) [\#332](https://github.com/inaka/sumo_db/pull/332) ([x80486](https://github.com/x80486))
+
 ## [0.7.6](https://github.com/inaka/sumo_db/tree/0.7.6) (2017-12-03)
 [Full Changelog](https://github.com/inaka/sumo_db/compare/0.7.5...0.7.6)
 
 **Merged pull requests:**
 
+- Bump version to 0.7.6 [\#330](https://github.com/inaka/sumo_db/pull/330) ([harenson](https://github.com/harenson))
 - Fix find\_by when offset is greater than available objects [\#329](https://github.com/inaka/sumo_db/pull/329) ([mvpossum](https://github.com/mvpossum))
 - Update README.md [\#328](https://github.com/inaka/sumo_db/pull/328) ([igaray](https://github.com/igaray))
 

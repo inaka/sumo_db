@@ -167,7 +167,7 @@ start_link(Name, Module, Options) ->
     {workers, PoolSize},
     {worker, {?MODULE, [Module, Options]}}
   ],
-  wpool:start_pool(Name, WPoolConfigOpts ++ WPoolOptions).
+  wpool:start_pool(Name, lists:ukeysort(1, WPoolConfigOpts ++ WPoolOptions)).
 
 %% @doc Creates the schema of the given docs in the given store name.
 -spec create_schema(atom(), sumo:schema()) -> ok | {error, term()}.
